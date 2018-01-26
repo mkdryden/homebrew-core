@@ -1,15 +1,15 @@
 class Scalariform < Formula
   desc "Scala source code formatter"
-  homepage "https://github.com/daniel-trinh/scalariform"
-  url "https://github.com/daniel-trinh/scalariform/releases/download/0.1.6/scalariform.jar"
-  sha256 "346276c5f3a25a44d64ed38f43739813933487299a651f7c64db748427641c54"
-
-  bottle :unneeded
+  homepage "https://github.com/scala-ide/scalariform"
+  url "https://github.com/scala-ide/scalariform/releases/download/0.2.6/scalariform.jar"
+  sha256 "0cd28ba1a8725527572f75f7b23bca8b9f55c945e01592d5968c1383113bf7a4"
 
   head do
-    url "https://github.com/daniel-trinh/scalariform.git"
+    url "https://github.com/scala-ide/scalariform.git"
     depends_on "sbt" => :build
   end
+
+  bottle :unneeded
 
   def install
     if build.head?
@@ -23,13 +23,13 @@ class Scalariform < Formula
   end
 
   test do
-    before_data = <<-EOS.undent
+    before_data = <<~EOS
       def foo() {
       println("Hello World")
       }
     EOS
 
-    after_data = <<-EOS.undent
+    after_data = <<~EOS
       def foo() {
          println("Hello World")
       }

@@ -1,37 +1,35 @@
 class Voldemort < Formula
   desc "Distributed key-value storage system"
   homepage "http://www.project-voldemort.com/"
-  url "https://github.com/voldemort/voldemort/archive/release-1.9.5-cutoff.tar.gz"
-  sha256 "d521943873665d863a207c93557dc322c091e22a4293df4e3b86eb298ebbda7c"
+  url "https://github.com/voldemort/voldemort/archive/release-1.10.25-cutoff.tar.gz"
+  sha256 "29f21adee7c8c67c57dacef5c204ceb3c92132dac32d0577418bcd2c5cfb81d2"
 
-  depends_on :ant => :build
+  bottle do
+    cellar :any_skip_relocation
+    sha256 "efab24efd6b897345a5ddb3932e4aa25600feed32a2efea1b66362f29637bed7" => :high_sierra
+    sha256 "76ba2152aec4e7334fbffe43f9597b0c13aca9f039d69b6d44dcf6c162b017a0" => :sierra
+    sha256 "272761b8757206fe1f31f7cc6b1ea36f7a6a804f6deb06ed14873eea6f894dfe" => :el_capitan
+    sha256 "7364d98e346d5bb358f26674c19116c09b5b8e48e28651e90776307d6c4398fe" => :yosemite
+  end
+
+  depends_on "gradle" => :build
   depends_on :java => "1.7+"
 
   def install
-    args = []
-    # ant on ML and below is too old to support 1.8
-    args << "-Dbuild.compiler=javac1.7" if MacOS.version < :mavericks
-    system "ant", *args
-    libexec.install %w[bin lib dist contrib]
-    libexec.install "config" => "config-examples"
-    (libexec/"config").mkpath
-
-    # Write shim scripts for all utilities
-    bin.write_exec_script Dir["#{libexec}/bin/*.sh"]
-  end
-
-  def caveats; <<-EOS.undent
-    You will need to set VOLDEMORT_HOME to:
-      #{libexec}
-
-    Config files should be placed in:
-      #{libexec}/config
-    or you can set VOL_CONF_DIR to a more reasonable path.
-    EOS
+    system "./gradlew", "build", "-x", "test"
+    libexec.install %w[lib dist contrib]
+    bin.install Dir["bin/*{.sh,.py}"]
+    libexec.install "bin"
+    pkgshare.install "config" => "config-examples"
+    (etc/"voldemort").mkpath
+    env = {
+      :VOLDEMORT_HOME => libexec,
+      :VOLDEMORT_CONFIG_DIR => etc/"voldemort",
+    }
+    bin.env_script_all_files(libexec/"bin", env)
   end
 
   test do
-    ENV["VOLDEMORT_HOME"] = libexec
-    system "#{bin}/vadmin.sh"
+    system bin/"vadmin.sh"
   end
 end

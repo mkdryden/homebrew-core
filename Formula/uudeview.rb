@@ -6,6 +6,8 @@ class Uudeview < Formula
   revision 1
 
   bottle do
+    sha256 "9dc171e8989c39f86f0c7dc3731223cfa5ca675777423141a81dd2eedb030fd1" => :high_sierra
+    sha256 "a8ab0219be6aa4d27c2d2cf782fdd6729c927b6e241c1a19c277c508dfaf9504" => :sierra
     sha256 "fa6bcd2362f84742db9e89d4e474a4359d06d9829db2a54223597b5ab662053c" => :el_capitan
     sha256 "2692468b933a114f9f2cdebdb566ace98a5d33694fa6133e5024df5e4022a63f" => :yosemite
     sha256 "632df808fdc10ec4f8dbc18c028b51f6c28152fe0cc00c4b2a19a723f0b0499b" => :mavericks
@@ -14,7 +16,7 @@ class Uudeview < Formula
 
   # Fix function signatures (for clang)
   patch :p0 do
-    url "https://raw.githubusercontent.com/Homebrew/patches/19da78c/uudeview/inews.c.patch"
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/19da78c/uudeview/inews.c.patch"
     sha256 "4bdf357ede31abc17b1fbfdc230051f0c2beb9bb8805872bd66e40989f686d7b"
   end
 

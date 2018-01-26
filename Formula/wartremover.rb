@@ -1,28 +1,30 @@
 class Wartremover < Formula
   desc "Flexible Scala code linting tool"
-  homepage "https://github.com/puffnfresh/wartremover"
-  url "https://github.com/puffnfresh/wartremover/archive/v0.13.tar.gz"
-  sha256 "65d2f9907662bc2cc892801055713dd80a7fc25ade5091cb534bfc51eaae626b"
-
-  head "https://github.com/puffnfresh/wartremover.git"
+  homepage "https://github.com/wartremover/wartremover"
+  url "https://github.com/wartremover/wartremover/archive/v2.1.1.tar.gz"
+  sha256 "4c789ee33ecff2b655bc839c5ebc7b20d581f99529f8f553628ed38d9615e553"
+  head "https://github.com/wartremover/wartremover.git"
 
   bottle do
-    cellar :any
-    sha256 "7cf8e78114d8212a56e71cf62b415151e0458141bef644a4a5f8e75417cc7f8b" => :yosemite
-    sha256 "a5c0eb64c5d8165c918772f3462eada415ad90545f77eb6d8aa8d636ba73ed32" => :mavericks
-    sha256 "4727d2f98bbe8c3b4e60a99cb97af633a1b33a8a1e42b8caade98ebd1d7131d0" => :mountain_lion
+    cellar :any_skip_relocation
+    sha256 "bf550c84f6496836bac31e52f0fd9409183db5835b874d7da2d7d1d343c645e7" => :high_sierra
+    sha256 "38422af4a85e008b1405bac3aba599e5465b1ce5990ebd482132d460eb31ba49" => :sierra
+    sha256 "2a91c4fb3c3f070a2828875eacc72c73d36928bea0b9169769435ed66538d9ff" => :el_capitan
+    sha256 "a39d5db621275982f364f37a5e6d2c0ccd3a507c1c9afa8a6693123b75d4413c" => :yosemite
   end
 
   depends_on "sbt" => :build
+  depends_on :java => "1.6+"
 
   def install
-    system "sbt", "core/assembly"
-    libexec.install Dir["core/target/scala-*/wartremover-assembly-*.jar"]
-    bin.write_jar_script Dir[libexec/"wartremover-assembly-*.jar"][0], "wartremover"
+    system "./sbt", "-sbt-jar", Formula["sbt"].opt_libexec/"bin/sbt-launch.jar",
+                    "core/assembly"
+    libexec.install "wartremover-assembly.jar"
+    bin.write_jar_script libexec/"wartremover-assembly.jar", "wartremover"
   end
 
   test do
-    test_data = <<-EOS.undent
+    (testpath/"foo").write <<~EOS
       object Foo {
         def foo() {
           var msg = "Hello World"
@@ -30,9 +32,7 @@ class Wartremover < Formula
         }
       }
     EOS
-
-    (testpath/"foo.scala").write test_data
-    cmd = "#{bin}/wartremover -traverser org.brianmckenna.wartremover.warts.Unsafe #{testpath}/foo.scala 2>&1"
-    assert_match /var is disabled/, shell_output(cmd, 1)
+    cmd = "#{bin}/wartremover -traverser org.wartremover.warts.Unsafe foo 2>&1"
+    assert_match "var is disabled", shell_output(cmd, 1)
   end
 end

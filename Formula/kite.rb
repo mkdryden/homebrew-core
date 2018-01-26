@@ -3,11 +3,12 @@ class Kite < Formula
   homepage "http://www.kite-language.org/"
   url "http://www.kite-language.org/files/kite-1.0.4.tar.gz"
   sha256 "8f97e777c3ea8cb22fa1236758df3c479bba98be3deb4483ae9aff4cd39c01d5"
+  revision 1
 
   bottle do
-    sha256 "9e2e8d816c2ad95f0b1cb25a457f12e47ec5e1d73ea5bbb65d9655aec9ecbe6b" => :el_capitan
-    sha256 "2833a3382b4fde542e4e5277e4f4dec6e0d9f1beb74c905db525b37e226a638f" => :yosemite
-    sha256 "55688f9323627d1ef884615c6de641885b1fc60031522ae584ce5ee54941fa87" => :mavericks
+    sha256 "40de335c9146382fe8e2dbb428cbbe81fb5463cdedea0270e043ecffb4b52635" => :high_sierra
+    sha256 "80afe502ef94189f6628d9bc33ac95b0271aa07f2e008934a46554b0e2d904a4" => :sierra
+    sha256 "7f8adfad9dcdf2d65050099d658e5277de444a69f2953569a93735780354a33b" => :el_capitan
   end
 
   depends_on "bdw-gc"
@@ -19,6 +20,11 @@ class Kite < Formula
     system "./configure", "--disable-debug", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make", "install"
+  end
+
+  test do
+    output = pipe_output("#{bin}/kite", "'hello, world'|print;", 0)
+    assert_equal "hello, world", output.chomp
   end
 end
 

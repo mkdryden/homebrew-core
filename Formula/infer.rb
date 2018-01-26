@@ -1,42 +1,57 @@
 class Infer < Formula
-  desc "Static analyzer for Java, C and Objective-C"
+  desc "Static analyzer for Java, C, C++, and Objective-C"
   homepage "http://fbinfer.com/"
-  url "https://github.com/facebook/infer/releases/download/v0.8.0/infer-osx-v0.8.0.tar.xz"
-  sha256 "2b494a2b595bd7cf0f0cfaac4e9bece568575a4bcf25cc00161ed34c0319dc58"
+  # pull from git tag to get submodules
+  url "https://github.com/facebook/infer.git",
+      :tag => "v0.13.0",
+      :revision => "ddda04c92b03dc86a0c32feaf8544f23874de4b3"
 
   bottle do
     cellar :any
-    sha256 "d16a8596892dc4fb16e576bb3c108f21d4739190fb43d088611bee25db1cc959" => :el_capitan
-    sha256 "da1e41d5b9a9f67a27ac65ea2fb36695c0cef9745a0819a13b03ffd0916f72b8" => :yosemite
-    sha256 "baf0deb2cfb6864b209a02c925cc97e7b32f5a2299d39aafcf21f82788afd4ee" => :mavericks
+    sha256 "cec01990ef619d19129f3b47c33c6e98e1fad1e2a453ec2d81ae1e9eeadeef15" => :high_sierra
+    sha256 "cb01220e0ac8d4c1d78230819706311ae2dc160ca8fbd30dfe7f19519dbba31f" => :sierra
+    sha256 "8cfddae067f407906fc983a69e8cdb5355cb766c7d43b853f0f4e45603ac2ecd" => :el_capitan
   end
 
-  option "without-clang", "Build without C/Objective-C analyzer"
-  option "without-java", "Build without Java analyzer"
+  option "without-clang", "Build without the C/C++/Objective-C analyzers"
+  option "without-java", "Build without the Java analyzers"
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
+  depends_on "cmake" => :build
+  depends_on :java => ["1.8", :build]
   depends_on "libtool" => :build
+  depends_on "ocaml" => :build
   depends_on "opam" => :build
+  depends_on "pkg-config" => :build
 
   def install
     if build.without?("clang") && build.without?("java")
       odie "infer: --without-clang and --without-java are mutually exclusive"
     end
 
-    opamroot = buildpath/"build"
+    # fix symbol not found issue (_clock_gettime) on el_capitan
+    ENV.delete("SDKROOT")
+
+    if build.with?("clang")
+      # needed to build clang
+      ENV.permit_arch_flags
+      # Apple's libstdc++ is too old to build LLVM
+      ENV.libcxx if ENV.compiler == :clang
+    end
+
+    opamroot = buildpath/"opamroot"
     opamroot.mkpath
     ENV["OPAMROOT"] = opamroot
     ENV["OPAMYES"] = "1"
 
-    system "opam", "init", "--no-setup"
-    system "opam", "update"
+    # Some of the libraries installed by ./build-infer.sh do not
+    # support parallel builds, eg OCaml itself. ./build-infer.sh
+    # builds in its own parallelization logic to mitigate that.
+    ENV.deparallelize
 
-    system "opam", "install", "ocamlfind"
-    system "opam", "install", "sawja>=1.5.1"
-    system "opam", "install", "atdgen>=1.6.0"
-    system "opam", "install", "extlib>=1.5.4"
-    system "opam", "install", "oUnit>=2.0.0"
+    # do not attempt to use the clang in facebook-clang-plugins/ as it hasn't been built yet
+    ENV["INFER_CONFIGURE_OPTS"] = "--prefix=#{prefix} --disable-ocaml-binannot --without-fcp-clang"
 
     target_platform = if build.without?("clang")
       "java"
@@ -45,17 +60,21 @@ class Infer < Formula
     else
       "all"
     end
+
+    system "opam", "init", "--no-setup"
+    ocaml_version = File.read("build-infer.sh").match(/OCAML_VERSION=\${OCAML_VERSION:-\"([^\"]+)\"}/)[1]
+    ocaml_version_number = ocaml_version.split("+", 2)[0]
+    inreplace "#{opamroot}/compilers/#{ocaml_version_number}/#{ocaml_version}/#{ocaml_version}.comp",
+      '["./configure"', '["./configure" "-no-graph"'
+    # so that `infer --version` reports a release version number
+    inreplace "infer/src/base/Version.ml.in", "let is_release = is_yes \"@IS_RELEASE_TREE@\"", "let is_release = true"
     system "./build-infer.sh", target_platform, "--yes"
-
-    rm "infer/tests/.inferconfig"
-    libexec.install "facebook-clang-plugins" if build.with?("clang")
-    libexec.install "infer"
-
-    bin.install_symlink libexec/"infer/bin/infer"
+    system "opam", "config", "exec", "--switch=infer-#{ocaml_version}", "--", "make", "install"
+    bin.env_script_all_files(libexec/"bin", Language::Java.java_home_env("1.8"))
   end
 
   test do
-    (testpath/"FailingTest.c").write <<-EOS.undent
+    (testpath/"FailingTest.c").write <<~EOS
       #include <stdio.h>
 
       int main() {
@@ -66,7 +85,7 @@ class Infer < Formula
       }
     EOS
 
-    (testpath/"PassingTest.c").write <<-EOS.undent
+    (testpath/"PassingTest.c").write <<~EOS
       #include <stdio.h>
 
       int main() {
@@ -79,10 +98,10 @@ class Infer < Formula
       }
     EOS
 
-    shell_output("#{bin}/infer --fail-on-bug -- clang FailingTest.c", 2)
-    shell_output("#{bin}/infer --fail-on-bug -- clang PassingTest.c", 0)
+    shell_output("#{bin}/infer --fail-on-issue -- clang -c FailingTest.c", 2)
+    shell_output("#{bin}/infer --fail-on-issue -- clang -c PassingTest.c", 0)
 
-    (testpath/"FailingTest.java").write <<-EOS.undent
+    (testpath/"FailingTest.java").write <<~EOS
       class FailingTest {
 
         String mayReturnNull(int i) {
@@ -99,7 +118,7 @@ class Infer < Formula
       }
     EOS
 
-    (testpath/"PassingTest.java").write <<-EOS.undent
+    (testpath/"PassingTest.java").write <<~EOS
       class PassingTest {
 
         String mayReturnNull(int i) {
@@ -116,7 +135,7 @@ class Infer < Formula
       }
     EOS
 
-    shell_output("#{bin}/infer --fail-on-bug -- javac FailingTest.java", 2)
-    shell_output("#{bin}/infer --fail-on-bug -- javac PassingTest.java", 0)
+    shell_output("#{bin}/infer --fail-on-issue -- javac FailingTest.java", 2)
+    shell_output("#{bin}/infer --fail-on-issue -- javac PassingTest.java", 0)
   end
 end

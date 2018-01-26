@@ -6,7 +6,9 @@ class ArgpStandalone < Formula
 
   bottle do
     cellar :any_skip_relocation
-    revision 1
+    rebuild 1
+    sha256 "92532fafd8c2cc86b33de0f347496746d8049bb4d1a6ce0948148e0f3c4bca5a" => :high_sierra
+    sha256 "10627e72c0e0eb66cbd03a2beb767c06b8edad4bef01914de7f7c6c1be33a356" => :sierra
     sha256 "798e6ddb78957f9ad33662287b5971aaf3a43f3646e84691d56b3b85ca06d47f" => :el_capitan
     sha256 "c926ac0ad3b8dbb8c3e08299ade556470f81d3a88eb51dc60e7cfe107da533e8" => :yosemite
     sha256 "789a73a54793c058ee419824d76d603562d56fe6c2bce37c6b5b47f8f0ddce2a" => :mavericks
@@ -15,11 +17,9 @@ class ArgpStandalone < Formula
 
   # This patch fixes compilation with Clang.
   patch :p0 do
-    url "https://raw.githubusercontent.com/Homebrew/patches/b5f0ad3/argp-standalone/patch-argp-fmtstream.h"
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/b5f0ad3/argp-standalone/patch-argp-fmtstream.h"
     sha256 "5656273f622fdb7ca7cf1f98c0c9529bed461d23718bc2a6a85986e4f8ed1cb8"
   end
-
-  conflicts_with "gpgme", :because => "gpgme picks it up during compile & fails to build"
 
   def install
     system "./configure", "--prefix=#{prefix}"
@@ -29,7 +29,7 @@ class ArgpStandalone < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <stdio.h>
       #include <argp.h>
 

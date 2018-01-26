@@ -1,17 +1,16 @@
 class SimpleTiles < Formula
   desc "Image generation library for spatial data"
   homepage "https://propublica.github.io/simple-tiles/"
-  url "https://github.com/propublica/simple-tiles/archive/v0.6.0.tar.gz"
-  sha256 "336fdc04c34b85270c377d880a0d4cc2ac1a9c9e5e4c3d53e0322d43c9495ac9"
-  revision 2
-
+  url "https://github.com/propublica/simple-tiles/archive/v0.6.1.tar.gz"
+  sha256 "2391b2f727855de28adfea9fc95d8c7cbaca63c5b86c7286990d8cbbcd640d6f"
   head "https://github.com/propublica/simple-tiles.git"
 
   bottle do
     cellar :any
-    sha256 "3ccf8630a6b5e3753094068e99e3eb9ce3759ab2096f9d25c7f01c435352bf4c" => :el_capitan
-    sha256 "26f1181169e02bc307686b1b16c287d4f18ba3296ec1743edfeab80f722dcf09" => :yosemite
-    sha256 "bae1c5f45992d4d4b096b2056b44a843026f3998ad35403c12e5eb4235601c7a" => :mavericks
+    sha256 "cbc2dea9c008f499c335bebb7bbb8c00fd19c797ae2442138175f794140e9396" => :high_sierra
+    sha256 "2d3092fc48d4bc3fd7eb3679f09506bae62c6509756a55fbf6f9a3f18dd5e738" => :sierra
+    sha256 "acbf4fd455b3351d3e5188361694cba78a98dec6f91ce70862e9a7a57b3d387b" => :el_capitan
+    sha256 "42c5936f5beb15090b5199c1e97295ecf442c11ce52fe38876f2a992ffbcb160" => :yosemite
   end
 
   depends_on "pkg-config" => :build
@@ -25,7 +24,7 @@ class SimpleTiles < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <simple-tiles/simple_tiles.h>
 
       int main(){

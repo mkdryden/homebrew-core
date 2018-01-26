@@ -1,45 +1,42 @@
 class Fftw < Formula
   desc "C routines to compute the Discrete Fourier Transform"
   homepage "http://www.fftw.org"
-  url "http://www.fftw.org/fftw-3.3.4.tar.gz"
-  sha256 "8f0cde90929bc05587c3368d2f15cd0530a60b8a9912a8e2979a72dbe5af0982"
+  url "http://fftw.org/fftw-3.3.7.tar.gz"
+  sha256 "3b609b7feba5230e8f6dd8d245ddbefac324c5a6ae4186947670d9ac2cd25573"
   revision 1
 
   bottle do
     cellar :any
-    sha256 "92f9c2aea12100ba53084c5fe886418c348ab744fd47b60a9cee9c922044942b" => :el_capitan
-    sha256 "14ba3f3d52df54d350a009ff1e65859095b99b31da996c52155bb3f2420716ad" => :yosemite
-    sha256 "e32ceb93872580935d6e63878717ce35c964a21fdd0a6a93b29715f6aafb6811" => :mavericks
-    sha256 "bb29553043cc4db9c38e0290215fb216facb5ae09a4c3dadf3b19a41df161764" => :mountain_lion
+    sha256 "9b75b4f667c2346cbdd285b9c499ad5bb8f4662a326061ed8718142894147eab" => :high_sierra
+    sha256 "d504285d5ce7d4510f14274e4738824d197c60ab4cb56d08a16284f368f8ae74" => :sierra
+    sha256 "591d1ad247fc19a1b0881dc4454c88bcf30dca774ac5f57e9f25d8bfa50724f6" => :el_capitan
   end
 
-  option "with-fortran", "Enable Fortran bindings"
-  option :universal
   option "with-mpi", "Enable MPI parallel transforms"
   option "with-openmp", "Enable OpenMP parallel transforms"
+  option "without-fortran", "Disable Fortran bindings"
 
-  depends_on :fortran => :optional
-  depends_on :mpi => [:cc, :optional]
-  needs :openmp if build.with? "openmp"
+  depends_on "open-mpi" if build.with? "mpi"
+
+  depends_on "gcc" if build.with?("fortran") || build.with?("openmp")
+  fails_with :clang if build.with? "openmp"
 
   def install
     args = ["--enable-shared",
             "--disable-debug",
             "--prefix=#{prefix}",
             "--enable-threads",
-            "--disable-dependency-tracking",
-           ]
+            "--disable-dependency-tracking"]
     simd_args = ["--enable-sse2"]
     simd_args << "--enable-avx" if ENV.compiler == :clang && Hardware::CPU.avx? && !build.bottle?
+    simd_args << "--enable-avx2" if ENV.compiler == :clang && Hardware::CPU.avx2? && !build.bottle?
 
     args << "--disable-fortran" if build.without? "fortran"
     args << "--enable-mpi" if build.with? "mpi"
     args << "--enable-openmp" if build.with? "openmp"
 
-    ENV.universal_binary if build.universal?
-
     # single precision
-    # enable-sse2 and enable-avx works for both single and double precision
+    # enable-sse2, enable-avx and enable-avx2 work for both single and double precision
     system "./configure", "--enable-single", *(args + simd_args)
     system "make", "install"
 
@@ -47,7 +44,7 @@ class Fftw < Formula
     system "make", "clean"
 
     # double precision
-    # enable-sse2 and enable-avx works for both single and double precision
+    # enable-sse2, enable-avx and enable-avx2 work for both single and double precision
     system "./configure", *(args + simd_args)
     system "make", "install"
 
@@ -63,7 +60,7 @@ class Fftw < Formula
   test do
     # Adapted from the sample usage provided in the documentation:
     # http://www.fftw.org/fftw3_doc/Complex-One_002dDimensional-DFTs.html
-    (testpath/"fftw.c").write <<-TEST_SCRIPT.undent
+    (testpath/"fftw.c").write <<~EOS
       #include <fftw3.h>
       int main(int argc, char* *argv)
       {
@@ -78,9 +75,9 @@ class Fftw < Formula
           fftw_free(in); fftw_free(out);
           return 0;
       }
-    TEST_SCRIPT
+    EOS
 
-    system ENV.cc, "-o", "fftw", "fftw.c", "-lfftw3", *ENV.cflags.to_s.split
+    system ENV.cc, "-o", "fftw", "fftw.c", "-L#{lib}", "-lfftw3", *ENV.cflags.to_s.split
     system "./fftw"
   end
 end

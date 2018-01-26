@@ -1,14 +1,15 @@
 class Fontforge < Formula
   desc "Command-line outline and bitmap font editor/converter"
   homepage "https://fontforge.github.io"
-  url "https://github.com/fontforge/fontforge/archive/20160404.tar.gz"
-  sha256 "1cc5646fccba2e5af8f1b6c1d0d6d7b6082d9546aefed2348d6c0ed948324796"
-  head "https://github.com/fontforge/fontforge.git"
+  url "https://github.com/fontforge/fontforge/releases/download/20170731/fontforge-dist-20170731.tar.xz"
+  sha256 "840adefbedd1717e6b70b33ad1e7f2b116678fa6a3d52d45316793b9fd808822"
+  revision 2
 
   bottle do
-    sha256 "fd97cefd808fc0f07ac61e6ea624f074c9be5f2fb11f5a45468912fe5991ca36" => :el_capitan
-    sha256 "e2dd2a2c7ce89b74b4bc2902da0ff93615b62b31bda5303a4f9bdf4447c2f05e" => :yosemite
-    sha256 "6f1a9f1a0a15a2f84f0dce5c73e80e4265efd05e4bfa570f3c5e78da2211bbc6" => :mavericks
+    rebuild 1
+    sha256 "2d17141ae67cf0ed5dd71744e0de6c1ec2afa7d9dfb7ff555a787dcc0314276e" => :high_sierra
+    sha256 "7d424a6d8dd7dc8bf8ae7899679877f2876a31c911bad73b547811ebae849b33" => :sierra
+    sha256 "1239df0ca7865d259b4590c362f6854c98b2d0c7664ea7235f2f3ff41bc0023c" => :el_capitan
   end
 
   option "with-giflib", "Build with GIF support"
@@ -16,81 +17,54 @@ class Fontforge < Formula
 
   deprecated_option "with-gif" => "with-giflib"
 
-  # Autotools are required to build from source in all releases.
-  depends_on "autoconf" => :build
-  depends_on "automake" => :build
   depends_on "pkg-config" => :build
   depends_on "libtool" => :run
   depends_on "gettext"
   depends_on "pango"
-  depends_on "zeromq"
-  depends_on "czmq"
   depends_on "cairo"
   depends_on "fontconfig"
-  depends_on "libpng" => :recommended
+  depends_on "libpng"
   depends_on "jpeg" => :recommended
   depends_on "libtiff" => :recommended
   depends_on "giflib" => :optional
   depends_on "libspiro" => :optional
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "libuninameslist" => :optional
+  depends_on "python" if MacOS.version <= :snow_leopard
 
-  resource "gnulib" do
-    url "git://git.savannah.gnu.org/gnulib.git",
-        :revision => "29ea6d6fe2a699a32edbe29f44fe72e0c253fcee"
-  end
-
-  fails_with :llvm do
-    build 2336
-    cause "Compiling cvexportdlg.c fails with error: initializer element is not constant"
+  # Remove for > 20170731
+  # Fix "fatal error: 'mem.h' file not found" for --with-extra-tools
+  # Upstream PR from 22 Sep 2017 https://github.com/fontforge/fontforge/pull/3156
+  patch do
+    url "https://github.com/fontforge/fontforge/commit/9f69bd0f9.patch?full_index=1"
+    sha256 "f8afa9a6ab7a71650a3f013d9872881754e1ba4a265f693edd7ba70f2ec1d525"
   end
 
   def install
-    # Don't link libraries to libpython, but do link binaries that expect
-    # to embed a python interpreter
-    # https://github.com/fontforge/fontforge/issues/2353#issuecomment-121009759
     ENV["PYTHON_CFLAGS"] = `python-config --cflags`.chomp
-    ENV["PYTHON_LIBS"] = "-undefined dynamic_lookup"
-    python_libs = `python2.7-config --ldflags`.chomp
-    inreplace "fontforgeexe/Makefile.am" do |s|
-      oldflags = s.get_make_var "libfontforgeexe_la_LDFLAGS"
-      s.change_make_var! "libfontforgeexe_la_LDFLAGS", "#{python_libs} #{oldflags}"
-    end
-
-    # Disable Homebrew detection
-    # https://github.com/fontforge/fontforge/issues/2425
-    inreplace "configure.ac", 'test "y$HOMEBREW_BREW_FILE" != "y"', "false"
+    ENV["PYTHON_LIBS"] = `python-config --ldflags`.chomp
 
     args = %W[
       --prefix=#{prefix}
       --disable-silent-rules
       --disable-dependency-tracking
-      --with-pythonbinary=#{which "python2.7"}
       --without-x
     ]
 
-    args << "--without-libpng" if build.without? "libpng"
     args << "--without-libjpeg" if build.without? "jpeg"
     args << "--without-libtiff" if build.without? "libtiff"
     args << "--without-giflib" if build.without? "giflib"
     args << "--without-libspiro" if build.without? "libspiro"
+    args << "--without-libuninameslist" if build.without? "libuninameslist"
 
-    # Fix linker error; see: https://trac.macports.org/ticket/25012
-    ENV.append "LDFLAGS", "-lintl"
+    # Fix header includes to avoid crash at runtime:
+    # https://github.com/fontforge/fontforge/pull/3147
+    inreplace "fontforgeexe/startnoui.c", "#include \"fontforgevw.h\"", "#include \"fontforgevw.h\"\n#include \"encoding.h\""
 
-    # Reset ARCHFLAGS to match how we build
-    ENV["ARCHFLAGS"] = "-arch #{MacOS.preferred_arch}"
-
-    # Bootstrap in every build: https://github.com/fontforge/fontforge/issues/1806
-    resource("gnulib").fetch
-    system "./bootstrap",
-           "--gnulib-srcdir=#{resource("gnulib").cached_download}",
-           "--skip-git"
     system "./configure", *args
-    system "make"
     system "make", "install"
 
-    # The app here is not functional. You should install Fontforge
-    # via the Cask if you want GUI/App support.
+    # The app here is not functional.
+    # If you want GUI/App support, check the caveats to see how to get it.
     (pkgshare/"osx/FontForge.app").rmtree
 
     if build.with? "extra-tools"
@@ -101,8 +75,21 @@ class Fontforge < Formula
     end
   end
 
+  def caveats; <<~EOS
+    This formula only installs the command line utilities.
+
+    FontForge.app can be downloaded directly from the website:
+      https://fontforge.github.io
+
+    Alternatively, install with Homebrew-Cask:
+      brew cask install fontforge
+    EOS
+  end
+
   test do
     system bin/"fontforge", "-version"
-    system "python", "-c", "import fontforge"
+    system bin/"fontforge", "-lang=py", "-c", "import fontforge; fontforge.font()"
+    ENV.append_path "PYTHONPATH", lib+"python2.7/site-packages"
+    system "python", "-c", "import fontforge; fontforge.font()"
   end
 end

@@ -1,12 +1,14 @@
 class Cake < Formula
-  desc "'C# Make' is a build automation system with a C# DSL."
-  homepage "http://cakebuild.net/"
-  url "https://github.com/cake-build/cake/releases/download/v0.10.1/Cake-bin-v0.10.1.zip"
-  sha256 "0bc51b906704d7c48f2696ef685fe97cb252e37c56364cf010392f906c281edf"
+  desc "Cross platform build automation system with a C# DSL"
+  homepage "https://cakebuild.net/"
+  url "https://github.com/cake-build/cake/releases/download/v0.25.0/Cake-bin-net461-v0.25.0.zip"
+  sha256 "4bfbbd6ee7cfbe3bbf573647a8724cce7632109a26608551596a640d638adb01"
 
   bottle :unneeded
 
   depends_on "mono" => :recommended
+
+  conflicts_with "coffeescript", :because => "both install `cake` binaries"
 
   def install
     libexec.install Dir["*.dll"]
@@ -14,16 +16,14 @@ class Cake < Formula
     libexec.install Dir["*.xml"]
 
     bin.mkpath
-    (bin/"cake").write <<-EOS.undent
+    (bin/"cake").write <<~EOS
       #!/bin/bash
       mono #{libexec}/Cake.exe "$@"
     EOS
   end
 
   test do
-    test_str = "Hello Homebrew"
-    (testpath/"build.cake").write <<-EOS.undent
-
+    (testpath/"build.cake").write <<~EOS
       var target = Argument ("target", "info");
 
       Task("info").Does(() =>
@@ -32,9 +32,7 @@ class Cake < Formula
       });
 
       RunTarget ("info");
-
     EOS
-
-    assert_match test_str, shell_output("#{bin}/cake ./build.cake").strip
+    assert_match "Hello Homebrew\n", shell_output("#{bin}/cake build.cake")
   end
 end

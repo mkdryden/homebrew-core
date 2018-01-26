@@ -1,25 +1,18 @@
 class Tin < Formula
   desc "Threaded, NNTP-, and spool-based UseNet newsreader"
   homepage "http://www.tin.org"
-  url "http://ftp.cuhk.edu.hk/pub/packages/news/tin/v2.2/tin-2.2.1.tar.gz"
-  sha256 "cf588884bbe4711498b807311e53d82a1b6ca343f4c85e53001c90e8c0e456ac"
+  url "http://ftp.cuhk.edu.hk/pub/packages/news/tin/v2.4/tin-2.4.2.tar.gz"
+  sha256 "93839d2fd82175281c57f1a408dfb56bf716cf4f0b259b3e03462dca32391d51"
 
   bottle do
-    sha256 "24b40c6319c0673d13ad30121de18c7797a97ef9b4ad14b92f7aa56fb07a1ae4" => :el_capitan
-    sha256 "1444c2fa1a3f63f4f8f8330b69d6c255c70c4732d13673a4beab2d621d753d3e" => :yosemite
-    sha256 "11505b2e7b9953370a54fab8dc3460e28d3aabc1e02d2d713d514e4a78eb68d7" => :mavericks
-    sha256 "231470502b1e124011bd79c44d84740d068ccc32aad86a5599e7006755e7a200" => :mountain_lion
-  end
-
-  devel do
-    url "http://ftp.cuhk.edu.hk/pub/packages/news/tin/v2.3/tin-2.3.1.tar.gz"
-    sha256 "d53ee03850988c96162f2a30a24f63a6976612f04fc049fd1e0c17d0d4567083"
+    sha256 "e9b2afbdc37d3a349dd8341e7ceb1191466b28fc9e636ef15308d6c5b7075ba4" => :high_sierra
+    sha256 "7964b2236af4b8c195271238b66a054293d94ce5bda3f10746f0b8e1d06c9f91" => :sierra
+    sha256 "572e6d081547a2b9fc46afffa994f52ffd5696be884e18858c8c03131a72faec" => :el_capitan
   end
 
   conflicts_with "mutt", :because => "both install mmdf.5 and mbox.5 man pages"
 
   def install
-    ENV.enable_warnings
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
                           "--prefix=#{prefix}",

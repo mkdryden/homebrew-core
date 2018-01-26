@@ -1,13 +1,14 @@
 class Clutter < Formula
   desc "Generic high-level canvas library"
   homepage "https://wiki.gnome.org/Projects/Clutter"
-  url "https://download.gnome.org/sources/clutter/1.24/clutter-1.24.2.tar.xz"
-  sha256 "9631c98cb4bcbfec15e1bbe9eaa6eef0f127201552fce40d7d28f2133803cd63"
+  url "https://download.gnome.org/sources/clutter/1.26/clutter-1.26.2.tar.xz"
+  sha256 "e7233314983055e9018f94f56882e29e7fc34d8d35de030789fdcd9b2d0e2e56"
 
   bottle do
-    sha256 "6b5dfa3423c12b165975b543b3d248c6a2d952a11f54592adb521d545762fb2e" => :el_capitan
-    sha256 "abec612052d49b3358be8c62c13390424bac6125c99943e387843be8b9b569b1" => :yosemite
-    sha256 "57f0e339ca82e2a2db0233fa02cdab5c546c60331c5467ae541d02ed8885b5ce" => :mavericks
+    sha256 "082e8d9fa6a2fc3e69a572734847373a47884bef8ddebba763219e5252b6e334" => :high_sierra
+    sha256 "16b3ecbbf37e62ce9e491ca525a948571f51c349fa25ba381db566fd0f825457" => :sierra
+    sha256 "3bfa2df55eed3598e510999b02f8d226eca4a4fc58ba7adcace0e443ca5cc64e" => :el_capitan
+    sha256 "c224d96814d9ef9c1929d2e4dbe4251e09395bbf9d61fc3a9f20886daf8581c8" => :yosemite
   end
 
   depends_on "pkg-config" => :build
@@ -40,7 +41,7 @@ class Clutter < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <clutter/clutter.h>
 
       int main(int argc, char *argv[]) {
@@ -59,8 +60,7 @@ class Clutter < Formula
     libpng = Formula["libpng"]
     pango = Formula["pango"]
     pixman = Formula["pixman"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{atk.opt_include}/atk-1.0
       -I#{cairo.opt_include}/cairo
       -I#{cogl.opt_include}/cogl

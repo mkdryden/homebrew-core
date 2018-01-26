@@ -1,9 +1,8 @@
 class RubyBuild < Formula
   desc "Install various Ruby versions and implementations"
   homepage "https://github.com/rbenv/ruby-build"
-  url "https://github.com/rbenv/ruby-build/archive/v20160330.tar.gz"
-  sha256 "e6cbc01f6db45675927a4a75f3d52cd94f6f397f63dc6ddd7643a0c23c46bcab"
-
+  url "https://github.com/rbenv/ruby-build/archive/v20171226.tar.gz"
+  sha256 "95f66250ea088f8f68743a27bc9f2e48caf6160816845ff9146212b6344632d6"
   head "https://github.com/rbenv/ruby-build.git"
 
   bottle :unneeded
@@ -18,6 +17,6 @@ class RubyBuild < Formula
   end
 
   test do
-    system "#{bin}/ruby-build", "--definitions"
+    assert_match "2.0.0", shell_output("#{bin}/ruby-build --definitions")
   end
 end

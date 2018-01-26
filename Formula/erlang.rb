@@ -1,27 +1,22 @@
-# Major releases of erlang should typically start out as separate formula in
-# Homebrew-versions, and only be merged to master when things like couchdb and
-# elixir are compatible.
 class Erlang < Formula
   desc "Programming language for highly scalable real-time systems"
   homepage "https://www.erlang.org/"
+  # Download tarball from GitHub; it is served faster than the official tarball.
+  url "https://github.com/erlang/otp/archive/OTP-20.2.2.tar.gz"
+  sha256 "7614a06964fc5022ea4922603ca4bf1d2cc241f9bd6b7321314f510fd74c7304"
   head "https://github.com/erlang/otp.git"
-
-  stable do
-    # Download tarball from GitHub; it is served faster than the official tarball.
-    url "https://github.com/erlang/otp/archive/OTP-18.3.tar.gz"
-    sha256 "8d5436faf37a1273c1b8529c4f02c28af0eccde31e52d474cb740b012d5da7e6"
-  end
 
   bottle do
     cellar :any
-    sha256 "3df1ac0cb76ea2d0511dbd7d42d536b486098251c84afbf5eb39cd658d229b4d" => :el_capitan
-    sha256 "25d81e60062d18590d837356527bde513fa69a7d82a86fd979dea931545bc8d6" => :yosemite
-    sha256 "c9bb4cf2ad9b4bd8c55518e4dbad390299bc3ec0539a4304f03ee7b00ddaaece" => :mavericks
+    sha256 "c6205be8384ac395a89ebf8dc93c164e2e73c45e07f04aa2687b4ea370f33244" => :high_sierra
+    sha256 "3d4f39cf9f6c8f859ff2a377b7a90a0073c0ce211b2dd9cdceebe83fa3fd489b" => :sierra
+    sha256 "e019f789f9d7765c34a78ef81dc71e93f805b937b01afb91f6b1fa8290b315b8" => :el_capitan
   end
 
-  option "without-hipe", "Disable building hipe; fails on various OS X systems"
+  option "without-hipe", "Disable building hipe; fails on various macOS systems"
   option "with-native-libs", "Enable native library compilation"
   option "with-dirty-schedulers", "Enable experimental dirty schedulers"
+  option "with-java", "Build jinterface application"
   option "without-docs", "Do not install documentation"
 
   deprecated_option "disable-hipe" => "without-hipe"
@@ -32,18 +27,19 @@ class Erlang < Formula
   depends_on "libtool" => :build
   depends_on "openssl"
   depends_on "fop" => :optional # enables building PDF docs
+  depends_on :java => :optional
   depends_on "wxmac" => :recommended # for GUI apps like observer
 
-  fails_with :llvm
-
   resource "man" do
-    url "https://www.erlang.org/download/otp_doc_man_18.3.tar.gz"
-    sha256 "978be100e9016874921b3ad1a65ee46b7b6a1e597b8db2ec4b5ef436d4c9ecc2"
+    url "https://www.erlang.org/download/otp_doc_man_20.2.tar.gz"
+    mirror "https://fossies.org/linux/misc/otp_doc_man_20.2.tar.gz"
+    sha256 "950e088f9e47fc10a98e3f67d6420a990650836c648686a2f5dafe331747cbdf"
   end
 
   resource "html" do
-    url "https://www.erlang.org/download/otp_doc_html_18.3.tar.gz"
-    sha256 "8fd6980fd05367735779a487df107ace7c53733f52fbe56de7ca7844a355676f"
+    url "https://www.erlang.org/download/otp_doc_html_20.2.tar.gz"
+    mirror "https://fossies.org/linux/misc/otp_doc_html_20.2.tar.gz"
+    sha256 "7f5e7d4cd0c58e15d7d29231931c2a710f7f5fdfcb0ff8edb8142969520c4256"
   end
 
   def install
@@ -73,13 +69,10 @@ class Erlang < Formula
     args << "--enable-native-libs" if build.with? "native-libs"
     args << "--enable-dirty-schedulers" if build.with? "dirty-schedulers"
     args << "--enable-wx" if build.with? "wxmac"
-
-    if MacOS.version >= :snow_leopard && MacOS::CLT.installed?
-      args << "--with-dynamic-trace=dtrace"
-    end
+    args << "--with-dynamic-trace=dtrace" if MacOS::CLT.installed?
 
     if build.without? "hipe"
-      # HIPE doesn't strike me as that reliable on OS X
+      # HIPE doesn't strike me as that reliable on macOS
       # https://syntatic.wordpress.com/2008/06/12/macports-erlang-bus-error-due-to-mac-os-x-1053-update/
       # https://www.erlang.org/pipermail/erlang-patches/2008-September/000293.html
       args << "--disable-hipe"
@@ -87,9 +80,14 @@ class Erlang < Formula
       args << "--enable-hipe"
     end
 
+    if build.with? "java"
+      args << "--with-javac"
+    else
+      args << "--without-javac"
+    end
+
     system "./configure", *args
     system "make"
-    ENV.j1 # Install is not thread-safe; can try to create folder twice and fail
     system "make", "install"
 
     if build.with? "docs"
@@ -98,7 +96,7 @@ class Erlang < Formula
     end
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     Man pages can be found in:
       #{opt_lib}/erlang/man
 

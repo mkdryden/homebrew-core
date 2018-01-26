@@ -1,13 +1,13 @@
 class Ola < Formula
   desc "Open Lighting Architecture for lighting control information"
   homepage "https://www.openlighting.org/ola/"
-  url "https://github.com/OpenLightingProject/ola/releases/download/0.10.1/ola-0.10.1.tar.gz"
-  sha256 "621f18f591a418236595d0117b4ab16d8e39a69b03071e62fdae0e9b01533de0"
+  url "https://github.com/OpenLightingProject/ola/releases/download/0.10.6/ola-0.10.6.tar.gz"
+  sha256 "26a8302b5134c370541e59eabff0145dcf7127cda761890df10aa80dfe223af0"
 
   bottle do
-    sha256 "03f1e69ea600927d840a5f1fe1a9932256fbd3b37530cd262caf641b4ae6db89" => :el_capitan
-    sha256 "38cc4502fa98c4afe97a2d1d8919508fda999a08cabc1af2bc19e0a6d6bb69a2" => :yosemite
-    sha256 "fff088b40bc18986aa3dfa1a90500727f90d6ef637890dc4a973e806b67ed525" => :mavericks
+    sha256 "ada249b3e16aaee5610c9c4a2c438b158c1dcf36be684af62e4af6095984fe7b" => :high_sierra
+    sha256 "06defbab5f678025a309989dc0c84aed8c2a315f880d9610263d2bdaab2d5c4c" => :sierra
+    sha256 "9230a8fcc75bcc0c29c57dbd012909a2d7331823e70db1fc58462143c7350cf3" => :el_capitan
   end
 
   head do
@@ -18,42 +18,46 @@ class Ola < Formula
     depends_on "libtool" => :build
   end
 
-  option :universal
-  option "with-ftdi", "Install FTDI USB plugin for OLA."
-  # RDM tests require protobuf-c --with-python to work
+  option "with-libftdi", "Install FTDI USB plugin for OLA."
   option "with-rdm-tests", "Install RDM Tests for OLA."
+  deprecated_option "with-ftdi" => "with-libftdi"
 
   depends_on "pkg-config" => :build
-  depends_on "cppunit"
-  depends_on "protobuf-c"
   depends_on "libmicrohttpd"
   depends_on "ossp-uuid"
-  depends_on "libusb" => :recommended
+  depends_on "protobuf@3.1"
+  depends_on "python" if MacOS.version <= :snow_leopard
   depends_on "liblo" => :recommended
+  depends_on "libusb" => :recommended
   depends_on "doxygen" => :optional
+  depends_on "libftdi" => :optional
+  depends_on "libftdi0" if build.with? "libftdi"
 
-  if build.with? "ftdi"
-    depends_on "libftdi"
-    depends_on "libftdi0"
-  end
-
-  if build.with? "rdm-tests"
-    depends_on :python if MacOS.version <= :snow_leopard
-  else
-    depends_on :python => :optional
+  resource "protobuf-c" do
+    url "https://github.com/protobuf-c/protobuf-c/releases/download/v1.2.1/protobuf-c-1.2.1.tar.gz"
+    sha256 "846eb4846f19598affdc349d817a8c4c0c68fd940303e6934725c889f16f00bd"
   end
 
   def install
-    ENV.universal_binary if build.universal?
+    resource("protobuf-c").stage do
+      system "./configure", "--disable-dependency-tracking",
+                            "--prefix=#{buildpath}/vendor/protobuf-c"
+      system "make", "install"
+    end
+    ENV.prepend_path "PKG_CONFIG_PATH", buildpath/"vendor/protobuf-c/lib/pkgconfig"
+
+    protobuf_pth = Formula["protobuf@3.1"].opt_lib/"python2.7/site-packages/homebrew-protobuf.pth"
+    (buildpath/".brew_home/Library/Python/2.7/lib/python/site-packages").install_symlink protobuf_pth
 
     args = %W[
       --disable-fatal-warnings
       --disable-dependency-tracking
       --disable-silent-rules
       --prefix=#{prefix}
+      --enable-python-libs
+      --disable-unittests
     ]
 
-    args << "--enable-python-libs" if build.with? "python"
     args << "--enable-rdm-tests" if build.with? "rdm-tests"
     args << "--enable-doxygen-man" if build.with? "doxygen"
 

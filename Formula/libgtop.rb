@@ -1,13 +1,14 @@
 class Libgtop < Formula
   desc "Library for portably obtaining information about processes"
   homepage "https://library.gnome.org/devel/libgtop/stable/"
-  url "https://download.gnome.org/sources/libgtop/2.32/libgtop-2.32.0.tar.xz"
-  sha256 "8443246332f22b33e389f565825b58cd9623fb7625bf874d404354b705ad178e"
+  url "https://download.gnome.org/sources/libgtop/2.36/libgtop-2.36.0.tar.xz"
+  sha256 "13bfe34c150b2b00b03df4732e8c7ccfae09ab15897ee4f4ebf0d16b0f3ba12b"
 
   bottle do
-    sha256 "6ef8bfd87b331fd871f5e3e0b8d915a39597a3c928c3c2d7393ebf402347c620" => :el_capitan
-    sha256 "52f03bdb25fba9efeb963f1715cc5e7bd47c949d3545e5af82118a5182c77eb4" => :yosemite
-    sha256 "7ea322eee9ce082ba9ba5a6b051916b5d3590b838fa52fbc22cb15de5dbc2a52" => :mavericks
+    sha256 "47d5cfb321c62629e60f963b93d1bbcbe28443bb0f373a7b19622fb78c77403b" => :high_sierra
+    sha256 "c7197f1afe98c3ee5e5b6ab1e7c7ed629c08b1f37d17312ab01c06fda637c718" => :sierra
+    sha256 "1aa4cdb2dfdf236eb3b9802d88cade9bb30c9358af5ddf6710e313a0b19b0e29" => :el_capitan
+    sha256 "68166fd2c7020a59d0a6f4bdc6820c5f461fa813b30e6de14c9728149e619d0d" => :yosemite
   end
 
   depends_on "pkg-config" => :build
@@ -24,7 +25,7 @@ class Libgtop < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <glibtop/sysinfo.h>
 
       int main(int argc, char *argv[]) {
@@ -34,8 +35,7 @@ class Libgtop < Formula
     EOS
     gettext = Formula["gettext"]
     glib = Formula["glib"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{gettext.opt_include}
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include

@@ -2,15 +2,16 @@ class Yasm < Formula
   desc "Modular BSD reimplementation of NASM"
   homepage "http://yasm.tortall.net/"
   url "https://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz"
+  mirror "https://ftp.openbsd.org/pub/OpenBSD/distfiles/yasm-1.3.0.tar.gz"
   sha256 "3dce6601b495f5b3d45b59f7d2492a340ee7e84b5beca17e48f862502bd5603f"
+  revision 1
 
   bottle do
     cellar :any_skip_relocation
-    revision 1
-    sha256 "db84535ba0b58448cdeab19d63e93f8dfecfc4b91cb06bd9919ca8d0f9b86ca4" => :el_capitan
-    sha256 "04197b434329940bfb424ce24adb2330bf69630859998d70d832fb3e9fc5a87c" => :yosemite
-    sha256 "22dd3a5df5d132c4d2ef97e17ddafb693ba2e6ed2ed7fd00abf6681ae34de0c8" => :mavericks
-    sha256 "cd103f302c7a91980fc494d771ba96d88b3936bc6d3f30566c01c55ca68bc508" => :mountain_lion
+    sha256 "ddb536410f898cba342c9c2d01696a690a28a4f1e9e30c67a3e352a41791fc85" => :high_sierra
+    sha256 "2ca19bb3f563569aa4eac4fd3398a7eb14a7fb1268b4ffe86ad7980f9701d1b7" => :sierra
+    sha256 "0dd9ef773dfbf9c59ab13c1fb7ec616d1ffba1c240357497d75482e0743c4119" => :el_capitan
+    sha256 "fc205e75319ba9e63a2e5fa6beccc66a163325a3a4a51807a2cf1844512f2c24" => :yosemite
   end
 
   head do
@@ -21,12 +22,7 @@ class Yasm < Formula
     depends_on "gettext"
   end
 
-  resource "cython" do
-    url "http://cython.org/release/Cython-0.20.2.tar.gz"
-    sha256 "ed13b606a2aeb5bd6c235f8ed6c9988c99d01a033d0d21d56137c13d5c7be63f"
-  end
-
-  depends_on :python => :optional
+  depends_on "cython" => :build
 
   def install
     args = %W[
@@ -34,17 +30,11 @@ class Yasm < Formula
       --prefix=#{prefix}
     ]
 
-    if build.with? "python"
-      ENV.prepend_create_path "PYTHONPATH", buildpath+"lib/python2.7/site-packages"
-      resource("cython").stage do
-        system "python", "setup.py", "build", "install", "--prefix=#{buildpath}"
-      end
+    ENV.prepend_path "PYTHONPATH", Formula["cython"].opt_libexec/"lib/python2.7/site-packages"
+    args << "--enable-python"
+    args << "--enable-python-bindings"
 
-      args << "--enable-python"
-      args << "--enable-python-bindings"
-    end
-
-    # https://github.com/Homebrew/homebrew/pull/19593
+    # https://github.com/Homebrew/legacy-homebrew/pull/19593
     ENV.deparallelize
 
     system "./autogen.sh" if build.head?
@@ -53,7 +43,7 @@ class Yasm < Formula
   end
 
   test do
-    (testpath/"test.asm").write <<-EOS.undent
+    (testpath/"test.asm").write <<~EOS
       global start
       section .text
       start:

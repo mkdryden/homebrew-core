@@ -1,59 +1,28 @@
-require "language/go"
-
 class Nomad < Formula
   desc "Distributed, Highly Available, Datacenter-Aware Scheduler"
   homepage "https://www.nomadproject.io"
-  url "https://github.com/hashicorp/nomad.git",
-    :tag => "v0.3.1",
-    :revision => "17fa55c4cfdacbcaf9459a7210d58aa4b47ed541"
-
+  url "https://github.com/hashicorp/nomad/archive/v0.7.1.tar.gz"
+  sha256 "312b7d89b0d03154b9c84672f013ff0d9c44dda0a73a8187d5509088fe0051c0"
   head "https://github.com/hashicorp/nomad.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "3c13f727ea94205939c69a1a98a95f56547f0472de45f19757af796a83388ed5" => :el_capitan
-    sha256 "49e6875dc35f9ac3c8bf4e88236920d285b9be6c73d724e0d8935185472ce1c6" => :yosemite
-    sha256 "eecc51d26cd0867c669d723d09fb90cd2f879c052ac4f3184f5441ccfd0a9576" => :mavericks
+    sha256 "650feea1f9bf5813aea5390d0eb0a6c6b8491ecff46be090774bd27b5cba49e9" => :high_sierra
+    sha256 "e0e420c63315e67b6e7aa4ee6b32380ef7b4a95113d6c8ab6c0131393056e3a7" => :sierra
+    sha256 "0a1d0ab2283e6b93de5e576b9c88e4ed230a31317138c88df0d2011a62a3ef0a" => :el_capitan
   end
+
+  option "with-dynamic", "Build dynamic binary with CGO_ENABLED=1"
 
   depends_on "go" => :build
 
-  go_resource "github.com/ugorji/go" do
-    url "https://github.com/ugorji/go.git",
-        :revision => "c062049c1793b01a3cc3fe786108edabbaf7756b"
-  end
-
-  go_resource "github.com/mitchellh/gox" do
-    url "https://github.com/mitchellh/gox.git",
-        :revision => "39862d88e853ecc97f45e91c1cdcb1b312c51ea"
-  end
-
-  go_resource "github.com/mitchellh/iochan" do
-    url "https://github.com/mitchellh/iochan.git",
-        :revision => "87b45ffd0e9581375c491fef3d32130bb15c5bd7"
-  end
-
   def install
-    contents = Dir["{*,.git,.gitignore}"]
-    gopath = buildpath/"gopath"
-    (gopath/"src/github.com/hashicorp/nomad").install contents
-
-    ENV["GOPATH"] = gopath
-    ENV.prepend_create_path "PATH", gopath/"bin"
-
-    Language::Go.stage_deps resources, gopath/"src"
-
-    cd gopath/"src/github.com/ugorji/go/codec/codecgen" do
-      system "go", "install"
-    end
-
-    cd gopath/"src/github.com/mitchellh/gox" do
-      system "go", "install"
-    end
-
-    cd gopath/"src/github.com/hashicorp/nomad" do
-      system "make", "dev"
-      bin.install "bin/nomad"
+    ENV["GOPATH"] = buildpath
+    (buildpath/"src/github.com/hashicorp/nomad").install buildpath.children
+    cd "src/github.com/hashicorp/nomad" do
+      ENV["CGO_ENABLED"] = "1" if build.with? "dynamic"
+      system "go", "build", "-o", bin/"nomad"
+      prefix.install_metafiles
     end
   end
 

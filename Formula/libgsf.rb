@@ -1,29 +1,28 @@
 class Libgsf < Formula
   desc "I/O abstraction library for dealing with structured file formats"
   homepage "https://developer.gnome.org/gsf/"
-  url "https://download.gnome.org/sources/libgsf/1.14/libgsf-1.14.36.tar.xz"
-  sha256 "71b7507f86c0f7c341bb362bdc7925a2ae286729be0bf5b8fd9581ffbbd62940"
+  url "https://download.gnome.org/sources/libgsf/1.14/libgsf-1.14.42.tar.xz"
+  sha256 "29fffb87b278b3fb1b8ae9138c3b4529c1fce664f1f94297c146a8563df80dc2"
 
   bottle do
-    sha256 "e26bcf9832cb64fe4b98df09c91804d3767cf8917f35dcaeaed91283a1d23d61" => :el_capitan
-    sha256 "9fdaabafa3deff19e3ac9d301f76fdd3179b99622d143aa80999919e36a86074" => :yosemite
-    sha256 "6fea08afcb32ebe2002155060ce5252b8aa7aed621f72a9bd3f590e1c1c59b00" => :mavericks
+    sha256 "991c1058133dd8551cf35408dac2d17d6dbc5ef0fd9a10cca9b2c80d8600f372" => :high_sierra
+    sha256 "192a8330ea0791eb95de79815207c40ab54b60a40fa287f376e286c9d4043661" => :sierra
+    sha256 "e9af6f98bb9a0cfe498bcc72897b04eae6da11b3163caee9111e0a5b8cfcda36" => :el_capitan
   end
 
   head do
     url "https://github.com/GNOME/libgsf.git"
-    depends_on "automake" => :build
     depends_on "autoconf" => :build
-    depends_on "gnome-common" => :build
+    depends_on "automake" => :build
     depends_on "gtk-doc" => :build
     depends_on "libtool" => :build
   end
 
-  depends_on "pkg-config" => :build
   depends_on "intltool" => :build
-  depends_on "gdk-pixbuf" => :optional
+  depends_on "pkg-config" => :build
   depends_on "gettext"
   depends_on "glib"
+  depends_on "gdk-pixbuf" => :optional
 
   def install
     args = %W[--disable-dependency-tracking --prefix=#{prefix}]
@@ -37,7 +36,7 @@ class Libgsf < Formula
 
   test do
     system bin/"gsf", "--help"
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gsf/gsf-utils.h>
       int main()
       {

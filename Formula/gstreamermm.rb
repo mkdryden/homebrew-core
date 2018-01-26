@@ -1,15 +1,14 @@
 class Gstreamermm < Formula
   desc "GStreamer C++ bindings"
   homepage "https://gstreamer.freedesktop.org/bindings/cplusplus.html"
-  url "https://download.gnome.org/sources/gstreamermm/1.4/gstreamermm-1.4.3.tar.xz"
-  sha256 "f1c11ee1cf7537d77de7f8d486e09c5140cc4bb78882849718cd88959a55462e"
-  revision 1
+  url "https://download.gnome.org/sources/gstreamermm/1.10/gstreamermm-1.10.0.tar.xz"
+  sha256 "be58fe9ef7d7e392568ec85e80a84f4730adbf91fb0355ff7d7c616675ea8d60"
 
   bottle do
     cellar :any
-    sha256 "467de3a6c47ebf36d74be7a1f0f921ad9b67087d8de3213cdbb929c5ec679106" => :el_capitan
-    sha256 "96d32cde0a48c4a2a78ed0f9bdcab529eefc82b1c807d87f86f571b252a73dad" => :yosemite
-    sha256 "cfb073d82bfdfdd8f485b70021ba0571528e2004bf7a6716ca03f9fd6d5490eb" => :mavericks
+    sha256 "9f8558e19dbfb73e4798553896b4aba609b3990e1a9395dc46b018f3cba2e0b6" => :high_sierra
+    sha256 "45ae532af36e771995390ce1816f3e4be0096e19cbcb21ad355e4365c079087e" => :sierra
+    sha256 "c7d02b368a880e259aba9216001b460edda0a4ce418dc027cafc260ab4a55772" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
@@ -28,7 +27,7 @@ class Gstreamermm < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <gstreamermm.h>
 
       int main(int argc, char *argv[]) {
@@ -43,8 +42,7 @@ class Gstreamermm < Formula
     gst_plugins_base = Formula["gst-plugins-base"]
     gstreamer = Formula["gstreamer"]
     libsigcxx = Formula["libsigc++"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{gettext.opt_include}
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include

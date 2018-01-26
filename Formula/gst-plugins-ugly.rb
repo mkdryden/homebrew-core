@@ -1,13 +1,13 @@
 class GstPluginsUgly < Formula
-  desc "GStreamer plugins (well-supported, possibly problematic for distributors)"
+  desc "Library for constructing graphs of media-handling components"
   homepage "https://gstreamer.freedesktop.org/"
-  url "https://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-1.8.0.tar.xz"
-  sha256 "53657ffb7d49ddc4ae40e3f52e56165db4c06eb016891debe2b6c0e9f134eb8c"
+  url "https://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-1.12.4.tar.xz"
+  sha256 "1c165b8d888ed350acd8e6ac9f6fe06508e6fcc0a3afc6ccc9fbeb30df9be522"
 
   bottle do
-    sha256 "de81ae62cc34b67d54cb632dce97fb108e4dff3cf839cf99703c23415e64fa8b" => :el_capitan
-    sha256 "5b471670878ccc08926394d973d3ddb5904921e7739ef11bb0f4fe3c67b77f09" => :yosemite
-    sha256 "32c4fc7c2fa4a60390f4346f69b9f4d1bf3a260c94400319d122d2b4c634d5ad" => :mavericks
+    sha256 "ef36a6cb7c9826b42b2d791665dc3e1a09b61b6ae682dfecbcd6b1d066e0789d" => :high_sierra
+    sha256 "e3c756d7d3b6d3a114f2d8b65309547bd0f9c9e7d517f9103c4dd7ef206d51a9" => :sierra
+    sha256 "f2f95f9f63c09730dbb4686332dc23d86e8f500a85260d6fe65473924e47b261" => :el_capitan
   end
 
   head do
@@ -24,9 +24,9 @@ class GstPluginsUgly < Formula
 
   # The set of optional dependencies is based on the intersection of
   # gst-plugins-ugly-0.10.17/REQUIREMENTS and Homebrew formulae
+  depends_on "jpeg" => :recommended
   depends_on "dirac" => :optional
   depends_on "mad" => :optional
-  depends_on "jpeg" => :optional
   depends_on "libvorbis" => :optional
   depends_on "cdparanoia" => :optional
   depends_on "lame" => :optional
@@ -74,5 +74,11 @@ class GstPluginsUgly < Formula
     system "./configure", *args
     system "make"
     system "make", "install"
+  end
+
+  test do
+    gst = Formula["gstreamer"].opt_bin/"gst-inspect-1.0"
+    output = shell_output("#{gst} --plugin dvdsub")
+    assert_match version.to_s, output
   end
 end

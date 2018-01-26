@@ -1,22 +1,34 @@
 class Depqbf < Formula
   desc "Solver for quantified boolean formulae (QBF)"
   homepage "https://lonsing.github.io/depqbf/"
-  url "https://github.com/lonsing/depqbf/archive/version-4.01.tar.gz"
-  sha256 "0246022128890d24b926a9bd17a9d4aa89b179dc05a0fedee33fa282c0ceba5b"
-  head "https://github.com/lonsig/depqbf.git"
+  url "https://github.com/lonsing/depqbf/archive/version-6.03.tar.gz"
+  sha256 "9684bb1562bfe14559007401f52975554373546d3290a19618ee71d709bce76e"
+  head "https://github.com/lonsing/depqbf.git"
 
   bottle do
     cellar :any
-    sha256 "5ef5545d3de7419cc366343b7acaf6d6bcc1c11c435d98b999285d21b48feaba" => :el_capitan
-    sha256 "d006dbbf545986f9d193b311c5c4dc126866188bdda63c9e3eecc396a8bb9d37" => :yosemite
-    sha256 "d03768d1c826f6f6b962ff7f397eac00dd4e0177abda5c520a43c1b0109b816f" => :mavericks
-    sha256 "fa17129bcb7ff4927330dfa1b25148cca21681b687811962402ab142914b9edd" => :mountain_lion
+    sha256 "7c956f3b4e86d6f60e90dde3e25f6b5ce75f2ba75e756c9e4dd6debe46d2ddea" => :high_sierra
+    sha256 "fea1eb8ca62fccc5ce43b0a645fb67feffbf97c5a343d0ea6c9a015c37e24ccc" => :sierra
+    sha256 "3229005d870984af6beee544d5178094fc859525bd96552ac42301860c175f5b" => :el_capitan
+    sha256 "2e56b8bac22dbf77677e825ee6242fea35545c2714859c4f22872c1c0fb056e3" => :yosemite
+  end
+
+  resource "nenofex" do
+    url "https://github.com/lonsing/nenofex/archive/version-1.1.tar.gz"
+    sha256 "972755fd9833c9cd050bdbc5a9526e2b122a5550fda1fbb3ed3fc62912113f05"
+  end
+
+  resource "picosat" do
+    url "http://fmv.jku.at/picosat/picosat-960.tar.gz"
+    sha256 "edb3184a04766933b092713d0ae5782e4a3da31498629f8bb2b31234a563e817"
   end
 
   def install
-    system "make"
+    (buildpath/"nenofex").install resource("nenofex")
+    (buildpath/"picosat-960").install resource("picosat")
+    system "./compile.sh"
     bin.install "depqbf"
-    lib.install "libqdpll.1.0.dylib"
+    lib.install "libqdpll.a", "libqdpll.1.0.dylib"
   end
 
   test do

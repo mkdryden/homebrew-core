@@ -1,20 +1,24 @@
 class Kawa < Formula
   desc "Programming language for Java (implementation of Scheme)"
   homepage "https://www.gnu.org/software/kawa/"
-  url "http://ftpmirror.gnu.org/kawa/kawa-2.1.jar"
-  mirror "https://ftp.gnu.org/gnu/kawa/kawa-2.1.jar"
-  sha256 "d579e81d51c481222a5bfd12098bf0f292a3e7c9754d508c4a0686cced8c72af"
+  url "https://ftp.gnu.org/gnu/kawa/kawa-3.0.zip"
+  mirror "https://ftpmirror.gnu.org/kawa/kawa-3.0.zip"
+  sha256 "63116eec4b2b2dd8fae0b30127639aa42ad7a7430c4970d3fd76b42a148e423c"
 
   bottle :unneeded
 
-  depends_on :java
+  depends_on :java => "1.7+"
 
   def install
-    libexec.install "kawa-#{version}.jar"
-    (bin/"kawa").write <<-EOS.undent
-      #!/bin/sh
-      KAWA_HOME="#{libexec}"
-      java -jar "$KAWA_HOME/kawa-#{version}.jar"
-    EOS
+    rm Dir["bin/*.bat"]
+    inreplace "bin/kawa", "thisfile=`command -v $0`",
+                          "thisfile=#{libexec}/bin/kawa"
+    libexec.install "bin", "lib"
+    bin.install_symlink libexec/"bin/kawa"
+    doc.install Dir["doc/*"]
+  end
+
+  test do
+    system bin/"kawa", "-e", "(import (srfi 1))"
   end
 end

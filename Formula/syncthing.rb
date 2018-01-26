@@ -2,38 +2,36 @@ class Syncthing < Formula
   desc "Open source continuous file synchronization application"
   homepage "https://syncthing.net/"
   url "https://github.com/syncthing/syncthing.git",
-    :tag => "v0.12.22", :revision => "94c6110f2e10ab8dbb0a416556701317ecd437cc"
-
+      :tag => "v0.14.43",
+      :revision => "a9f0659f2f4bf910f82b652fd27a864074ec7ab8"
   head "https://github.com/syncthing/syncthing.git"
 
   bottle do
     cellar :any_skip_relocation
-    revision 1
-    sha256 "a1bcb0a2a531940e3d86a570d761b93790951eb54943f67b64bdbc00a7131cb9" => :el_capitan
-    sha256 "da8d917a1e5ad5c7d691de072db5428b4cd5ed309077d7101d93ba3b206fcc95" => :yosemite
-    sha256 "b4276fc05ba69825cb62f2c1622311109b9f4108ee73d3f69c4bf5a8e78e6d44" => :mavericks
+    sha256 "38b51fc2079f67d34f3f82829f5219ed8bcf0c2b58f1e05f242bc6bc87f3c3b9" => :high_sierra
+    sha256 "1387e7fbdb3b113477d32e948c57e9121d893962730fc9eca91f9beb302a51d6" => :sierra
+    sha256 "9e38fffd7bfe40e5aba8c81bc6e73961e00f716afc32609c5667141e28719245" => :el_capitan
   end
 
   depends_on "go" => :build
-  depends_on :hg => :build
 
   def install
-    ENV["GOPATH"] = cached_download/".gopath"
-    ENV.append_path "PATH", "#{ENV["GOPATH"]}/bin"
-
-    # FIXTHIS: do this without mutating the cache!
-    hack_dir = cached_download/".gopath/src/github.com/syncthing"
-    rm_rf hack_dir
-    mkdir_p hack_dir
-    ln_s cached_download, "#{hack_dir}/syncthing"
-
-    system "./build.sh", "noupgrade"
-    bin.install "syncthing"
+    ENV["GOPATH"] = buildpath
+    (buildpath/"src/github.com/syncthing/syncthing").install buildpath.children
+    ENV.append_path "PATH", buildpath/"bin"
+    cd buildpath/"src/github.com/syncthing/syncthing" do
+      system "./build.sh", "noupgrade"
+      bin.install "syncthing"
+      man1.install Dir["man/*.1"]
+      man5.install Dir["man/*.5"]
+      man7.install Dir["man/*.7"]
+      prefix.install_metafiles
+    end
   end
 
   plist_options :manual => "syncthing"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">

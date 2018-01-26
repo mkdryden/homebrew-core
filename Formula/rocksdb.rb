@@ -1,26 +1,48 @@
 class Rocksdb < Formula
-  desc "Persistent key-value store for fast storage environments"
+  desc "Embeddable, persistent key-value store for fast storage"
   homepage "http://rocksdb.org"
-  url "https://github.com/facebook/rocksdb/archive/rocksdb-4.4.tar.gz"
-  sha256 "ff79856613e628c2181c4e2e0bc98763e05a4536e0662e5d84f4d237bf40cdb8"
+  url "https://github.com/facebook/rocksdb/archive/v5.9.2.tar.gz"
+  sha256 "784023d5fea572e860938ec9041e064c9ca529a129574d7fccb74618c7e0dad8"
+  revision 1
 
   bottle do
     cellar :any
-    sha256 "b14163ab3b6b274bf856a7286406bd1bfd66dcf353deb34d562bf380d33d2a06" => :el_capitan
-    sha256 "97abd3d4c4d275e7ce766d60d27ce7464e441f3dd88b85cd4d1c11f846847336" => :yosemite
-    sha256 "d604d2a1d462ab484d029724a308c5d9da75729b1f6447425c17b07e593059f1" => :mavericks
+    sha256 "a2c0bbb462c769b14e3d8960cce66c7521131f25db7da86994809f7904cb2336" => :high_sierra
+    sha256 "a4e46bae57d30ad82ee29abd8138c5e3fd964e4a5935ec94d9187bcb592d5cae" => :sierra
+    sha256 "888e57814ffae73b2a4dfc167327928c659ec43ee83bb3a758e3ef93d4e10f59" => :el_capitan
   end
-
-  option "with-lite", "Build mobile/non-flash optimized lite version"
 
   needs :cxx11
   depends_on "snappy"
   depends_on "lz4"
+  depends_on "gflags"
 
   def install
     ENV.cxx11
     ENV["PORTABLE"] = "1" if build.bottle?
-    ENV.append_to_cflags "-DROCKSDB_LITE=1" if build.with? "lite"
+    ENV["DEBUG_LEVEL"] = "0"
+    ENV["USE_RTTI"] = "1"
+    ENV["DISABLE_JEMALLOC"] = "1" # prevent opportunistic linkage
+
+    # build regular rocksdb
+    system "make", "clean"
+    system "make", "static_lib"
+    system "make", "shared_lib"
+    system "make", "tools"
+    system "make", "install", "INSTALL_PATH=#{prefix}"
+
+    bin.install "sst_dump" => "rocksdb_sst_dump"
+    bin.install "db_sanity_test" => "rocksdb_sanity_test"
+    bin.install "db_stress" => "rocksdb_stress"
+    bin.install "write_stress" => "rocksdb_write_stress"
+    bin.install "ldb" => "rocksdb_ldb"
+    bin.install "db_repl_stress" => "rocksdb_repl_stress"
+    bin.install "rocksdb_dump"
+    bin.install "rocksdb_undump"
+
+    # build rocksdb_lite
+    ENV.append_to_cflags "-DROCKSDB_LITE=1"
+    ENV["LIBNAME"] = "librocksdb_lite"
     system "make", "clean"
     system "make", "static_lib"
     system "make", "shared_lib"
@@ -28,25 +50,32 @@ class Rocksdb < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <assert.h>
       #include <rocksdb/options.h>
       #include <rocksdb/memtablerep.h>
       using namespace rocksdb;
       int main() {
         Options options;
-        options.memtable_factory.reset(
-                    NewHashSkipListRepFactory(16));
         return 0;
       }
     EOS
 
-    system ENV.cxx, "test.cpp", "-o", "db_test", "-v", "-std=c++11",
-                                "-stdlib=libc++",
-                                "-lstdc++",
-                                "-lrocksdb",
+    system ENV.cxx, "test.cpp", "-o", "db_test", "-v",
+                                "-std=c++11", "-stdlib=libc++", "-lstdc++",
                                 "-lz", "-lbz2",
-                                "-lsnappy", "-llz4"
+                                "-L#{lib}", "-lrocksdb_lite",
+                                "-L#{Formula["snappy"].opt_lib}", "-lsnappy",
+                                "-L#{Formula["lz4"].opt_lib}", "-llz4"
     system "./db_test"
+
+    assert_match "sst_dump --file=", shell_output("#{bin}/rocksdb_sst_dump --help 2>&1", 1)
+    assert_match "rocksdb_sanity_test <path>", shell_output("#{bin}/rocksdb_sanity_test --help 2>&1", 1)
+    assert_match "rocksdb_stress [OPTIONS]...", shell_output("#{bin}/rocksdb_stress --help 2>&1", 1)
+    assert_match "rocksdb_write_stress [OPTIONS]...", shell_output("#{bin}/rocksdb_write_stress --help 2>&1", 1)
+    assert_match "ldb - RocksDB Tool", shell_output("#{bin}/rocksdb_ldb --help 2>&1", 1)
+    assert_match "rocksdb_repl_stress:", shell_output("#{bin}/rocksdb_repl_stress --help 2>&1", 1)
+    assert_match "rocksdb_dump:", shell_output("#{bin}/rocksdb_dump --help 2>&1", 1)
+    assert_match "rocksdb_undump:", shell_output("#{bin}/rocksdb_undump --help 2>&1", 1)
   end
 end

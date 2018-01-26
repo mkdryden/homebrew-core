@@ -1,36 +1,28 @@
 class Vifm < Formula
   desc "Ncurses based file manager with vi like keybindings"
   homepage "https://vifm.info/"
-  url "https://downloads.sourceforge.net/project/vifm/vifm/vifm-0.8.1a.tar.bz2"
-  mirror "https://github.com/vifm/vifm/releases/download/v0.8.1a/vifm-0.8.1a.tar.bz2"
-  sha256 "974fb2aa5e32d2c729ceff678c595070c701bd30a6ccc5cb6ca64807a9dd4422"
+  url "https://github.com/vifm/vifm/releases/download/v0.9/vifm-0.9.tar.bz2"
+  sha256 "ab10c99d1e4c24ff8a03c20be1c202cc15874750cc47a1614e6fe4f8d816a7fd"
 
   bottle do
-    sha256 "46ad2f98c56e9306c00540ead159cbc70f02e4a7947e9f3f80f2408a01752f01" => :el_capitan
-    sha256 "140c708112af6fc1c4f7c740abdca3af0e3fc12a8205cfa428800f7794541b6f" => :yosemite
-    sha256 "ba80ce8c6d4762404cfd8f1595823ad1d7e347447dbbe50c1d73ad75a10efdcf" => :mavericks
-  end
-
-  head do
-    url "https://github.com/vifm/vifm.git"
-    depends_on "automake" => :build
-    depends_on "autoconf" => :build
+    sha256 "351bfdaa028f9ffd3265391ac9dcd27e5f9818a18fe40dcabfe5adfa84ff920d" => :high_sierra
+    sha256 "43c49f57d80cae5391aa31e7f344b2082e163bf9ff0003988c5fa4f419d46566" => :sierra
+    sha256 "427c8115c17a6a7143a2ce8b9a00d1f0639a15d2f61f7492623d6f958351cd35" => :el_capitan
+    sha256 "d9eb249223e2cc06049f21e9e14c544d640858d10faafeca395c99005c7c0125" => :yosemite
   end
 
   def install
-    args = %W[--disable-dependency-tracking --prefix=#{prefix}]
-    if build.head?
-      system "./autogen.sh", *args
-    else
-      system "./configure", *args
-    end
-
-    ENV.deparallelize
-    system "make", "install"
+    system "./configure", "--disable-dependency-tracking",
+                          "--prefix=#{prefix}",
+                          "--without-gtk",
+                          "--without-libmagic",
+                          "--without-X11"
+    system "make"
+    system "make", "check"
+    ENV.deparallelize { system "make", "install" }
   end
 
   test do
-    assert_match /^Version: #{Regexp.escape(version)}/,
-      shell_output("#{bin}/vifm --version")
+    assert_match version.to_s, shell_output("#{bin}/vifm --version")
   end
 end

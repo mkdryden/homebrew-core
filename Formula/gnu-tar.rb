@@ -1,25 +1,17 @@
 class GnuTar < Formula
   desc "GNU version of the tar archiving utility"
   homepage "https://www.gnu.org/software/tar/"
-  url "http://ftpmirror.gnu.org/tar/tar-1.28.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/tar/tar-1.28.tar.gz"
-  sha256 "6a6b65bac00a127a508533c604d5bf1a3d40f82707d56f20cefd38a05e8237de"
+  url "https://ftp.gnu.org/gnu/tar/tar-1.30.tar.gz"
+  mirror "https://ftpmirror.gnu.org/tar/tar-1.30.tar.gz"
+  sha256 "4725cc2c2f5a274b12b39d1f78b3545ec9ebb06a6e48e8845e1995ac8513b088"
 
   bottle do
-    revision 4
-    sha256 "006f9aba7b70361c01666a0775027457265646bdd4d05a4c6fc1b0d9268af8a8" => :el_capitan
-    sha256 "7a32439d8e25984e4737ab74e1ee15a03f0cfc1455f9940f98beafe8609d97e8" => :yosemite
-    sha256 "b51eee5840990c2fc46ea887d9efd9c06fd92946bd39b8e4c124c4da40873be3" => :mavericks
+    sha256 "ad87e1488b6d1a2db804c348abf05143b6b7310402c7928f725305c295599708" => :high_sierra
+    sha256 "5a04574acb1ff235b2509e70cb207e6379a8c83191986131bba52717c328fc1b" => :sierra
+    sha256 "1a559b78e6f1a6594b18a9ba2aa2e9828af2736aacc4aec07911fe7638e80e68" => :el_capitan
   end
 
   option "with-default-names", "Do not prepend 'g' to the binary"
-
-  # Fix for xattrs bug causing build failures on OS X:
-  # https://lists.gnu.org/archive/html/bug-tar/2014-08/msg00001.html
-  patch do
-    url "https://gist.githubusercontent.com/mistydemeo/10fbae8b8441359ba86d/raw/e5c183b72036821856f9e82b46fba6185e10e8b9/gnutar-configure-xattrs.patch"
-    sha256 "f2e56bb8afd1c641a7e5b81e35fdbf36b6fb66434b1e35caa8b55196b30c3ad9"
-  end
 
   def install
     # Work around unremovable, nested dirs bug that affects lots of
@@ -27,10 +19,8 @@ class GnuTar < Formula
     # https://github.com/Homebrew/homebrew/issues/45273
     # https://github.com/Homebrew/homebrew/issues/44993
     # This is thought to be an el_capitan bug:
-    # http://lists.gnu.org/archive/html/bug-tar/2015-10/msg00017.html
-    if MacOS.version == :el_capitan
-      ENV["gl_cv_func_getcwd_abort_bug"] = "no"
-    end
+    # https://lists.gnu.org/archive/html/bug-tar/2015-10/msg00017.html
+    ENV["gl_cv_func_getcwd_abort_bug"] = "no" if MacOS.version == :el_capitan
 
     args = ["--prefix=#{prefix}", "--mandir=#{man}"]
     args << "--program-prefix=g" if build.without? "default-names"
@@ -46,7 +36,7 @@ class GnuTar < Formula
   end
 
   def caveats
-    if build.without? "default-names" then <<-EOS.undent
+    if build.without? "default-names" then <<~EOS
       gnu-tar has been installed as "gtar".
 
       If you really need to use it as "tar", you can add a "gnubin" directory

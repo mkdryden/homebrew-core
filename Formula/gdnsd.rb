@@ -1,13 +1,13 @@
 class Gdnsd < Formula
   desc "Authoritative-only DNS server"
   homepage "http://gdnsd.org/"
-  url "https://github.com/gdnsd/gdnsd/releases/download/v2.2.1/gdnsd-2.2.1.tar.xz"
-  sha256 "dd78ff355704b2da9dd064efb0cb78b16b58020843d07dc0403684b2afe2d4c0"
+  url "https://github.com/gdnsd/gdnsd/releases/download/v2.3.0/gdnsd-2.3.0.tar.xz"
+  sha256 "376f9784c2d6872e0f6e14ab255ca58829f396b436d9c9c846831ee2397f2dd6"
 
   bottle do
-    sha256 "2e07ada030282cd7a8b28640fc7deceaad15edd378516fafc8487a0a99c958a3" => :el_capitan
-    sha256 "c8b85594959295e68360b588463d78a83dc71bda6fed83b48891dac40d66fbb8" => :yosemite
-    sha256 "6fc53b0eb48f03d7480e99db211df0d0c32aba347d695c61e403ab5581db31a0" => :mavericks
+    sha256 "daf899fbc641f2706adc7331f52914640608eecb0d9ce73a35dc46ad9971fe6e" => :high_sierra
+    sha256 "aa47b8750157ca483e2df58a8242d2a2a25e59993490d0d039ef750db1a10be5" => :sierra
+    sha256 "46f59cea0ac87e5db7ad8b62531ae5ed1b81e1f0f2a4ea93d5e60ff2431b4ac5" => :el_capitan
   end
 
   head do

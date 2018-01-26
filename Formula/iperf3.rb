@@ -1,10 +1,14 @@
 class Iperf3 < Formula
   desc "Update of iperf: measures TCP, UDP, and SCTP bandwidth"
   homepage "https://github.com/esnet/iperf"
+  url "https://github.com/esnet/iperf/archive/3.3.tar.gz"
+  sha256 "d8f11283fbad9d71d5bd729de3546db119eeafa87dc58950606f25045f996011"
 
-  stable do
-    url "https://github.com/esnet/iperf/archive/3.0.11.tar.gz"
-    sha256 "c774b807ea4db20e07558c47951df186b6fb1dd0cdef4282c078853ad87cc712"
+  bottle do
+    cellar :any
+    sha256 "de271ddb90cbba7502bb5ddaa2c61efca3853dc3e161770e152f560851fc1d58" => :high_sierra
+    sha256 "4d3de5c4be1a5bedeaabfadaed5f920a15812b2117b93d733cdd3c7397819867" => :sierra
+    sha256 "fdefe297eeca30db994dc4dd084200998943cb1118a888a49c76c63a4670cd89" => :el_capitan
   end
 
   head do
@@ -15,22 +19,24 @@ class Iperf3 < Formula
     depends_on "autoconf" => :build
   end
 
-  bottle do
-    cellar :any
-    sha256 "451060a5b7811824a29b1814dfb33fdcf89836cc277f9eff675510d6fd9bc458" => :el_capitan
-    sha256 "023bc1d684749db3cc8a2584d1c92c15c691b5afed13eb4ae94c98c25cefe6a1" => :yosemite
-    sha256 "8a461d45d6e5a9bca5778f174cd48445c3bf5659ceb017e6bc82ba0fb289a15c" => :mavericks
-    sha256 "391b1e77cf0805e7fab56c14a6fa5e8aa832ad43da77f320e5150c4b69547f5c" => :mountain_lion
-  end
+  depends_on "openssl"
 
   def install
     system "./bootstrap.sh" if build.head?
-    system "./configure", "--prefix=#{prefix}"
-    system "make", "clean"      # there are pre-compiled files in the tarball
+    system "./configure", "--prefix=#{prefix}",
+                          "--with-openssl=#{Formula["openssl"].opt_prefix}"
+    system "make", "clean" # there are pre-compiled files in the tarball
     system "make", "install"
   end
 
   test do
-    system "#{bin}/iperf3", "--version"
+    begin
+      server = IO.popen("#{bin}/iperf3 --server")
+      sleep 1
+      assert_match "Bitrate", pipe_output("#{bin}/iperf3 --client 127.0.0.1 --time 1")
+    ensure
+      Process.kill("SIGINT", server.pid)
+      Process.wait(server.pid)
+    end
   end
 end

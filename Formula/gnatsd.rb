@@ -1,15 +1,15 @@
 class Gnatsd < Formula
   desc "Lightweight cloud messaging system"
   homepage "https://nats.io"
-  url "https://github.com/nats-io/gnatsd/archive/v0.6.8.tar.gz"
-  sha256 "13dfc0ef51feaa52fc347d12a972ed800ff1f2a6a816e988ce38bf1dfce1d8eb"
-  head "https://github.com/apcera/gnatsd.git"
+  url "https://github.com/nats-io/gnatsd/archive/v1.0.4.tar.gz"
+  sha256 "860479e3fcac18402737533da39018f784e56f28e55b7e2067a0f78ea9793717"
+  head "https://github.com/nats-io/gnatsd.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "0f535cf9e5a9f76b148f937da21ab66fa8998fd2b1efeebe57a927dbe6d54049" => :el_capitan
-    sha256 "09d43712f376ea345183662c585a5334cc23e8933aa83bf1862a1d6dac4784f3" => :yosemite
-    sha256 "3fda8657a9758ebbbb305236e9b04fdfbfec556b8c6924e58caa17a4513debbc" => :mavericks
+    sha256 "7d11796c77ffec9c52c412c326273818de378a1b7ae3e08c18a4cbe6ef5300c7" => :high_sierra
+    sha256 "fa218c829b161df9d5227ec36077d8bbb0900b094eb132e365fdf615edfebcd1" => :sierra
+    sha256 "0430b437b2293518ded8731aa77f52f7cb151fe6883d3b1e2a9a5991440a94d3" => :el_capitan
   end
 
   depends_on "go" => :build
@@ -18,11 +18,12 @@ class Gnatsd < Formula
     ENV["GOPATH"] = buildpath
     mkdir_p "src/github.com/nats-io"
     ln_s buildpath, "src/github.com/nats-io/gnatsd"
-    system "go", "install", "github.com/nats-io/gnatsd"
-    system "go", "build", "-o", bin/"gnatsd", "gnatsd.go"
+    system "go", "build", "-o", bin/"gnatsd", "main.go"
   end
 
-  def plist; <<-EOS.undent
+  plist_options :manual => "gnatsd"
+
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -41,6 +42,20 @@ class Gnatsd < Formula
   end
 
   test do
-    system "gnatsd", "-v"
+    pid = fork do
+      exec bin/"gnatsd",
+           "--port=8085",
+           "--pid=#{testpath}/pid",
+           "--log=#{testpath}/log"
+    end
+    sleep 3
+
+    begin
+      assert_match version.to_s, shell_output("curl localhost:8085")
+      assert_predicate testpath/"log", :exist?
+    ensure
+      Process.kill "SIGINT", pid
+      Process.wait pid
+    end
   end
 end

@@ -1,13 +1,16 @@
 class PostgresXc < Formula
   desc "PostgreSQL cluster based on shared-nothing architecture"
-  homepage "http://postgres-xc.sourceforge.net/"
+  homepage "https://postgres-xc.sourceforge.io/"
   url "https://downloads.sourceforge.net/project/postgres-xc/Version_1.0/pgxc-v1.0.4.tar.gz"
   sha256 "b467cbb7d562a8545645182958efd1608799ed4e04a9c3906211878d477b29c1"
+  revision 1
 
   bottle do
-    sha256 "1a8e8d86ffbdce0287ed016a8fe98ab166097356c25db0796defb346d7bd77a6" => :el_capitan
-    sha256 "6a96a35995306b0f3f32a5d3f3b4527d9bced585f828cc9dbec1ef8c29eb8790" => :yosemite
-    sha256 "1f05cbe6cb40097c0e5fb7d3b62d32b5305dce2c364f018c830069e7ad1adcd9" => :mavericks
+    rebuild 1
+    sha256 "fa227de1722867aadf57d0868bc137a67f30d79b613fbf713396ba846b33f908" => :high_sierra
+    sha256 "9219ea92a221cae45f87c8119afbae22a190c396f41972ab2f8019ede381207d" => :sierra
+    sha256 "8c17e52f8c1171e0a4e36d77180ee5113aa61d35acbe0d11741372d3fe93e9f5" => :el_capitan
+    sha256 "3dc1e2e4d10cc1cf2604b5bc91c4167257bd84b27a167580d2342e7ab7539428" => :yosemite
   end
 
   option "with-dtrace", "Build with DTrace support"
@@ -19,9 +22,8 @@ class PostgresXc < Formula
   depends_on :arch => :x86_64
   depends_on "openssl"
   depends_on "readline"
-  depends_on "libxml2" if MacOS.version <= :leopard # Leopard libxml is too old
   depends_on "ossp-uuid" => :recommended
-  depends_on :python => :optional
+  depends_on "python" => :optional
 
   conflicts_with "postgresql",
     :because => "postgres-xc and postgresql install the same binaries."
@@ -32,13 +34,12 @@ class PostgresXc < Formula
   end
 
   # Fix PL/Python build: https://github.com/Homebrew/homebrew/issues/11162
-  # Fix uuid-ossp build issues: http://www.postgresql.org/message-id/05843630-E25D-442A-A6B0-5CA63622A400@likeness.com
   patch :DATA
 
   def install
-    ENV.libxml2 if MacOS.version >= :snow_leopard
-
-    # See https://sourceforge.net/mailarchive/forum.php?thread_name=82E44F89-543A-44F2-8AF8-F6909B5DC561%40uniud.it&forum_name=postgres-xc-bugs
+    # Fix uuid-ossp build issues: https://www.postgresql.org/message-id/05843630-E25D-442A-A6B0-5CA63622A400@likeness.com
+    ENV.append_to_cflags "-D_XOPEN_SOURCE"
+    # See https://sourceforge.net/p/postgres-xc/mailman/postgres-xc-bugs/thread/82E44F89-543A-44F2-8AF8-F6909B5DC561@uniud.it/
     ENV.append "CFLAGS", "-D_FORTIFY_SOURCE=0 -O2" if MacOS.version >= :mavericks
 
     ENV.prepend "LDFLAGS", "-L#{Formula["openssl"].opt_lib} -L#{Formula["readline"].opt_lib}"
@@ -74,7 +75,7 @@ class PostgresXc < Formula
 
     system "./configure", *args
 
-    # Building the documentation looks for Jade or OpenJade, neither of which exist on OS X
+    # Building the documentation looks for Jade or OpenJade, neither of which exist on macOS
     # or are supplied by Homebrew at this point in time. Disable for now, since error fatal.
     inreplace "GNUmakefile", "recurse,install-world,doc-xc src", "recurse,install-world,src"
     system "make", "install-world"
@@ -101,12 +102,12 @@ class PostgresXc < Formula
     return unless framework_python.exist?
     unless (archs_for_command framework_python).include? :x86_64
       opoo "Detected a framework Python that does not have 64-bit support in:"
-      puts <<-EOS.undent
+      puts <<~EOS
         #{framework_python}
 
         The configure script seems to prefer this version of Python over any others,
         so you may experience linker problems as described in:
-          http://osdir.com/ml/pgsql-general/2009-09/msg00160.html
+          https://osdir.com/ml/pgsql-general/2009-09/msg00160.html
 
         To fix this issue, you may need to either delete the version of Python
         shown above, or move it out of the way before brewing PostgreSQL.
@@ -118,10 +119,10 @@ class PostgresXc < Formula
     end
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     To get started with Postgres-XC, read the documents at
-      http://sourceforge.net/projects/postgres-xc/files/Publication/
-      http://postgres-xc.sourceforge.net/docs/1_0/tutorial-start.html
+      https://sourceforge.net/projects/postgres-xc/files/Publication/
+      https://postgres-xc.sourceforge.io/docs/1_0/tutorial-start.html
 
     For a first cluster, you may start with a single GTM (Global Transaction Manager),
     a pair of Data Nodes and a single Coordinator, all on the same machine:
@@ -160,9 +161,11 @@ class PostgresXc < Formula
     If you get the following error:
       FATAL:  could not create shared memory segment: Cannot allocate memory
     then you need to tweak your system's shared memory parameters:
-      http://www.postgresql.org/docs/current/static/kernel-resources.html#SYSVIPC
+      https://www.postgresql.org/docs/current/static/kernel-resources.html#SYSVIPC
     EOS
   end
+
+  plist_options :startup => true
 
   # Override Formula#plist_name
   def plist_name(extra = nil)
@@ -174,7 +177,7 @@ class PostgresXc < Formula
     extra ? super().dirname+(plist_name(extra)+".plist") : super()
   end
 
-  def gtm_startup_plist(name); <<-EOPLIST.undent
+  def gtm_startup_plist(name); <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -199,10 +202,10 @@ class PostgresXc < Formula
       <string>#{var}/postgres-xc/#{name}/server.log</string>
     </dict>
     </plist>
-    EOPLIST
+    EOS
   end
 
-  def gtm_proxy_startup_plist(name); <<-EOPLIST.undent
+  def gtm_proxy_startup_plist(name); <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -233,10 +236,10 @@ class PostgresXc < Formula
       <string>#{var}/postgres-xc/#{name}/server.log</string>
     </dict>
     </plist>
-    EOPLIST
+    EOS
   end
 
-  def coordinator_startup_plist(name); <<-EOPLIST.undent
+  def coordinator_startup_plist(name); <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -263,10 +266,10 @@ class PostgresXc < Formula
       <string>#{var}/postgres-xc/#{name}/server.log</string>
     </dict>
     </plist>
-    EOPLIST
+    EOS
   end
 
-  def datanode_startup_plist(name); <<-EOPLIST.undent
+  def datanode_startup_plist(name); <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -293,12 +296,12 @@ class PostgresXc < Formula
       <string>#{var}/postgres-xc/#{name}/server.log</string>
     </dict>
     </plist>
-    EOPLIST
+    EOS
   end
 
   test do
     system "#{bin}/initdb", "--nodename=brew", testpath/"test"
-    assert File.exist?("test")
+    assert_predicate testpath/"test", :exist?
   end
 end
 
@@ -315,14 +318,3 @@ __END__
  endif
 
  # If we don't have a shared library and the platform doesn't allow it
---- a/contrib/uuid-ossp/uuid-ossp.c	2012-07-30 18:34:53.000000000 -0700
-+++ b/contrib/uuid-ossp/uuid-ossp.c	2012-07-30 18:35:03.000000000 -0700
-@@ -9,6 +9,8 @@
-  *-------------------------------------------------------------------------
-  */
-
-+#define _XOPEN_SOURCE
-+
- #include "postgres.h"
- #include "fmgr.h"
- #include "utils/builtins.h"

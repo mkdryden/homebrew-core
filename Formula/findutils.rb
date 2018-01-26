@@ -1,16 +1,15 @@
 class Findutils < Formula
   desc "Collection of GNU find, xargs, and locate"
   homepage "https://www.gnu.org/software/findutils/"
-  url "http://ftpmirror.gnu.org/findutils/findutils-4.6.0.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/findutils/findutils-4.6.0.tar.gz"
+  url "https://ftp.gnu.org/gnu/findutils/findutils-4.6.0.tar.gz"
+  mirror "https://ftpmirror.gnu.org/findutils/findutils-4.6.0.tar.gz"
   sha256 "ded4c9f73731cd48fec3b6bdaccce896473b6d8e337e9612e16cf1431bb1169d"
 
   bottle do
-    cellar :any_skip_relocation
-    revision 1
-    sha256 "fc0efb414966dda5544279320c8b7505a7a292bcf38164b7afcc5fdfcf666aa5" => :el_capitan
-    sha256 "e7fb30feeb8f5adb37e29c298d24da06a172d778a0d1373ed47c02bb3735419d" => :yosemite
-    sha256 "4dffec36d2f9b22e67c75aecba9391af95408426bcae16e270ae42e53305909a" => :mavericks
+    rebuild 2
+    sha256 "8411fd3a9a42a2be0c52b4ae8cad2dd60add473a4cf882620200ab43442fb5c2" => :high_sierra
+    sha256 "c1ecad1c780cb569d268ca5648570dcc753cca720ead2783943aea0363af728e" => :sierra
+    sha256 "bc20b7e2a97c3277ea13fd91b44fbc0015628e8684a2bba203c38a4c7357f6c7" => :el_capitan
   end
 
   deprecated_option "default-names" => "with-default-names"
@@ -23,10 +22,8 @@ class Findutils < Formula
     # https://github.com/Homebrew/homebrew/issues/45273
     # https://github.com/Homebrew/homebrew/issues/44993
     # This is thought to be an el_capitan bug:
-    # http://lists.gnu.org/archive/html/bug-tar/2015-10/msg00017.html
-    if MacOS.version == :el_capitan
-      ENV["gl_cv_func_getcwd_abort_bug"] = "no"
-    end
+    # https://lists.gnu.org/archive/html/bug-tar/2015-10/msg00017.html
+    ENV["gl_cv_func_getcwd_abort_bug"] = "no" if MacOS.version == :el_capitan
 
     args = %W[
       --prefix=#{prefix}
@@ -42,8 +39,8 @@ class Findutils < Formula
     # https://savannah.gnu.org/bugs/index.php?46846
     # https://github.com/Homebrew/homebrew/issues/47791
     updatedb = (build.with?("default-names") ? "updatedb" : "gupdatedb")
-    (libexec/"bin").install bin/"#{updatedb}"
-    (bin/updatedb).write <<-EOS.undent
+    (libexec/"bin").install bin/updatedb
+    (bin/updatedb).write <<~EOS
       #!/bin/sh
       export LC_ALL='C'
       exec "#{libexec}/bin/#{updatedb}" "$@"
@@ -62,7 +59,7 @@ class Findutils < Formula
 
   def caveats
     if build.without? "default-names"
-      <<-EOS.undent
+      <<~EOS
         All commands have been installed with the prefix 'g'.
         If you do not want the prefix, install using the "with-default-names" option.
 

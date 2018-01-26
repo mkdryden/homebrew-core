@@ -1,14 +1,15 @@
 class DatetimeFortran < Formula
   desc "Fortran time and date manipulation library"
   homepage "https://github.com/milancurcic/datetime-fortran"
-  url "https://github.com/milancurcic/datetime-fortran/releases/download/v1.4.2/datetime-fortran-1.4.2.tar.gz"
-  sha256 "5b70c6e5d38032951e879b437e9ac7c5d483860ce8a9f6bbe6f1d6cd777e737f"
+  url "https://github.com/milancurcic/datetime-fortran/releases/download/v1.6.0/datetime-fortran-1.6.0.tar.gz"
+  sha256 "e46c583bca42e520a05180984315495495da4949267fc155e359524c2bf31e9a"
+  revision 2
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "38dc388b455327e84f09132794a4a116bd15d5da943bc8beb9a54d86f24e6f8d" => :el_capitan
-    sha256 "7946958a4af7b3ceab82df7f5daddae1fcc659a01368e3e96e30b2961eb822cf" => :yosemite
-    sha256 "c79a7073c0868cce8aba565992fcc30cba5920deb873c8ba480e23a656bf7457" => :mavericks
+    sha256 "887a64af4a2366598e0e374ddb664a303381c9ce849bff4de6297f522999daae" => :high_sierra
+    sha256 "b3106afade8eeb808df615f809a185ea9e7da4f01974b5ae39f244eb89ca4545" => :sierra
+    sha256 "39b4cbe4d95db475a36909c9d4241d3726523cab239f3b468c4fef6679abf1a0" => :el_capitan
   end
 
   head do
@@ -19,21 +20,19 @@ class DatetimeFortran < Formula
     depends_on "pkg-config" => :build
   end
 
-  option "without-test", "Skip build time tests (Not recommended)"
-  depends_on :fortran
+  depends_on "gcc" # for gfortran
 
   def install
     system "autoreconf", "-fvi" if build.head?
     system "./configure", "--prefix=#{prefix}",
                           "--disable-silent-rules"
-    system "make", "check" if build.with? "test"
     system "make", "install"
     (pkgshare/"test").install "src/tests/datetime_tests.f90"
   end
 
   test do
-    ENV.fortran
-    system ENV.fc, "-odatetime_test", "-ldatetime", "-I#{HOMEBREW_PREFIX}/include", pkgshare/"test/datetime_tests.f90"
-    system testpath/"datetime_test"
+    system "gfortran", "-o", "test", "-I#{include}", "-L#{lib}", "-ldatetime",
+                       pkgshare/"test/datetime_tests.f90"
+    system "./test"
   end
 end

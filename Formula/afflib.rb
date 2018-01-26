@@ -1,38 +1,40 @@
 class Afflib < Formula
   desc "Advanced Forensic Format"
   homepage "https://github.com/sshock/AFFLIBv3"
-  url "https://github.com/sshock/AFFLIBv3/archive/v3.7.7.tar.gz"
-  sha256 "049acb8b430fc354de0ae8b8c2043c221a213bcb17259eb099e1d5523a9697bf"
+  url "https://github.com/sshock/AFFLIBv3/archive/v3.7.16.tar.gz"
+  sha256 "9c0522941a24a3aafa027e510c6add5ca9f4defd2d859da3e0b536ad11b6bf72"
 
   bottle do
     cellar :any
-    sha256 "b31a73db6339ce92a10aac22aa087fcbf92c783494e09400b698c7ac5b994345" => :el_capitan
-    sha256 "dc89843c96eafc42c84834a5490169f59facc1d33036139d97009c03ae55592c" => :yosemite
-    sha256 "0293b47792615b7b36e06d55f50d3565d4e6a251b1dad09ad3f7a673f1b856f2" => :mavericks
+    sha256 "7a5a2cdf54e81089aeda288185c13dd947af90dab3c32f5ce3017d5251f8ea28" => :high_sierra
+    sha256 "0a69dea1576c68720739308a0aa66e83c24de8e6b88303f0d3fe371db2f932d4" => :sierra
+    sha256 "923868f49a8245403e9e2207780d3a9234e29ea12d9861a671fe5675e1fea046" => :el_capitan
+    sha256 "bbebd8159a1a187405374c9fd34a9fad999c44c9c4af60d7c763b97f99f95ae6" => :yosemite
   end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
-  depends_on "expat" => :optional
-  depends_on :osxfuse => :optional
+  depends_on "pkg-config" => :build
   depends_on "openssl"
-
-  # This patch fixes a bug reported upstream over there
-  # https://github.com/simsong/AFFLIBv3/issues/4
-  patch :DATA
+  depends_on "python" if MacOS.version <= :snow_leopard
+  depends_on :osxfuse => :optional
 
   def install
-    system "./bootstrap.sh"
-
-    args = ["--disable-dependency-tracking", "--prefix=#{prefix}"]
+    args = ["--enable-s3", "--enable-python"]
 
     if build.with? "osxfuse"
-      ENV["CPPFLAGS"] = "-I#{Formula["osxfuse"].include}/osxfuse"
+      ENV.append "CPPFLAGS", "-I/usr/local/include/osxfuse"
+      ENV.append "LDFLAGS", "-L/usr/local/lib"
       args << "--enable-fuse"
+    else
+      args << "--disable-fuse"
     end
 
-    system "./configure", *args
+    system "autoreconf", "-fiv"
+    system "./configure", "--disable-dependency-tracking",
+                          "--prefix=#{prefix}",
+                          *args
     system "make", "install"
   end
 
@@ -40,42 +42,3 @@ class Afflib < Formula
     system "#{bin}/affcat", "-v"
   end
 end
-
-__END__
-diff --git a/bootstrap.sh b/bootstrap.sh
-index 3a7af59..7510933 100755
---- a/bootstrap.sh
-+++ b/bootstrap.sh
-@@ -6,7 +6,7 @@
- echo Bootstrap script to create configure script using autoconf
- echo
- # use the installed ones first, not matter what the path says.
--export PATH=/usr/bin:/usr/sbin:/bin:$PATH
-+#export PATH=/usr/bin:/usr/sbin:/bin:$PATH
- touch NEWS README AUTHORS ChangeLog stamp-h
- aclocal
- LIBTOOLIZE=glibtoolize
-diff --git a/configure.ac b/configure.ac
-index 940353b..c530f2e 100644
---- a/configure.ac
-+++ b/configure.ac
-@@ -241,10 +241,6 @@ AC_ARG_ENABLE(fuse,
- if test "x${enable_fuse}" = "xyes" ; then
-   AC_MSG_NOTICE([FUSE requested])
-   CPPFLAGS="-D_FILE_OFFSET_BITS=64 -DFUSE_USE_VERSION=26 $CPPFLAGS"
--  if test `uname -s` = Darwin ; then
--    AC_MSG_NOTICE([FUSE IS NOT SUPPORTED ON MACOS])
--    enable_fuse=no
--  fi
-   AC_CHECK_HEADER([fuse.h],,
-     AC_MSG_NOTICE([fuse.h not found; Disabling FUSE support.])
-     enable_fuse=no)
-@@ -255,7 +251,7 @@ AFFUSE_BIN=
- if test "${enable_fuse}" = "yes"; then
-   AC_DEFINE([USE_FUSE],1,[Use FUSE to mount AFF images])
-   AFFUSE_BIN='affuse$(EXEEXT)'
--  FUSE_LIBS=-lfuse
-+  FUSE_LIBS=-losxfuse
- fi
- AC_SUBST(AFFUSE_BIN)
- AM_PROG_CC_C_O			dnl for affuse

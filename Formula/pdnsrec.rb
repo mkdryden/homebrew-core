@@ -1,51 +1,47 @@
 class Pdnsrec < Formula
   desc "Non-authoritative/recursing DNS server"
   homepage "https://www.powerdns.com/recursor.html"
-  url "https://downloads.powerdns.com/releases/pdns-recursor-3.7.3.tar.bz2"
-  sha256 "859ca6071147dd2e2ac1b2a5c3d5c2cbff0f5cbc501660db4259e7cbf27fea11"
+  url "https://downloads.powerdns.com/releases/pdns-recursor-4.1.1.tar.bz2"
+  sha256 "8feb03c7141997775cb52c131579e8e34c9896ea8bb77276328f5f6cc4e1396b"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "90319425e9cf1c1bf5db4a1c62c48d98f88dc57f321cbfdb4be48dc91330e93f" => :el_capitan
-    sha256 "68e80d6dd093d9ab1c986d9f68c97dfe9d8b46b228c4b27d64ce4bcd47105250" => :yosemite
-    sha256 "afc4630468ea74d4a7aec183f5f5f3c4872b3bcca1aac7a58c9a579aa7d0cbcc" => :mavericks
-    sha256 "a9faf9edf0e71de5e9ec9fa70d27811f353a8451b41746208fbdc0d592aa5910" => :mountain_lion
+    sha256 "acf3ac20e35b04e046d21f99f74e8301a14f16e8740ac0ab140d2979a5eb6d09" => :high_sierra
+    sha256 "ca5fca7f5c1f2ac202508bc09c11ceb34928e6f02363723f50c1da8ad985e6a6" => :sierra
+    sha256 "19c92e4a6b850eb8852640da9f10e5f71dbf272d22b17c1e78ad9dbe538c088a" => :el_capitan
   end
 
-  depends_on :macos => :lion
+  depends_on "pkg-config" => :build
   depends_on "boost"
-  depends_on "lua" => :optional
+  depends_on "openssl"
+  depends_on "lua"
+  depends_on "gcc" if DevelopmentTools.clang_build_version <= 600
+
+  needs :cxx11
+
+  fails_with :clang do
+    build 600
+    cause "incomplete C++11 support"
+  end
 
   def install
-    # Set overrides using environment variables
-    ENV["DESTDIR"] = "#{prefix}"
-    ENV["OPTFLAGS"] = "-O0"
-    ENV.O0
+    ENV.cxx11
 
-    # Include Lua if requested
-    if build.with? "lua"
-      ENV["LUA"] = "1"
-      ENV["LUA_CPPFLAGS_CONFIG"] = "-I#{Formula["lua"].opt_include}"
-      ENV["LUA_LIBS_CONFIG"] = "-llua"
-    end
+    args = %W[
+      --prefix=#{prefix}
+      --sysconfdir=#{etc}/powerdns
+      --disable-silent-rules
+      --with-boost=#{Formula["boost"].opt_prefix}
+      --with-libcrypto=#{Formula["openssl"].opt_prefix}
+      --with-lua
+      --without-net-snmp
+    ]
 
-    # Adjust hard coded paths in Makefile
-    inreplace "Makefile.in", "/usr/sbin/", "#{sbin}/"
-    inreplace "Makefile.in", "/usr/bin/", "#{bin}/"
-    inreplace "Makefile.in", "/etc/powerdns/", "#{etc}/powerdns/"
-    inreplace "Makefile.in", "/var/run/", "#{var}/run/"
+    system "./configure", *args
+    system "make", "install"
+  end
 
-    # Compile
-    system "./configure"
-    system "make"
-
-    # Do the install manually
-    bin.install "rec_control"
-    sbin.install "pdns_recursor"
-    man1.install "pdns_recursor.1", "rec_control.1"
-
-    # Generate a default configuration file
-    (prefix/"etc/powerdns").mkpath
-    system "#{sbin}/pdns_recursor --config > #{prefix}/etc/powerdns/recursor.conf"
+  test do
+    output = shell_output("#{sbin}/pdns_recursor --version 2>&1")
+    assert_match "PowerDNS Recursor #{version}", output
   end
 end

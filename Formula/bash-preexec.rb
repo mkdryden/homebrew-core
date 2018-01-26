@@ -1,8 +1,8 @@
 class BashPreexec < Formula
-  desc "preexec and precmd functions for Bash just like Zsh."
+  desc "preexec and precmd functions for Bash (just like Zsh)"
   homepage "https://github.com/rcaloras/bash-preexec"
-  url "https://github.com/rcaloras/bash-preexec/archive/0.2.3.tar.gz"
-  sha256 "33fad9f4e024d4d23972ca656406bfdacecd5a2fcdf290d81bb56c14a5c8d094"
+  url "https://github.com/rcaloras/bash-preexec/archive/0.3.7.tar.gz"
+  sha256 "56c33779763f9960dee863f4d87bc58f8da0ad9120b2c60dd12ba61c71c72da4"
 
   head "https://github.com/rcaloras/bash-preexec.git"
 
@@ -12,16 +12,14 @@ class BashPreexec < Formula
     (prefix/"etc/profile.d").install "bash-preexec.sh"
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     Add the following line to your bash profile (e.g. ~/.bashrc, ~/.profile, or ~/.bash_profile)
-
-      [[ -f $(brew --prefix)/etc/profile.d/bash-preexec.sh ]] && . $(brew --prefix)/etc/profile.d/bash-preexec.sh
-
+      [ -f #{etc}/profile.d/bash-preexec.sh ] && . #{etc}/profile.d/bash-preexec.sh
     EOS
   end
 
   test do
     # Just testing that the file is installed
-    assert File.exist?("#{prefix}/etc/profile.d/bash-preexec.sh")
+    assert_predicate testpath/"#{prefix}/etc/profile.d/bash-preexec.sh", :exist?
   end
 end

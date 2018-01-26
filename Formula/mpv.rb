@@ -1,48 +1,50 @@
 class Mpv < Formula
-  desc "Free, open source, and cross-platform media player"
+  desc "Media player based on MPlayer and mplayer2"
   homepage "https://mpv.io"
-  url "https://github.com/mpv-player/mpv/archive/v0.17.0.tar.gz"
-  sha256 "602cd2b0f5fc7e43473234fbb96e3f7bbb6418f15eb8fa720d9433cce31eba6e"
+  url "https://github.com/mpv-player/mpv/archive/v0.27.0.tar.gz"
+  sha256 "341d8bf18b75c1f78d5b681480b5b7f5c8b87d97a0d4f53a5648ede9c219a49c"
+  revision 5
+
   head "https://github.com/mpv-player/mpv.git"
 
   bottle do
-    sha256 "67be0ca312f28797543e781b9449f48593ca6c25446031a334c235864b829be9" => :el_capitan
-    sha256 "6b6559bc6d4dab13be590afff7fd637b52f01365ed0ec2cea6f1e84b801ea6e0" => :yosemite
-    sha256 "6df154963d1757f6abb2b5255049fd3e91c7585fa72bd8b02834e3448e4117fe" => :mavericks
+    sha256 "400407134ecae015f75a45c27ab0bec2087310737f7fd14f3849a21834c415a7" => :high_sierra
+    sha256 "82dc721763626f8acf23e374b28c1a7fe7ade4675286dd34cdd5eebe616da2d1" => :sierra
+    sha256 "67d08c667592b5c6138d3a0e80cc2e3887bea46ddee0f3f5a8411cf08db1f839" => :el_capitan
   end
 
-  option "with-shared", "Build libmpv shared library."
   option "with-bundle", "Enable compilation of the .app bundle."
 
   depends_on "pkg-config" => :build
-  depends_on :python3
+  depends_on "python3" => :build
 
   depends_on "libass"
   depends_on "ffmpeg"
+  depends_on "lua@5.1"
 
   depends_on "jpeg" => :recommended
   depends_on "little-cms2" => :recommended
-  depends_on "lua" => :recommended
+  depends_on "mujs" => :recommended
   depends_on "youtube-dl" => :recommended
 
-  depends_on "libcaca" => :optional
-  depends_on "libdvdread" => :optional
-  depends_on "libdvdnav" => :optional
-  depends_on "libbluray" => :optional
+  depends_on "jack" => :optional
   depends_on "libaacs" => :optional
+  depends_on "libarchive" => :optional
+  depends_on "libbluray" => :optional
+  depends_on "libcaca" => :optional
+  depends_on "libdvdnav" => :optional
+  depends_on "libdvdread" => :optional
+  depends_on "pulseaudio" => :optional
+  depends_on "rubberband" => :optional
+  depends_on "uchardet" => :optional
   depends_on "vapoursynth" => :optional
   depends_on :x11 => :optional
 
   depends_on :macos => :mountain_lion
 
-  resource "waf" do
-    url "https://waf.io/waf-1.8.12"
-    sha256 "01bf2beab2106d1558800c8709bc2c8e496d3da4a2ca343fe091f22fca60c98b"
-  end
-
   resource "docutils" do
-    url "https://pypi.python.org/packages/source/d/docutils/docutils-0.12.tar.gz"
-    sha256 "c7db717810ab6965f66c8cf0398a98c9d8df982da39b4cd7f162911eb89596fa"
+    url "https://files.pythonhosted.org/packages/05/25/7b5484aca5d46915493f1fd4ecb63c38c333bd32aa9ad6e19da8d08895ae/docutils-0.13.1.tar.gz"
+    sha256 "718c0f5fb677be0f34b781e04241c4067cbd9327b66bdd8e763201130f5175be"
   end
 
   def install
@@ -51,20 +53,36 @@ class Mpv < Formula
     # that's good enough for building the manpage.
     ENV["LC_ALL"] = "C"
 
-    version = Language::Python.major_minor_version("python3")
-    ENV.prepend_create_path "PKG_CONFIG_PATH", Pathname.new(`python3-config --prefix`.chomp)/"lib/pkgconfig"
-    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python#{version}/site-packages"
-    ENV.prepend_create_path "PATH", libexec/"bin"
+    # Prevents a conflict between python2 and python3 when gobject-introspection
+    # is using the :python requirement
+    ENV.delete("PYTHONPATH") if MacOS.version <= :mavericks
+
+    ENV.prepend_create_path "PYTHONPATH", buildpath/"vendor/lib/python2.7/site-packages"
     resource("docutils").stage do
-      system "python3", *Language::Python.setup_install_args(libexec)
+      system "python", *Language::Python.setup_install_args(buildpath/"vendor")
     end
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
+    ENV.prepend_path "PATH", buildpath/"vendor/bin"
 
-    args = ["--prefix=#{prefix}", "--enable-gpl3", "--enable-zsh-comp"]
-    args << "--enable-libmpv-shared" if build.with? "shared"
+    args = %W[
+      --prefix=#{prefix}
+      --enable-zsh-comp
+      --enable-libmpv-shared
+      --enable-html-build
+      --enable-lua
+      --confdir=#{etc}/mpv
+      --datadir=#{pkgshare}
+      --mandir=#{man}
+      --docdir=#{doc}
+      --zshdir=#{zsh_completion}
+    ]
+    args << "--enable-libarchive" if build.with? "libarchive"
+    args << "--enable-libbluray" if build.with? "libbluray"
+    args << "--enable-dvdnav" if build.with? "libdvdnav"
+    args << "--enable-dvdread" if build.with? "libdvdread"
+    args << "--enable-javascript" if build.with? "mujs"
+    args << "--enable-pulse" if build.with? "pulseaudio"
 
-    waf = resource("waf")
-    buildpath.install waf.files("waf-#{waf.version}" => "waf")
+    system "./bootstrap.py"
     system "python3", "waf", "configure", *args
     system "python3", "waf", "install"
 
@@ -75,6 +93,6 @@ class Mpv < Formula
   end
 
   test do
-    system "#{bin}/mpv", "--ao=null", test_fixtures("test.wav")
+    system bin/"mpv", "--ao=null", test_fixtures("test.wav")
   end
 end

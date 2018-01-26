@@ -11,7 +11,8 @@ class CloudWatch < Formula
 
   def install
     env = Language::Java.java_home_env
-    env.merge! :AWS_CLOUDWATCH_HOME => libexec, :SERVICE_HOME => libexec
+    env[:AWS_CLOUDWATCH_HOME] = libexec
+    env[:SERVICE_HOME] = libexec
     rm Dir["bin/*.cmd"] # Remove Windows versions
     libexec.install Dir["*"]
     Pathname.glob("#{libexec}/bin/*") do |file|
@@ -23,7 +24,7 @@ class CloudWatch < Formula
   end
 
   def caveats
-    <<-EOS.undent
+    <<~EOS
       Before you can use these tools you must export some variables to your $SHELL.
         export AWS_ACCESS_KEY="<Your AWS Access ID>"
         export AWS_SECRET_KEY="<Your AWS Secret Key>"
@@ -32,6 +33,6 @@ class CloudWatch < Formula
   end
 
   test do
-    assert_match /w.x.y.z/, shell_output("#{bin}/mon-version")
+    assert_match "w.x.y.z", shell_output("#{bin}/mon-version")
   end
 end

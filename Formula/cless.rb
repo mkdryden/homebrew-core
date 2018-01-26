@@ -9,21 +9,24 @@ class Cless < Formula
   sha256 "382ad9b2ce6bf216bf2da1b9cadd9a7561526bfbab418c933b646d03e56833b2"
   revision 1
 
-  # fix compilation with GHC 7.10
-  # to be removed once https://github.com/tanakh/cless/pull/2 is merged
-  patch :DATA
-
   bottle do
-    sha256 "69b6e6441633e58e2c48483b2bf6122daed6d1dfe3d7ce31525024dc0ce2d4d6" => :el_capitan
-    sha256 "49b15946ec65f85e5b94333485ba8a8eee1b7ec6d2f53c4619d894c9aaf3e6a8" => :yosemite
-    sha256 "aaa095676d987a4cdfb613ddf4be28fd8ae1eaf4788f85b045fa5711cfecdffb" => :mavericks
-    sha256 "8dcb4a2e9c72d22ab96eee8f18ce4f63bd5f28dea6ef586de82865c94cb2fd8a" => :mountain_lion
+    cellar :any_skip_relocation
+    rebuild 2
+    sha256 "b0f4cd35cfb88bae1816f87df9a6eac25ffc5b68bc03ed7d92c8bba493add8c1" => :high_sierra
+    sha256 "3585e128d1f855aede1e5bb6adec957c64e6777b126cc93a4165d68ccc304038" => :sierra
+    sha256 "660d59f6fe5f0b319091559c727a8b1b241f62244b877fc35ecdf34d69bf7713" => :el_capitan
   end
 
   depends_on "ghc" => :build
   depends_on "cabal-install" => :build
 
   def install
+    # GHC 8 compat
+    # Reported 25 May 2016: https://github.com/tanakh/cless/issues/3
+    # Also see "fix compilation with GHC 7.10", which has the base bump but not
+    # the transformers bump: https://github.com/tanakh/cless/pull/2
+    (buildpath/"cabal.config").write("allow-newer: base,transformers\n")
+
     install_cabal_package
   end
 
@@ -33,18 +36,3 @@ class Cless < Formula
     system "#{bin}/cless", "--list-styles"
   end
 end
-
-__END__
-diff --git a/cless.cabal b/cless.cabal
-index 0e8913d..105a7c9 100644
---- a/cless.cabal
-+++ b/cless.cabal
-@@ -19,7 +19,7 @@ source-repository head
- executable cless
-   main-is:             Main.hs
-
--  build-depends:       base >=4.7 && <4.8
-+  build-depends:       base >=4.7 && <5
-                      , highlighting-kate >=0.5
-                      , wl-pprint-terminfo >=3.7
-                      , wl-pprint-extras

@@ -1,18 +1,18 @@
 class Jpegoptim < Formula
   desc "Utility to optimize JPEG files"
   homepage "https://github.com/tjko/jpegoptim"
-  url "https://github.com/tjko/jpegoptim/archive/RELEASE.1.4.3.tar.gz"
-  mirror "https://mirrors.kernel.org/debian/pool/main/j/jpegoptim/jpegoptim_1.4.3.orig.tar.gz"
-  sha256 "f892f5917c8dd8259d319df204e4bc13806b90389041ca7a4a24d8a5c25c7013"
+  url "https://github.com/tjko/jpegoptim/archive/RELEASE.1.4.4.tar.gz"
+  mirror "https://mirrors.kernel.org/debian/pool/main/j/jpegoptim/jpegoptim_1.4.4.orig.tar.gz"
+  sha256 "bc6b018ae8c3eb12d07596693d54243e214780a2a2303a6578747d3671f45da3"
+  revision 1
   head "https://github.com/tjko/jpegoptim.git"
 
   bottle do
     cellar :any
-    revision 1
-    sha256 "51375e2896eeee829b34c01860508651e6121c6266ec77d8898b08f832098f10" => :el_capitan
-    sha256 "abb7ce068535b9f2b8a7c9213b785c63f9c3e80271c7efe8ea71bd7583d09c9c" => :yosemite
-    sha256 "eff2aedc08673bfb2942cda88a725c839a1943a85d465e82360f59174b3bcc98" => :mavericks
-    sha256 "a52cb9795ff62f76943d387572f2546b75b0f5bdd5662945b7132437f4f4b962" => :mountain_lion
+    sha256 "c672c7aad4c78e3b65d9fdd857d00f832efa16f291217cb5bb4f047da1ac7c52" => :high_sierra
+    sha256 "2d1ab7073255d2c4a67d224e9f39a22fd32111e47b9e289829df48bed8d567e1" => :sierra
+    sha256 "8fa157cbed17cb04bd6784e316866e89e0962dde9e0939ad20c896feaf5dfa05" => :el_capitan
+    sha256 "90276c07525f402cf5d9ba4cd55fd40fa5fc3f80e198e3d316605a6c236ee1e7" => :yosemite
   end
 
   depends_on "jpeg"
@@ -21,12 +21,12 @@ class Jpegoptim < Formula
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
-    ENV.j1 # Install is not parallel-safe
+    ENV.deparallelize # Install is not parallel-safe
     system "make", "install"
   end
 
   test do
     source = test_fixtures("test.jpg")
-    assert_match(/OK/, shell_output("#{bin}/jpegoptim --noaction #{source}"))
+    assert_match "OK", shell_output("#{bin}/jpegoptim --noaction #{source}")
   end
 end

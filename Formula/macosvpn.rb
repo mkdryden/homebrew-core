@@ -1,24 +1,24 @@
 class Macosvpn < Formula
   desc "Create Mac OS VPNs programmatically"
   homepage "https://github.com/halo/macosvpn"
-  url "https://github.com/halo/macosvpn/archive/0.1.4.tar.gz"
-  sha256 "577a93fff84a6076a4f53da0406ee712522f37e88c1857ad54686b7b7d936fcb"
+  url "https://github.com/halo/macosvpn/archive/0.3.5.tar.gz"
+  sha256 "a1ab4276d22d42430ae8696420a9e0641609bad442036e4e2403d722a1d919a4"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "f8c3cc9d7403c53bdfe3d164fc2fa00711f0d5ea2ebe55e26616a204ee07066d" => :el_capitan
-    sha256 "1051f8e2aa5543853298466e37de75059fb8306bf3dba3e242158702b459018d" => :yosemite
-    sha256 "f46d4474233ed96a42a6cd2dee7cb80efb198b13a35b426dded181e0be8be4d9" => :mavericks
+    sha256 "478bec17d2000763fde198848b85478aa8ece4414499a1cfc2dd8925071f15e9" => :high_sierra
+    sha256 "fd31b7b30a4867a7693a35ce96a6d74034e160f8b7cae1bc37e8ca5083552a04" => :sierra
+    sha256 "4cf716851d7a1fda3ed5387504d01d8832b53f54fd7b683267af29fc5d18f7a1" => :el_capitan
   end
 
-  depends_on :xcode => ["6.1", :build]
+  depends_on :xcode => ["7.3", :build]
 
   def install
-    xcodebuild
+    xcodebuild "SYMROOT=build"
     bin.install "build/Release/macosvpn"
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/macosvpn version", 98)
+    assert_match version.to_s, shell_output("#{bin}/macosvpn version", 10)
   end
 end

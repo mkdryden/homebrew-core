@@ -3,63 +3,124 @@ class Osquery < Formula
   homepage "https://osquery.io"
   # pull from git tag to get submodules
   url "https://github.com/facebook/osquery.git",
-    :tag => "1.7.3",
-    :revision => "6901aa644a9bcc0667207008db71471abf756b82"
+      :tag => "2.11.2",
+      :revision => "966854028f7dda2eeea07c21b6abaca40689ee28"
+  head "https://github.com/facebook/osquery.git"
 
   bottle do
     cellar :any
-    revision 1
-    sha256 "478bdc556f34b100381665b9553af3f5527a0ccb7d51c91cd989d3bd63a525e2" => :el_capitan
-    sha256 "382b88d2596337f17abdcb6d66b083977673f18c7f41e394bb68ce785acb7a15" => :yosemite
-    sha256 "98243f2e24824430971e51b79edf5034e30bd65db94db27e8f40af0a493cbc7b" => :mavericks
+    sha256 "9512eff161f1d323c8cce485d3c1ad297f87e1bd590edf93f9aedc08cf130e60" => :high_sierra
+    sha256 "38237e06130f18b080e7a3de5dd1bf3b028353da51a0651d2d41ea33322f1534" => :sierra
   end
 
-  # osquery only supports OS X 10.9 and above. Do not remove this.
-  depends_on :macos => :mavericks
+  fails_with :gcc => "6"
 
+  # osquery only supports macOS 10.12 and above. Do not remove this.
+  depends_on :macos => :sierra
+  depends_on "bison" => :build
   depends_on "cmake" => :build
   depends_on "doxygen" => :build
+  depends_on "asio"
+  depends_on "augeas"
   depends_on "boost"
-  depends_on "rocksdb"
-  depends_on "thrift"
-  depends_on "yara"
-  depends_on "libressl"
   depends_on "gflags"
   depends_on "glog"
+  depends_on "libarchive"
   depends_on "libmagic"
-  depends_on "cpp-netlib"
+  depends_on "lldpd"
+  depends_on "librdkafka"
+  depends_on "openssl"
+  depends_on "rapidjson"
+  depends_on "rocksdb"
   depends_on "sleuthkit"
+  depends_on "thrift"
+  depends_on "yara"
+  depends_on "xz"
+  depends_on "zstd"
 
-  resource "markupsafe" do
-    url "https://pypi.python.org/packages/source/M/MarkupSafe/MarkupSafe-0.23.tar.gz"
+  resource "MarkupSafe" do
+    url "https://files.pythonhosted.org/packages/c0/41/bae1254e0396c0cc8cf1751cb7d9afc90a602353695af5952530482c963f/MarkupSafe-0.23.tar.gz"
     sha256 "a4ec1aff59b95a14b45eb2e23761a0179e98319da5a7eb76b56ea8cdc7b871c3"
   end
 
-  resource "jinja2" do
-    url "https://pypi.python.org/packages/source/J/Jinja2/Jinja2-2.7.3.tar.gz"
-    sha256 "2e24ac5d004db5714976a04ac0e80c6df6e47e98c354cb2c0d82f8879d4f8fdb"
+  resource "Jinja2" do
+    url "https://files.pythonhosted.org/packages/5f/bd/5815d4d925a2b8cbbb4b4960f018441b0c65f24ba29f3bdcfb3c8218a307/Jinja2-2.8.1.tar.gz"
+    sha256 "35341f3a97b46327b3ef1eb624aadea87a535b8f50863036e085e7c426ac5891"
   end
 
   resource "psutil" do
-    url "https://pypi.python.org/packages/source/p/psutil/psutil-2.2.1.tar.gz"
-    sha256 "a0e9b96f1946975064724e242ac159f3260db24ffa591c3da0a355361a3a337f"
+    url "https://files.pythonhosted.org/packages/d9/c8/8c7a2ab8ec108ba9ab9a4762c5a0d67c283d41b13b5ce46be81fdcae3656/psutil-5.0.1.tar.gz"
+    sha256 "9d8b7f8353a2b2eb6eb7271d42ec99d0d264a9338a37be46424d56b4e473b39e"
+  end
+
+  resource "aws-sdk-cpp" do
+    url "https://github.com/aws/aws-sdk-cpp/archive/1.2.7.tar.gz"
+    sha256 "1f65e63dbbceb1e8ffb19851a8e0ee153e05bf63bfa12b0e259d50021ac3ab6e"
+  end
+
+  resource "cpp-netlib" do
+    url "https://github.com/cpp-netlib/cpp-netlib/archive/cpp-netlib-0.12.0-final.tar.gz"
+    sha256 "d66e264240bf607d51b8d0e743a1fa9d592d96183d27e2abdaf68b0a87e64560"
+  end
+
+  resource "linenoise" do
+    url "https://github.com/theopolis/linenoise-ng/archive/v1.0.1.tar.gz"
+    sha256 "c317f3ec92dcb4244cb62f6fb3b7a0a5a53729a85842225fcfce0d4a429a0dfa"
   end
 
   def install
-    # Link dynamically against brew-installed libraries.
-    ENV["BUILD_LINK_SHARED"] = "1"
+    ENV.cxx11
 
-    # Use LibreSSL instead of the system provided OpenSSL.
-    ENV["BUILD_USE_LIBRESSL"] = "1"
+    vendor = buildpath/"brew_vendor"
+
+    resource("aws-sdk-cpp").stage do
+      args = std_cmake_args + %W[
+        -DSTATIC_LINKING=1
+        -DNO_HTTP_CLIENT=1
+        -DMINIMIZE_SIZE=ON
+        -DBUILD_SHARED_LIBS=OFF
+        -DBUILD_ONLY=ec2;firehose;kinesis;sts
+        -DCMAKE_INSTALL_PREFIX=#{vendor}/aws-sdk-cpp
+      ]
+
+      mkdir "build" do
+        system "cmake", "..", *args
+        system "make"
+        system "make", "install"
+      end
+    end
+
+    resource("cpp-netlib").stage do
+      args = std_cmake_args + %W[
+        -DCMAKE_INSTALL_PREFIX=#{vendor}/cpp-netlib
+        -DCPP-NETLIB_BUILD_TESTS=OFF
+        -DCPP-NETLIB_BUILD_EXAMPLES=OFF
+      ]
+      system "cmake", ".", *args
+      system "make"
+      system "make", "install"
+    end
+
+    resource("linenoise").stage do
+      mkdir "build" do
+        args = std_cmake_args + %W[
+          -DCMAKE_INSTALL_PREFIX=#{vendor}/linenoise
+          -DCMAKE_CXX_FLAGS=-mno-avx\ -fPIC
+        ]
+        system "cmake", "..", *args
+        system "make"
+        system "make", "install"
+      end
+    end
 
     # Skip test and benchmarking.
     ENV["SKIP_TESTS"] = "1"
 
     ENV.prepend_create_path "PYTHONPATH", buildpath/"third-party/python/lib/python2.7/site-packages"
-    ENV["THRIFT_HOME"] = Formula["thrift"].opt_prefix
 
-    resources.each do |r|
-      r.stage do
+    res = resources.map(&:name).to_set - %w[aws-sdk-cpp cpp-netlib linenoise]
+    res.each do |r|
+      resource(r).stage do
         system "python", "setup.py", "install",
                                  "--prefix=#{buildpath}/third-party/python/",
                                  "--single-version-externally-managed",
@@ -67,48 +128,38 @@ class Osquery < Formula
       end
     end
 
-    system "cmake", ".", *std_cmake_args
+    cxx_flags_release = %W[
+      -DNDEBUG
+      -I#{MacOS.sdk_path}/usr/include/libxml2
+      -I#{vendor}/aws-sdk-cpp/include
+      -I#{vendor}/cpp-netlib/include
+      -I#{vendor}/linenoise/include
+      -Wl,-L#{vendor}/linenoise/lib
+    ]
+
+    args = std_cmake_args + %W[
+      -Daws-cpp-sdk-core_library:FILEPATH=#{vendor}/aws-sdk-cpp/lib/libaws-cpp-sdk-core.a
+      -Daws-cpp-sdk-firehose_library:FILEPATH=#{vendor}/aws-sdk-cpp/lib/libaws-cpp-sdk-firehose.a
+      -Daws-cpp-sdk-kinesis_library:FILEPATH=#{vendor}/aws-sdk-cpp/lib/libaws-cpp-sdk-kinesis.a
+      -Daws-cpp-sdk-sts_library:FILEPATH=#{vendor}/aws-sdk-cpp/lib/libaws-cpp-sdk-sts.a
+      -Dcppnetlib-client-connections_library:FILEPATH=#{vendor}/cpp-netlib/lib/libcppnetlib-client-connections.a
+      -Dcppnetlib-uri_library:FILEPATH=#{vendor}/cpp-netlib/lib/libcppnetlib-uri.a
+      -Dlinenoise_library:FILEPATH=#{vendor}/linenoise/lib/liblinenoise.a
+      -DCMAKE_CXX_FLAGS_RELEASE:STRING=#{cxx_flags_release.join(" ")}
+    ]
+
+    # Link dynamically against brew-installed libraries.
+    ENV["BUILD_LINK_SHARED"] = "1"
+
+    system "cmake", ".", *args
     system "make"
     system "make", "install"
+    (include/"osquery/core").install Dir["osquery/core/*.h"]
   end
 
   plist_options :startup => true, :manual => "osqueryd"
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
-      #include <osquery/sdk.h>
-
-      using namespace osquery;
-
-      class ExampleTablePlugin : public TablePlugin {
-       private:
-        TableColumns columns() const {
-          return {{"example_text", TEXT_TYPE}, {"example_integer", INTEGER_TYPE}};
-        }
-
-        QueryData generate(QueryContext& request) {
-          QueryData results;
-          Row r;
-
-          r["example_text"] = "example";
-          r["example_integer"] = INTEGER(1);
-          results.push_back(r);
-          return results;
-        }
-      };
-
-      REGISTER_EXTERNAL(ExampleTablePlugin, "table", "example");
-
-      int main(int argc, char* argv[]) {
-        Initializer runner(argc, argv, OSQUERY_EXTENSION);
-        runner.shutdown();
-        return 0;
-      }
-    EOS
-
-    system ENV.cxx, "test.cpp", "-o", "test", "-v", "-std=c++11",
-      "-losquery", "-lthrift", "-lboost_system", "-lboost_thread-mt",
-      "-lboost_filesystem", "-lglog", "-lgflags", "-lrocksdb"
-    system "./test"
+    assert_match "platform_info", shell_output("#{bin}/osqueryi -L")
   end
 end

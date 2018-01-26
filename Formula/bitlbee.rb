@@ -1,16 +1,29 @@
 class Bitlbee < Formula
   desc "IRC to other chat networks gateway"
   homepage "https://www.bitlbee.org/"
-  url "https://get.bitlbee.org/src/bitlbee-3.4.1.tar.gz"
-  sha256 "500a0b19943040d67458eb3beb0a63d004abb2aa54a777addeb2a895d4f5c0e1"
-  revision 1
-
   head "https://github.com/bitlbee/bitlbee.git"
 
+  stable do
+    url "https://get.bitlbee.org/src/bitlbee-3.5.1.tar.gz"
+    sha256 "9636d7fd89ebb3756c13a9a3387736ca6d56ccf66ec0580d512f07b21db0fa69"
+
+    # Fixes a couple of bugs/potential crashes.
+    patch do
+      url "https://github.com/bitlbee/bitlbee/commit/17a58dfa.patch?full_index=1"
+      sha256 "3a5729fd68bedabd1df717124e1950897eaee9feaf8237f6d67746e73df6cc6b"
+    end
+
+    patch do
+      url "https://github.com/bitlbee/bitlbee/commit/eb73d05e.patch?full_index=1"
+      sha256 "a54bdc82ff2959992e081586f5dd478a1719cd5037ebb0bfa54db6013853e0a5"
+    end
+  end
+
   bottle do
-    sha256 "b736c902609a430ca96856f09d956bdabcb544a8c768e035dbf103e61a5fdc77" => :el_capitan
-    sha256 "4d0f0e8560de296d49ffa340d0b50adfd4eaf1fe86abb332011fc44b283564fc" => :yosemite
-    sha256 "bfd5d013c21129aa2d87e6fff261d7428a8c883f0b2682da0ae4fe8740d76345" => :mavericks
+    sha256 "75272001af19553b23bd5d999c76570e9f53c5f0386fe8377f4e8af6e525fb50" => :high_sierra
+    sha256 "a73fcc3ea892e02dff11eda82c9338230f16778d786dbcfecae89802fb0859cb" => :sierra
+    sha256 "f1e4ace83358ed1164d5d8cfbe7ffe239b5698d24211150b86dbf4d4fb589a37" => :el_capitan
+    sha256 "85eebf3ba9ee2e986ef1c54b99a8df958cf48a1d5112f765e5498d9be23b9426" => :yosemite
   end
 
   option "with-pidgin", "Use finch/libpurple for all communication with instant messaging networks"
@@ -31,8 +44,10 @@ class Bitlbee < Formula
   def install
     args = %W[
       --prefix=#{prefix}
+      --plugindir=#{HOMEBREW_PREFIX}/lib/bitlbee/
       --debug=0
       --ssl=gnutls
+      --etcdir=#{etc}/bitlbee
       --pidfile=#{var}/bitlbee/run/bitlbee.pid
       --config=#{var}/bitlbee/lib/
       --ipsocket=#{var}/bitlbee/run/bitlbee.sock
@@ -51,14 +66,16 @@ class Bitlbee < Formula
     system "make", "install-dev"
     # This build has an extra step.
     system "make", "install-etc"
+  end
 
+  def post_install
     (var/"bitlbee/run").mkpath
     (var/"bitlbee/lib").mkpath
   end
 
   plist_options :manual => "bitlbee -D"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -100,6 +117,6 @@ class Bitlbee < Formula
   end
 
   test do
-    shell_output("#{sbin}/bitlbee -V", 1)
+    assert_match version.to_s, shell_output("#{sbin}/bitlbee -V", 1)
   end
 end

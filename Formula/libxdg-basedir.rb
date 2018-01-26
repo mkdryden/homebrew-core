@@ -6,6 +6,8 @@ class LibxdgBasedir < Formula
 
   bottle do
     cellar :any
+    sha256 "f5b940765c84d65ecd0baddcc03eab2bc612a090db48e6309b411f13e7a3c714" => :high_sierra
+    sha256 "00953ec922b6ebac6e27b1f8e1139fcc1cc5b9f8312dc8d0ebe69778c884c1b7" => :sierra
     sha256 "30b3e34a46470f11d90ca01aebd2b2d1fbaa6cc8a05c1bcec7067d40fdec75d1" => :el_capitan
     sha256 "7e165b0e949f559789981a5c0e0fd68bbf478943a0c9b03ad3778cecb0219691" => :yosemite
     sha256 "5c7bfadf4ca8b26c077eea7480df5a4ca3634b5823860a06ce2756050acbe84a" => :mavericks
@@ -23,7 +25,7 @@ class LibxdgBasedir < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <basedir.h>
       int main() {
         xdgHandle handle;
@@ -32,7 +34,7 @@ class LibxdgBasedir < Formula
         return 0;
       }
     EOS
-    system ENV.cc, "test.cpp", "-lxdg-basedir", "-o", "test"
+    system ENV.cc, "test.cpp", "-L#{lib}", "-lxdg-basedir", "-o", "test"
     system "./test"
   end
 end

@@ -1,25 +1,29 @@
 class Yaz < Formula
   desc "Toolkit for Z39.50/SRW/SRU clients/servers"
-  homepage "http://www.indexdata.com/yaz"
-  url "http://ftp.indexdata.dk/pub/yaz/yaz-5.15.1.tar.gz"
-  sha256 "ebef25b0970ea1485bbba43a721d7001523b6faa18c8d8da4080a8f83d5e2116"
-  revision 1
+  homepage "https://www.indexdata.com/yaz"
+  url "http://ftp.indexdata.dk/pub/yaz/yaz-5.23.1.tar.gz"
+  sha256 "4fb3b1ffcec4b9a56b892c47a0a645142e45418ce5ef6a835aeebc723f7d147e"
+  revision 2
 
   bottle do
     cellar :any
-    sha256 "5c92b86a99954d7c94d4fea236515387c985b4cb53ae08e7b44db3273bdf7752" => :el_capitan
-    sha256 "24875e71916b26cbe8758bb8ecbd8efe4a3b0cf02349fc7668fb84db99c6e048" => :yosemite
-    sha256 "6326adcf981c85d58153e9472797efe34605196ec5ead5cf19faf127e1d93444" => :mavericks
+    sha256 "f0c08571d5eb5ec506e76b675f96b36f355f5bf2e7f91bcccfa463573449ba79" => :high_sierra
+    sha256 "0578e44aff8a426b3936633ca29e8693860941f4d693c37e8e9491fe9d9cf2fa" => :sierra
+    sha256 "a0c3051306314ba99073719706fd57c40c432a9c83dcbef9b6aaee52bc49f3ef" => :el_capitan
   end
 
-  option :universal
+  head do
+    url "https://github.com/indexdata/yaz.git"
+    depends_on "automake" => :build
+    depends_on "autoconf" => :build
+    depends_on "libtool" => :build
+  end
 
   depends_on "pkg-config" => :build
   depends_on "icu4c" => :recommended
 
   def install
-    ENV.universal_binary if build.universal?
-
+    system "./buildconf.sh" if build.head?
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--with-xml2"
@@ -45,7 +49,7 @@ class Yaz < Formula
       # * xy transformed to z
       # * lowercase
       configurationfile = testpath/"icu-chain.xml"
-      configurationfile.write <<-EOS.undent
+      configurationfile.write <<~EOS
         <?xml version="1.0" encoding="UTF-8"?>
         <icu_chain locale="en">
           <transform rule="[:Control:] Any-Remove"/>
@@ -60,7 +64,7 @@ class Yaz < Formula
       inputfile = testpath/"icu-test.txt"
       inputfile.write "yaz-ICU	xy!"
 
-      expectedresult = <<-EOS.undent
+      expectedresult = <<~EOS
         1 1 'yaz' 'yaz'
         2 1 '' ''
         3 1 'icuz' 'ICUz'

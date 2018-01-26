@@ -1,14 +1,15 @@
 class GnomeThemesStandard < Formula
   desc "Default themes for the GNOME desktop environment"
   homepage "https://git.gnome.org/browse/gnome-themes-standard/"
-  url "https://download.gnome.org/sources/gnome-themes-standard/3.18/gnome-themes-standard-3.18.0.tar.xz"
-  sha256 "e646eb04c225282b7df7fff65741adaad4cf9ed2c12616b7310e7edd27d2bacb"
+  url "https://download.gnome.org/sources/gnome-themes-standard/3.22/gnome-themes-standard-3.22.3.tar.xz"
+  sha256 "61dc87c52261cfd5b94d65e8ffd923ddeb5d3944562f84942eeeb197ab8ab56a"
 
   bottle do
     cellar :any
-    sha256 "fdd2ceb4074c51b300a9777d54d5eb6b2d37e1dc0b7f4bc70c8215bf042bfa0b" => :el_capitan
-    sha256 "594a1b8339120e31d0575234b0e9071daec6457a28c7d0d87ec8548311a0d64d" => :yosemite
-    sha256 "adcb641a47869ea2f41c6d5fd277c39496c8203256efa92fc1d8810802a693ed" => :mavericks
+    sha256 "589376bcde7566b5afaa542c51fd99f20ea417f53ac37de25ca99a131b79977b" => :high_sierra
+    sha256 "628cb3dafd7c2577efe0541a200c190d4a8b7653e5e806f38f6aa4d79f4d872b" => :sierra
+    sha256 "92177002751416a5c288faa4a22343dd6b40d0bf056cce53108aa371d9dce0bb" => :el_capitan
+    sha256 "13d5ff2e6d7497d5eb32d2dcf1794c4541d0d38a00e02f00a42ad83457b507a9" => :yosemite
   end
 
   depends_on "pkg-config" => :build
@@ -26,7 +27,7 @@ class GnomeThemesStandard < Formula
   end
 
   test do
-    assert (share/"icons/HighContrast/scalable/actions/document-open-recent.svg").exist?
-    assert (lib/"gtk-2.0/2.10.0/engines/libadwaita.so").exist?
+    assert_predicate share/"icons/HighContrast/scalable/actions/document-open-recent.svg", :exist?
+    assert_predicate lib/"gtk-2.0/2.10.0/engines/libadwaita.so", :exist?
   end
 end

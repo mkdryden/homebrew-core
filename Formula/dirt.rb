@@ -1,25 +1,27 @@
 class Dirt < Formula
   desc "Experimental sample playback"
-  homepage "https://github.com/yaxu/Dirt"
-  url "https://github.com/yaxu/Dirt/archive/1.0.tar.gz"
-  sha256 "c7c51ea3f279c048e84d988978455f075fd8ae063b2ad7378fc9b8369218f8fb"
-  head "https://github.com/yaxu/Dirt.git"
+  homepage "https://github.com/tidalcycles/Dirt"
+  url "https://github.com/tidalcycles/Dirt/archive/1.1.tar.gz"
+  sha256 "bb1ae52311813d0ea3089bf3837592b885562518b4b44967ce88a24bc10802b6"
+  revision 1
+  head "https://github.com/tidalcycles/Dirt.git"
 
   bottle do
     cellar :any
-    sha256 "4433c2f444c42144017d8c0bd0fff5726a8fcdef2a7127b3a1da20e601efd0aa" => :el_capitan
-    sha256 "7a613357e497ebf96d96cbb18fd4a29a6e7a3e348296f4286b4a0ef62ec45ca2" => :yosemite
-    sha256 "21e3d01b0d6995f1e3e6fbd1fb8e249920db144c5f6ddd50ad53fa3750d241f4" => :mavericks
+    sha256 "b889891f8186b244161241e9c81d20afad20c31bd592fbf6860658334f314d39" => :high_sierra
+    sha256 "63847bffb4de9fa0cf57a1aea8a6bc1d713b8b0a1243ada27e6dd9d4aa21ccc1" => :sierra
+    sha256 "96b6e1e120bb8be5a051cdca4534d569afe5cae61abdcaf808cdef7af94042af" => :el_capitan
+    sha256 "ae94ee15ddb686a63120bea12e2991a5357711fcfcf0ed5c09f7aa6e2d6c3a4f" => :yosemite
   end
 
   depends_on "jack"
   depends_on "liblo"
 
   def install
-    system "make", "DESTDIR=#{prefix}", "install"
+    system "make", "PREFIX=#{prefix}", "install"
   end
 
   test do
-    system "#{bin}/dirt", "-h"
+    assert_match "Usage", shell_output("#{bin}/dirt --help; :")
   end
 end

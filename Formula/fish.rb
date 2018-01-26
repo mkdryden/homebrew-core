@@ -1,33 +1,43 @@
 class Fish < Formula
   desc "User-friendly command-line shell for UNIX-like operating systems"
   homepage "https://fishshell.com"
-  url "https://fishshell.com/files/2.2.0/fish-2.2.0.tar.gz"
-  sha256 "a76339fd14ce2ec229283c53e805faac48c3e99d9e3ede9d82c0554acfc7b77a"
+  url "https://github.com/fish-shell/fish-shell/releases/download/2.7.1/fish-2.7.1.tar.gz"
+  mirror "https://fishshell.com/files/2.7.1/fish-2.7.1.tar.gz"
+  sha256 "e42bb19c7586356905a58578190be792df960fa81de35effb1ca5a5a981f0c5a"
 
   bottle do
-    revision 1
-    sha256 "bae2a0bf4fb942e18acc911c4169588f6982e717513ad85a8e07c7484af44408" => :el_capitan
-    sha256 "6be5af9624adf408cddf9000f86c133e3e33613c10d9e1af94c9e36dd6df9826" => :yosemite
-    sha256 "6b215dbab60ed14d1fe6766d92aaf55e9e3172192af5f5ee6cf1cdfda48ac4ff" => :mavericks
+    sha256 "b75d873885ecfe3a6e28e8de9a7f292b03c3fb3ebedd3d6ac7a74219148af04e" => :high_sierra
+    sha256 "20e6c49692cef13eaadd8ee94e9831557130d449405fe12bfd9403659865f5b3" => :sierra
+    sha256 "017610f146a161b4383b905a675ac935568a721ed042c3f41f97aaa7f4b5037b" => :el_capitan
   end
 
   head do
     url "https://github.com/fish-shell/fish-shell.git", :shallow => false
 
     depends_on "autoconf" => :build
+    depends_on "automake" => :build
     depends_on "doxygen" => :build
-    depends_on "pcre2"
   end
 
+  depends_on "pcre2"
+
   def install
-    system "autoconf" if build.head?
+    system "autoreconf", "--no-recursive" if build.head?
+
     # In Homebrew's 'superenv' sed's path will be incompatible, so
     # the correct path is passed into configure here.
-    system "./configure", "--prefix=#{prefix}", "SED=/usr/bin/sed"
+    args = %W[
+      --prefix=#{prefix}
+      --with-extra-functionsdir=#{HOMEBREW_PREFIX}/share/fish/vendor_functions.d
+      --with-extra-completionsdir=#{HOMEBREW_PREFIX}/share/fish/vendor_completions.d
+      --with-extra-confdir=#{HOMEBREW_PREFIX}/share/fish/vendor_conf.d
+      SED=/usr/bin/sed
+    ]
+    system "./configure", *args
     system "make", "install"
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     You will need to add:
       #{HOMEBREW_PREFIX}/bin/fish
     to /etc/shells.
@@ -35,11 +45,13 @@ class Fish < Formula
     Then run:
       chsh -s #{HOMEBREW_PREFIX}/bin/fish
     to make fish your default shell.
-
-    If you are upgrading from an older version of fish, you should now run:
-      killall fishd
-    to terminate the outdated fish daemon.
     EOS
+  end
+
+  def post_install
+    (pkgshare/"vendor_functions.d").mkpath
+    (pkgshare/"vendor_completions.d").mkpath
+    (pkgshare/"vendor_conf.d").mkpath
   end
 
   test do

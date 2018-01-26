@@ -1,17 +1,17 @@
 class Pod2man < Formula
-  desc "perl documentation generator"
-  homepage "http://www.eyrie.org/~eagle/software/podlators/"
-  url "https://archives.eyrie.org/software/perl/podlators-4.06.tar.xz"
-  sha256 "11c7b32a8f5d32e28c732927f337697174d6c31714acbdc39c2dd24b0b9e5a21"
+  desc "Perl documentation generator"
+  homepage "https://www.eyrie.org/~eagle/software/podlators/"
+  url "https://archives.eyrie.org/software/perl/podlators-4.10.tar.xz"
+  sha256 "fe2f03ede570af7e9878e7d48757986ca13e978991901e4499df8fc6433836a2"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "e0ae6f201d4771a6539be2026226528f3dba5c4321a73a59ed05971725ab9759" => :el_capitan
-    sha256 "8806729aca1eafefe388f2553d11e97087f5272271f11861c6b5ce2f8782acfa" => :yosemite
-    sha256 "72b70d3540fbbe10b8afa8e4ac366075a45947b340576d0d0ec66f218363100a" => :mavericks
+    sha256 "e92e6b707bc43455372737a425e346a85ef58f02d0f1ba1f9aa3c5a39342e8aa" => :high_sierra
+    sha256 "d14e362b3cd8f1f5b3b949ba80c260e67a7263db05b55aa6917e8d078768fd72" => :sierra
+    sha256 "a1d9b068b86149457b8c99e473ed880120b456826341d540854ffc116d301ead" => :el_capitan
   end
 
-  keg_only :provided_by_osx
+  keg_only :provided_by_macos
 
   def install
     system "perl", "Makefile.PL", "PREFIX=#{prefix}",

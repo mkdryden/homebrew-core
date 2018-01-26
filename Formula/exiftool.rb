@@ -1,27 +1,42 @@
 class Exiftool < Formula
   desc "Perl lib for reading and writing EXIF metadata"
-  homepage "http://www.sno.phy.queensu.ca/~phil/exiftool/index.html"
-  url "http://www.sno.phy.queensu.ca/~phil/exiftool/Image-ExifTool-10.11.tar.gz"
-  sha256 "8cf8b2ec192fdbec5e1946bcf1ed9c7c681e6d16896298bbf7adb8eb59356729"
+  homepage "https://www.sno.phy.queensu.ca/~phil/exiftool/index.html"
+  # Ensure release is tagged production before submitting.
+  # https://www.sno.phy.queensu.ca/~phil/exiftool/history.html
+  url "https://www.sno.phy.queensu.ca/~phil/exiftool/Image-ExifTool-10.55.tar.gz"
+  mirror "https://downloads.sourceforge.net/project/exiftool/Image-ExifTool-10.55.tar.gz"
+  sha256 "029b81a43f423332c00b76b5402fd8f85dee975fad41a734b494faeda4e41f7d"
+  revision 1
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "6ba5c8524d2462d8a6608ebffef9c4e2b8fa923d809c4292c044768a7d9db809" => :el_capitan
-    sha256 "d76b0cd4853457378e8d527419e8cea8a5d8e63487e75a43c943ee943a4caed9" => :yosemite
-    sha256 "28920f699adb9e45ec79a9e504721b7984f1a9c82309bfdf0ad1917480e88057" => :mavericks
+    sha256 "5039ab4f2bc31d2afc9b4cd1fab9ab5d6deec2bf2d1bba0a95f4d54e747dd117" => :high_sierra
+    sha256 "5039ab4f2bc31d2afc9b4cd1fab9ab5d6deec2bf2d1bba0a95f4d54e747dd117" => :sierra
+    sha256 "5039ab4f2bc31d2afc9b4cd1fab9ab5d6deec2bf2d1bba0a95f4d54e747dd117" => :el_capitan
+  end
+
+  devel do
+    url "https://sno.phy.queensu.ca/~phil/exiftool/Image-ExifTool-10.76.tar.gz"
+    mirror "https://downloads.sourceforge.net/project/exiftool/Image-ExifTool-10.76.tar.gz"
+    sha256 "6cce2c517d128e670d678cff51870f6ed365bb3f26d48d67fc85fd8b771d876a"
   end
 
   def install
     # replace the hard-coded path to the lib directory
-    inreplace "exiftool", "$exeDir/lib", "#{libexec}/lib"
+    inreplace "exiftool", "$exeDir/lib", libexec/"lib"
 
     system "perl", "Makefile.PL"
-
+    system "make", "all"
     libexec.install "lib"
     bin.install "exiftool"
+    doc.install Dir["html/*"]
+    man1.install "blib/man1/exiftool.1"
+    man3.install Dir["blib/man3/*"]
   end
 
   test do
-    system "#{bin}/exiftool"
+    test_image = test_fixtures("test.jpg")
+    assert_match %r{MIME Type\s+: image/jpeg},
+                 shell_output("#{bin}/exiftool #{test_image}")
   end
 end

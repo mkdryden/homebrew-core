@@ -1,17 +1,19 @@
 class Chaiscript < Formula
   desc "Easy to use embedded scripting language for C++"
   homepage "http://chaiscript.com/"
-  url "https://github.com/ChaiScript/ChaiScript/archive/v5.7.1.tar.gz"
-  sha256 "333ba4317c318b9a7fa36cb8e93353c477b43fab051f787b4f587f0a82ca6fa3"
+  url "https://github.com/ChaiScript/ChaiScript/archive/v6.0.0.tar.gz"
+  sha256 "ec4b51e30afbc5133675662882c59417a36aa607556ede7ca4736fab2b28c026"
+  head "https://github.com/ChaiScript/ChaiScript.git", :branch => "develop"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "e28fad6a4367dba0f1ae5ab768cc2df103466d59a0db1374a3b7a2cc71abeaeb" => :el_capitan
-    sha256 "604a16f4a3c987ac050ae13327297a0f83d0a3dead05f98a843fdc134084530f" => :yosemite
-    sha256 "ba81c0119afe95219526ae4f197a75fa5d97aa82075ff1222eb525a0084cb4e6" => :mavericks
+    sha256 "9a5b137a9798ab0277ee7f0fa186319ce114ca4c1ef0e52ee61e3c3abb8fb7f2" => :high_sierra
+    sha256 "0f69ef5b0abc817e48108d954c9db79400fda08318b93f2e512fb43183c04921" => :sierra
+    sha256 "eea2d33732098ba3075a9011124d095f13359e182f2bed3e3fc27d47722262a6" => :el_capitan
   end
 
   depends_on "cmake" => :build
+  depends_on :macos => :el_capitan # needs thread-local storage
 
   def install
     system "cmake", ".", *std_cmake_args
@@ -19,17 +21,17 @@ class Chaiscript < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <chaiscript/chaiscript.hpp>
       #include <chaiscript/chaiscript_stdlib.hpp>
       #include <cassert>
       int main() {
-        chaiscript::ChaiScript chai(chaiscript::Std_Lib::library());
+        chaiscript::ChaiScript chai;
         assert(chai.eval<int>("123") == 123);
       }
     EOS
 
-    system ENV.cxx, "test.cpp", "-L#{lib}", "-std=c++11", "-o", "test"
+    system ENV.cxx, "test.cpp", "-L#{lib}", "-std=c++14", "-o", "test"
     system "./test"
   end
 end

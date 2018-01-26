@@ -1,15 +1,16 @@
 class Libgxps < Formula
   desc "GObject based library for handling and rendering XPS documents"
   homepage "https://live.gnome.org/libgxps"
-  url "https://download.gnome.org/sources/libgxps/0.2/libgxps-0.2.3.2.tar.xz"
-  sha256 "6ea5f0ed85665a4e6702e31e38b5f1b2e5ae4f3d316a55d7f1fb1799224b4127"
+  url "https://download.gnome.org/sources/libgxps/0.2/libgxps-0.2.5.tar.xz"
+  sha256 "3e7594c5c9b077171ec9ccd3ff2b4f4c4b29884d26d4f35e740c8887b40199a0"
+  revision 2
 
   bottle do
     cellar :any
-    sha256 "392ca405f7777d56f57afc81dc0ccd60fa5207f33d141c9db4e988cabce0fc89" => :el_capitan
-    sha256 "5fe7d6ed71bf6db8a328022131173ac3f90da1e3eda9c3223efb0dff98aa6c83" => :yosemite
-    sha256 "08fa716142105ddb4686832f85240ed1f8cb3f9aefe67095f37b1728d85b70a3" => :mavericks
-    sha256 "67c8ebbe398a93cd9e3f35d5307b31f47fc6fbdc41482a62c15d5efbca0678c7" => :mountain_lion
+    sha256 "c3e944367cacd85f4a7d2baa0c2d6174d80b586591b9664ef4b36f758ae597f9" => :high_sierra
+    sha256 "4cfffe7346052e0b1e58d90c121a3f5019a5dbc84ba615f2b61d12489b6f83a6" => :sierra
+    sha256 "98487c22daa05bf49ae4975759c71f568b574a55f96cdbdd9834c4d05293155c" => :el_capitan
+    sha256 "234ce5d81d10db1eac54601306fb9889a549559c4e2a87e972782971103ae399" => :yosemite
   end
 
   head do
@@ -38,10 +39,10 @@ class Libgxps < Formula
       "--disable-dependency-tracking",
       "--disable-silent-rules",
       "--enable-man",
-      "--prefix=#{prefix}"
+      "--prefix=#{prefix}",
     ]
 
-    args << "--without-libjpeg" if build.without? "libjpeg"
+    args << "--without-libjpeg" if build.without? "jpeg"
     args << "--without-libtiff" if build.without? "libtiff"
     args << "--without-liblcms2" if build.without? "lcms2"
 
@@ -57,23 +58,23 @@ class Libgxps < Formula
   test do
     mkdir_p [
       (testpath/"Documents/1/Pages/_rels/"),
-      (testpath/"_rels/")
+      (testpath/"_rels/"),
     ]
 
-    (testpath/"FixedDocumentSequence.fdseq").write <<-EOS.undent
+    (testpath/"FixedDocumentSequence.fdseq").write <<~EOS
       <FixedDocumentSequence>
       <DocumentReference Source="/Documents/1/FixedDocument.fdoc"/>
       </FixedDocumentSequence>
       EOS
-    (testpath/"Documents/1/FixedDocument.fdoc").write <<-EOS.undent
+    (testpath/"Documents/1/FixedDocument.fdoc").write <<~EOS
       <FixedDocument>
       <PageContent Source="/Documents/1/Pages/1.fpage"/>
       </FixedDocument>
       EOS
-    (testpath/"Documents/1/Pages/1.fpage").write <<-EOS.undent
+    (testpath/"Documents/1/Pages/1.fpage").write <<~EOS
       <FixedPage Width="1" Height="1" xml:lang="und" />
       EOS
-    (testpath/"_rels/.rels").write <<-EOS.undent
+    (testpath/"_rels/.rels").write <<~EOS
       <Relationships>
       <Relationship Target="/FixedDocumentSequence.fdseq" Type="http://schemas.microsoft.com/xps/2005/06/fixedrepresentation"/>
       </Relationships>
@@ -81,9 +82,9 @@ class Libgxps < Formula
     [
       "_rels/FixedDocumentSequence.fdseq.rels",
       "Documents/1/_rels/FixedDocument.fdoc.rels",
-      "Documents/1/Pages/_rels/1.fpage.rels"
+      "Documents/1/Pages/_rels/1.fpage.rels",
     ].each do |f|
-      (testpath/f).write <<-EOS.undent
+      (testpath/f).write <<~EOS
         <Relationships />
         EOS
     end

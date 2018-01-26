@@ -1,24 +1,24 @@
 class GitTown < Formula
   desc "High-level command-line interface for Git"
   homepage "http://www.git-town.com"
-  url "https://github.com/Originate/git-town/archive/v0.10.0.tar.gz"
-  sha256 "b012ea8736b6446bf73ca758815376eadc019c771fa2bbaaa142eb4f8bf2c971"
+  url "https://github.com/Originate/git-town/archive/v6.0.1.tar.gz"
+  sha256 "c24972d005c708c3b2534113256ce5a6d447c0576013aea3443156858c4bbf4f"
 
-  bottle :unneeded
-
-  conflicts_with "git-extras", :because => "git-town also ships a git-sync binary"
-
-  def install
-    libexec.install Dir["src/*"]
-    bin.write_exec_script Dir["#{libexec}/git-*"]
-    man1.install Dir["man/man1/*"]
+  bottle do
+    cellar :any_skip_relocation
+    sha256 "76f3d3e2cf6ea9b6026cc9521e5be5a5dd81d671a291e47d82763288d6f8ba76" => :high_sierra
+    sha256 "28320a9c1c3c6fee0b1d5fa724130bdc00b65d7f83d91973fc94047601ea1554" => :sierra
+    sha256 "636f1e8d156ef3c91a05a4d2b3a296bc1480ed7832ee478af18c4bdc3e8b9a89" => :el_capitan
   end
 
-  def caveats; <<-EOS.undent
-    To install the Fish shell autocompletions run:
-      `git town install-fish-autocompletion`
-    in your terminal.
-  EOS
+  depends_on "go" => :build
+  depends_on :macos => :el_capitan
+
+  def install
+    ENV["GOPATH"] = buildpath
+    (buildpath/"src/github.com/Originate").mkpath
+    ln_sf buildpath, buildpath/"src/github.com/Originate/git-town"
+    system "go", "build", "-o", bin/"git-town"
   end
 
   test do

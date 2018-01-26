@@ -2,35 +2,26 @@ class X264 < Formula
   desc "H.264/AVC encoder"
   homepage "https://www.videolan.org/developers/x264.html"
   # the latest commit on the stable branch
-  url "https://git.videolan.org/git/x264.git", :revision => "a0cd7d38acb6c31973228ab207e18344920e0aa3"
-  version "r2601"
-
-  devel do
-    # the latest commit on the master branch
-    url "https://git.videolan.org/git/x264.git", :revision => "75992107adcc8317ba2888e3957a7d56f16b5cd4"
-    version "r2638"
-  end
-
+  url "https://git.videolan.org/git/x264.git",
+      :revision => "aaa9aa83a111ed6f1db253d5afa91c5fc844583f"
+  version "r2795"
   head "https://git.videolan.org/git/x264.git"
 
   bottle do
     cellar :any
-    sha256 "010cb2be57c48fb617749e583ad2fbeb148cc522b47d59b407dfb9f10f1f3a2b" => :el_capitan
-    sha256 "e093adfd1af594a592ace82f77bd59748e3040d263e507acd3d8ad2275292e16" => :yosemite
-    sha256 "977c077c5d38c1a5842bda75aec11831f4980ae258556b9bd9ba2184deb11faa" => :mavericks
+    sha256 "1f75c3a57ca3e1b7b528c04725c7d5c32dc1f4b222a289702dd7c057db8e34a2" => :high_sierra
+    sha256 "815cd74498e36ce6df804d22561d99e1ef0d4b5706f28e2850b2ea3f6c6df406" => :sierra
+    sha256 "be983033e47329fe52c1a32b1fcdfac071c495b24f4662584ad6165a0d126f30" => :el_capitan
+    sha256 "1a7be693b06e4219ef7721586fce481065433759d0dc9ee3b6caab2e776317c4" => :yosemite
   end
-
-  depends_on "yasm" => :build
 
   option "with-10-bit", "Build a 10-bit x264 (default: 8-bit)"
-  option "with-mp4=", "Select mp4 output: none (default), l-smash or gpac"
+  option "with-l-smash", "Build CLI with l-smash mp4 output"
+
+  depends_on "yasm" => :build
+  depends_on "l-smash" => :optional
 
   deprecated_option "10-bit" => "with-10-bit"
-
-  case ARGV.value "with-mp4"
-  when "l-smash" then depends_on "l-smash"
-  when "gpac" then depends_on "gpac"
-  end
 
   def install
     args = %W[
@@ -39,11 +30,7 @@ class X264 < Formula
       --enable-static
       --enable-strip
     ]
-    if Formula["l-smash"].installed?
-      args << "--disable-gpac"
-    elsif Formula["gpac"].installed?
-      args << "--disable-lsmash"
-    end
+    args << "--disable-lsmash" if build.without? "l-smash"
     args << "--bit-depth=10" if build.with? "10-bit"
 
     system "./configure", *args
@@ -51,7 +38,7 @@ class X264 < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <stdint.h>
       #include <x264.h>
 
@@ -64,7 +51,7 @@ class X264 < Formula
           return 0;
       }
     EOS
-    system ENV.cc, "-lx264", "test.c", "-o", "test"
+    system ENV.cc, "-L#{lib}", "-lx264", "test.c", "-o", "test"
     system "./test"
   end
 end

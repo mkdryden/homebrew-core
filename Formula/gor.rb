@@ -1,38 +1,28 @@
-require "language/go"
-
 class Gor < Formula
   desc "Real-time HTTP traffic replay tool written in Go"
-  homepage "https://github.com/buger/gor/"
-  url "https://github.com/buger/gor/archive/v0.10.1.tar.gz"
-  sha256 "283ca037a782844df42a0352c072efb558ffca3dc76f88a6317eca0d44ab1a5c"
-  head "https://github.com/buger/gor.git"
+  homepage "https://gortool.com"
+  url "https://github.com/buger/goreplay.git",
+      :tag => "v0.16.1",
+      :revision => "652e589e2b71d5dfa4d2a70431d21b108a5e471e"
+  head "https://github.com/buger/goreplay.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "8f552482322a1f17d656f4079509cfe4e2ed44a02d0270bc842fb7d71c1140ed" => :el_capitan
-    sha256 "33c2c144336309b25f877c18d5daa69b7948ad20c505da4832135d77629ee880" => :yosemite
-    sha256 "06d1905b52b0d9b6ea0ee983e4d1981a9070ffe06b80b2488ef1fe4e2f654522" => :mavericks
+    sha256 "204f649341531e36b220221f6dd76b3b637ea4880720111cddda6bb5224be5ed" => :high_sierra
+    sha256 "78689bec0668532515a42e5274733ad296998e0e623bdbd3bbd66d2d0fb8f1e7" => :sierra
+    sha256 "dd3721a8686fb9e08074a6787d2bbefc5d3f3a585b99e52f40734a4516564754" => :el_capitan
+    sha256 "5263cd24fee9bae85eb69aafe887865642e039236e810339f84aa546e6d444d7" => :yosemite
   end
 
   depends_on "go" => :build
 
-  go_resource "github.com/bitly/go-hostpool" do
-    url "https://github.com/bitly/go-hostpool.git",
-      :revision => "d0e59c22a56e8dadfed24f74f452cea5a52722d2"
-  end
-
-  go_resource "github.com/buger/elastigo" do
-    url "https://github.com/buger/elastigo.git",
-      :revision => "23fcfd9db0d8be2189a98fdab77a4c90fcc3a1e9"
-  end
-
   def install
     ENV["GOPATH"] = buildpath
-    mkdir_p buildpath/"src/github.com/buger/"
-    ln_sf buildpath, buildpath/"src/github.com/buger/gor"
-    Language::Go.stage_deps resources, buildpath/"src"
-
-    system "go", "build", "-o", "#{bin}/gor", "-ldflags", "-X main.VERSION \"#{version}\""
+    (buildpath/"src/github.com/buger/goreplay").install buildpath.children
+    cd "src/github.com/buger/goreplay" do
+      system "go", "build", "-o", bin/"gor", "-ldflags", "-X main.VERSION=#{version}"
+      prefix.install_metafiles
+    end
   end
 
   test do

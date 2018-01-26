@@ -1,30 +1,47 @@
 class Hyperscan < Formula
   desc "High-performance regular expression matching library"
   homepage "https://01.org/hyperscan"
-  url "https://github.com/01org/hyperscan/archive/v4.1.0.tar.gz"
-  sha256 "b8de3f59c2bd1a8765a5aca5dfdd062766cef67218aedf63df2c92766524b3c1"
+  url "https://github.com/01org/hyperscan/archive/v4.7.0.tar.gz"
+  sha256 "a0c07b48ae80903001ab216b03fdf6359bfd5777b2976de728947725b335e941"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "2b329383f8299ac45263713545c087dcc1182a8e3d665ea41500799e0c88ce90" => :el_capitan
-    sha256 "f0e8559d67e926c9afaed0ea037d70643073673f027c21817679a2ca26fd4827" => :yosemite
-    sha256 "13c9cb6d0aa29dd4039148a7ac06a6dadc9c89d72ff5b2fa42a29d1d3833fd32" => :mavericks
+    cellar :any
+    sha256 "7114cdf8a7e154d861a21a9a3dab22639875ed40e5398021bd73987a8ef263b9" => :high_sierra
+    sha256 "cd7714c9f44d58be98bdc64d3294bcd40cfb070bd7ce6af2c93359d33d4d1285" => :sierra
+    sha256 "769a4578b1776d344622e8a3d45e48d927b67fea7cda7dbe94160d39abae8807" => :el_capitan
   end
 
-  depends_on :python => :build if MacOS.version <= :snow_leopard
+  option "with-debug", "Build with debug symbols"
+
+  depends_on "python" => :build if MacOS.version <= :snow_leopard
   depends_on "boost" => :build
   depends_on "ragel" => :build
   depends_on "cmake" => :build
+  depends_on "pkg-config" => :build
 
   def install
     mkdir "build" do
-      system "cmake", "..", *std_cmake_args
+      args = std_cmake_args << "-DBUILD_STATIC_AND_SHARED=on"
+
+      if build.with? "debug"
+        args -= %w[
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_C_FLAGS_RELEASE=-DNDEBUG
+          -DCMAKE_CXX_FLAGS_RELEASE=-DNDEBUG
+        ]
+        args += %w[
+          -DCMAKE_BUILD_TYPE=Debug
+          -DDEBUG_OUTPUT=on
+        ]
+      end
+
+      system "cmake", "..", *args
       system "make", "install"
     end
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <stdio.h>
       #include <hs/hs.h>
       int main()

@@ -1,19 +1,14 @@
 class Tgui < Formula
   desc "GUI library for use with sfml"
   homepage "https://tgui.eu"
-  url "https://github.com/texus/TGUI/archive/v0.6.9.tar.gz"
-  sha256 "9bbde01e918e950e484d75b3eaeb0c77f38180865f3cfcb188a56e77a62db8bb"
+  url "https://github.com/texus/TGUI/archive/0.7.6.tar.gz"
+  sha256 "98ad67451e40dd7d9fed157802391738f9eb42a7c552c200161c0cb1aca40b02"
 
   bottle do
     cellar :any
-    sha256 "d88822c09b3c9fa62e715ea85195895b7bcde852d00873241f2f52e207756176" => :el_capitan
-    sha256 "6d77ff9accd5e3697c521903c8f434cab29f82353d0d61dbcb70809c837c3b64" => :yosemite
-    sha256 "584391c814f3c27d4dfbb6da6eb1494b3972fe0c9c60ed7b4c055d55e66ab48d" => :mavericks
-  end
-
-  devel do
-    url "https://github.com/texus/TGUI/archive/v0.7-alpha2.tar.gz"
-    sha256 "12da819d3e396a3d3369051e3b40eb1c8f660a13dd5648706235aa282f415e4a"
+    sha256 "0704075771f1b1a90a24a3f31f8892aa899fa2ead2b3b26f6518fe350c245933" => :high_sierra
+    sha256 "897c59a552dc8dc164dc02be3da0c7b48d7f496b780eb8c397559d90ae734549" => :sierra
+    sha256 "779e1add67f739fff76aaa5714d3110278e09192b7aa2bd9abdf7cc6de5eda50" => :el_capitan
   end
 
   depends_on "cmake" => :build
@@ -25,7 +20,7 @@ class Tgui < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <TGUI/TGUI.hpp>
       int main()
       {
@@ -35,7 +30,7 @@ class Tgui < Formula
       }
     EOS
     system ENV.cxx, "test.cpp", "-std=c++1y", "-I#{include}",
-      "-L#{lib}", "-L#{HOMEBREW_PREFIX}/lib",
+      "-L#{lib}", "-L#{Formula["sfml"].opt_lib}",
       "-ltgui", "-lsfml-graphics", "-lsfml-system", "-lsfml-window",
       "-o", "test"
     system "./test"

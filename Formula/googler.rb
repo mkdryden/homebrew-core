@@ -1,23 +1,30 @@
 class Googler < Formula
   desc "Google Search and News from the command-line"
   homepage "https://github.com/jarun/googler"
-  url "https://github.com/jarun/googler/archive/v2.2.tar.gz"
-  sha256 "5e0948e775bdfcef1db94a209778a23844a5cef4ef3aa2c12b1dadf75311db7b"
+  url "https://github.com/jarun/googler/archive/v3.4.tar.gz"
+  sha256 "187d9369ed0d7d2db118a0144ccbc54f18a1b8e7ef24921571b80dbaaad726aa"
+  revision 1
+  head "https://github.com/jarun/googler.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "073bead051d86b4960bbf867838f4477cc6297c4f7ccd8455e4c37ca28d60250" => :el_capitan
-    sha256 "598f00f3c84a61b95ff7c5ca3c7d1da61e7d1534e029049a293b5059c4575f2b" => :yosemite
-    sha256 "28e563fb4a51613c1c815dc43c38e9b6f221e2ae53cb42d2e91665eaef7fdec6" => :mavericks
+    sha256 "4a89cfbe31f679fad1a15cc900718ea76246e7802718e62e6fc7b14c46ef2dc5" => :high_sierra
+    sha256 "4a89cfbe31f679fad1a15cc900718ea76246e7802718e62e6fc7b14c46ef2dc5" => :sierra
+    sha256 "4a89cfbe31f679fad1a15cc900718ea76246e7802718e62e6fc7b14c46ef2dc5" => :el_capitan
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python3"
 
   def install
+    system "make", "disable-self-upgrade"
     system "make", "install", "PREFIX=#{prefix}"
+    bash_completion.install "auto-completion/bash/googler-completion.bash"
+    fish_completion.install "auto-completion/fish/googler.fish"
+    zsh_completion.install "auto-completion/zsh/_googler"
   end
 
   test do
-    assert_match /Homebrew/, shell_output("PYTHONIOENCODING=utf-8 #{bin}/googler Homebrew </dev/null")
+    ENV["PYTHONIOENCODING"] = "utf-8"
+    assert_match "Homebrew", shell_output("#{bin}/googler --noprompt Homebrew")
   end
 end

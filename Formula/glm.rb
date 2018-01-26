@@ -1,16 +1,17 @@
 class Glm < Formula
   desc "C++ mathematics library for graphics software"
-  homepage "http://glm.g-truc.net/"
-  url "https://github.com/g-truc/glm/releases/download/0.9.7.4/glm-0.9.7.4.zip"
-  sha256 "d48a0d732776b0fbfd17f01c830a08b50f07a3226f0cab95fcca5591982a43f2"
+  homepage "https://glm.g-truc.net/"
+  url "https://github.com/g-truc/glm/releases/download/0.9.8.5/glm-0.9.8.5.zip"
+  sha256 "9f9f520ec7fb8c20c69d6b398ed928a2448c6a3245cbedb8631a56a987c38660"
 
   head "https://github.com/g-truc/glm.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "29ff8490d5ea5ee326e7abfe1f293ad1b1eed335e7ae2a1f8bb8ae789c6ac704" => :el_capitan
-    sha256 "36bc7186db700587e50a7a3a43455c4e9e6d66a6081d53353265b8fb09b0e8a3" => :yosemite
-    sha256 "81b40ac922519c615c57703a94930ec577353d9327303e314fc6537b9615ded2" => :mavericks
+    sha256 "d4424acb044d7f1de566ab1709d6107ef17f30198a31c988cc80ab80903c257a" => :high_sierra
+    sha256 "44c8742891bf12707b9d3024e4dee0b371e7d91fbd4da12f6e1d21242db6acd5" => :sierra
+    sha256 "44c8742891bf12707b9d3024e4dee0b371e7d91fbd4da12f6e1d21242db6acd5" => :el_capitan
+    sha256 "44c8742891bf12707b9d3024e4dee0b371e7d91fbd4da12f6e1d21242db6acd5" => :yosemite
   end
 
   option "with-doxygen", "Build documentation"
@@ -33,7 +34,7 @@ class Glm < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <glm/vec2.hpp>// glm::vec2
       int main()
       {

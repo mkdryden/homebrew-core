@@ -1,41 +1,38 @@
 class Tbb < Formula
   desc "Rich and complete approach to parallelism in C++"
   homepage "https://www.threadingbuildingblocks.org/"
-  url "https://www.threadingbuildingblocks.org/sites/default/files/software_releases/source/tbb44_20160128oss_src_0.tgz"
-  sha256 "8d256bf13aef1b0726483af9f955918f04e3de4ebbf6908aa1b0c94cbe784ad7"
-  version "4.4-20160128"
+  url "https://github.com/01org/tbb/archive/2018_U2.tar.gz"
+  version "2018_U2"
+  sha256 "78bb9bae474736d213342f01fe1a6d00c6939d5c75b367e2e43e7bf29a6d8eca"
 
   bottle do
-    cellar :any
-    sha256 "0cf0e393e5a6e1a48fae36e5c3f90bfd23030c9ba190280c1f7eb58ee3890199" => :el_capitan
-    sha256 "e1c15f6313b69d6b214d4dbe6e8d79b53179f3ec649ac51dcb775a2eabccadfb" => :yosemite
-    sha256 "33d6f509064574263767772e3563a1466e4a9c2208b94ae74ef51f1bae694b32" => :mavericks
+    sha256 "ac31698064d5177e6d72f8f57a8b359b523b4f1cc824d16bdc1ef9c6ed654361" => :high_sierra
+    sha256 "1f200261fcf061bb022503be5cf5e6a69b5c359c64ea475a0ff7698035909d9e" => :sierra
+    sha256 "1b3f01c4baee65f4c321023646cf03ef5cae1aa7dd2ba8b1bfa069bda19c4777" => :el_capitan
   end
 
   # requires malloc features first introduced in Lion
   # https://github.com/Homebrew/homebrew/issues/32274
   depends_on :macos => :lion
-
-  option :cxx11
+  depends_on "python" if MacOS.version <= :snow_leopard
+  depends_on "swig" => :build
 
   def install
-    # Intel sets varying O levels on each compile command.
-    ENV.no_optimization
-
-    args = %W[tbb_build_prefix=BUILDPREFIX]
-
-    if build.cxx11?
-      ENV.cxx11
-      args << "cpp0x=1" << "stdlib=libc++"
-    end
+    compiler = (ENV.compiler == :clang) ? "clang" : "gcc"
+    args = %W[tbb_build_prefix=BUILDPREFIX compiler=#{compiler}]
 
     system "make", *args
     lib.install Dir["build/BUILDPREFIX_release/*.dylib"]
     include.install "include/tbb"
+
+    cd "python" do
+      ENV["TBBROOT"] = prefix
+      system "python", *Language::Python.setup_install_args(prefix)
+    end
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <tbb/task_scheduler_init.h>
       #include <iostream>
 
@@ -45,7 +42,7 @@ class Tbb < Formula
         return 0;
       }
     EOS
-    system ENV.cxx, "test.cpp", "-ltbb", "-o", "test"
+    system ENV.cxx, "test.cpp", "-L#{lib}", "-ltbb", "-o", "test"
     system "./test"
   end
 end

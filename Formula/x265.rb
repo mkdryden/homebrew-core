@@ -1,33 +1,55 @@
 class X265 < Formula
   desc "H.265/HEVC encoder"
   homepage "http://x265.org"
-  url "https://bitbucket.org/multicoreware/x265/downloads/x265_1.9.tar.gz"
-  mirror "https://mirrors.kernel.org/debian/pool/main/x/x265/x265_1.9.orig.tar.gz"
-  sha256 "3e4654133ed957a98708fdb4cb9a154d9e80922b84e26e43fc462a101c5b15c8"
-
+  url "https://bitbucket.org/multicoreware/x265/downloads/x265_2.6.tar.gz"
+  sha256 "1bf0036415996af841884802161065b9e6be74f5f6808ac04831363e2549cdbf"
   head "https://bitbucket.org/multicoreware/x265", :using => :hg
 
   bottle do
     cellar :any
-    sha256 "2e13c1ef59fd23193c577de8819858fcebe755e40c0448bdee423a2bce0e6e4b" => :el_capitan
-    sha256 "962bad9f05baa67d0e911ce7eb08cc92ad77a6d8124a61af5aa03467cc3cd9f3" => :yosemite
-    sha256 "3b889f2c294fd916c51699eed1d3c80f9acb28b25d07ebcd71f36ed6410eeabb" => :mavericks
+    sha256 "a108074ba899ceb9ec7ee2254e7ec564d2629413f310f71da4e3fcf451bfb92e" => :high_sierra
+    sha256 "49a58ac4ba4965bd3fafc3a188064c2b29573cb3e991b949198175c72bf223c2" => :sierra
+    sha256 "868310a95be1b8ad9e784a111fd41ec4a2ac4547f437e7cf5920f391dabdc454" => :el_capitan
   end
 
-  option "with-16-bit", "Build a 16-bit x265 (default: 8-bit)"
-
-  deprecated_option "16-bit" => "with-16-bit"
-
-  depends_on "yasm" => :build
   depends_on "cmake" => :build
+  depends_on "yasm" => :build
   depends_on :macos => :lion
 
   def install
-    args = std_cmake_args
-    args << "-DHIGH_BIT_DEPTH=ON" if build.with? "16-bit"
+    # Build based off the script at ./build/linux/multilib.sh
+    args = std_cmake_args + %w[
+      -DLINKED_10BIT=ON
+      -DLINKED_12BIT=ON
+      -DEXTRA_LINK_FLAGS=-L.
+      -DEXTRA_LIB=x265_main10.a;x265_main12.a
+    ]
+    high_bit_depth_args = std_cmake_args + %w[
+      -DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF
+      -DENABLE_SHARED=OFF -DENABLE_CLI=OFF
+    ]
+    (buildpath/"8bit").mkpath
 
-    system "cmake", "source", *args
-    system "make", "install"
+    mkdir "10bit" do
+      system "cmake", buildpath/"source", *high_bit_depth_args
+      system "make"
+      mv "libx265.a", buildpath/"8bit/libx265_main10.a"
+    end
+
+    mkdir "12bit" do
+      system "cmake", buildpath/"source", "-DMAIN12=ON", *high_bit_depth_args
+      system "make"
+      mv "libx265.a", buildpath/"8bit/libx265_main12.a"
+    end
+
+    cd "8bit" do
+      system "cmake", buildpath/"source", *args
+      system "make"
+      mv "libx265.a", "libx265_main.a"
+      system "libtool", "-static", "-o", "libx265.a", "libx265_main.a",
+                        "libx265_main10.a", "libx265_main12.a"
+      system "make", "install"
+    end
   end
 
   test do

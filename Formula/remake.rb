@@ -1,24 +1,25 @@
 class Remake < Formula
   desc "GNU Make with improved error handling, tracing, and a debugger"
-  homepage "http://bashdb.sourceforge.net/remake/"
-  url "https://downloads.sourceforge.net/project/bashdb/remake/4.1%2Bdbg-0.91/remake-4.1%2Bdbg0.91.tar.bz2"
-  sha256 "02a1c62b47e99376701f8d99b45fffdf44e8512ecf92794fc6bf5d6779900dfb"
+  homepage "https://bashdb.sourceforge.io/remake"
+  url "https://downloads.sourceforge.net/project/bashdb/remake/4.2%2Bdbg-1.4/remake-4.2.1%2Bdbg-1.4.tar.bz2"
+  version "4.2.1-1.4"
+  sha256 "55df3b2586ab90ac0983a049f1911c4a1d9b68f7715c69768fbb0405e96a0e7b"
 
   bottle do
-    sha256 "6be98927b7043f275c945e57feec44a7ae7d6b7420e2925b2243a9f92673ee68" => :el_capitan
-    sha256 "521c4370d42f1ceca81eb9b665a8886162f3c1ee7497ec0a66a9edc15c183502" => :yosemite
-    sha256 "260d1ac2aac0f356a2548152d70a0cc4c68817fdc5f59fb505454aca7076a236" => :mavericks
-    sha256 "685c98bcbdc8a9c4586802c9d73b895c0ff0a91df2ae3ee78dab57d7cfdba68e" => :mountain_lion
+    sha256 "3d3ab44424002f01faba037c83e6d0bf19f9477c71ebd63191f565f87574238e" => :high_sierra
+    sha256 "6b8bcf13f7d7b879c005fa90e2d0afeade5ebf04887330aa5905bde2923e7186" => :sierra
+    sha256 "ea8af9ddc7a22e0708ea44345c78fd0c900cef791096cc1091157580de152297" => :el_capitan
   end
 
   def install
-    system "./configure", "--disable-debug", "--disable-dependency-tracking",
+    system "./configure", "--disable-debug",
+                          "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make", "install"
   end
 
   test do
-    (testpath/"Makefile").write <<-EOS.undent
+    (testpath/"Makefile").write <<~EOS
       all:
       \techo "Nothing here, move along"
     EOS

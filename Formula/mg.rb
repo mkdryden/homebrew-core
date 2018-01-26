@@ -1,16 +1,17 @@
 class Mg < Formula
   desc "Small Emacs-like editor"
   homepage "https://devio.us/~bcallah/mg/"
-  url "https://devio.us/~bcallah/mg/mg-20160103.tar.gz"
-  sha256 "4abd059ba3e0d59626104a21812ae33a37ee1f6ddaafdb33511f38d21057fae6"
+  url "https://devio.us/~bcallah/mg/mg-20170917.tar.gz"
+  sha256 "def9237a89ec6a14241abaf12714bc5fcb3b0e2f8d9d466ff7561628d35b7ff1"
 
   bottle do
     cellar :any_skip_relocation
-    revision 1
-    sha256 "5ed12a2bdce7b76ff2f336a0dcc1ec1be95cf8194cd253600d6edde4de51ac36" => :el_capitan
-    sha256 "1feeace7595726f96687dc2ee0bf2836ac9aaba982d39306f32703047340827d" => :yosemite
-    sha256 "f199621c41a7f6af908017610eac17f5d81da652ceeab148560afb96c8ba9ccc" => :mavericks
+    sha256 "dd9c1d6d792d7c9ba725c46e8247053c6fcaa5af5f6e5807d91a7219bf72cff0" => :high_sierra
+    sha256 "279095340e89cd20a28008b3db888d6dbe7fa0d0d023f95ee7c71ad07f22aef3" => :sierra
+    sha256 "8e2193d88c0ae77696b0612ce830a7fbdf73aa633d0680ec8c84a9d71a30c529" => :el_capitan
   end
+
+  depends_on :macos => :yosemite # older versions don't support fstatat(2)
 
   conflicts_with "mg3a", :because => "both install `mg` binaries"
 
@@ -19,7 +20,7 @@ class Mg < Formula
   end
 
   test do
-    (testpath/"command.sh").write <<-EOS.undent
+    (testpath/"command.sh").write <<~EOS
       #!/usr/bin/expect -f
       set timeout -1
       spawn #{bin}/mg

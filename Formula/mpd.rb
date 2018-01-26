@@ -1,25 +1,17 @@
 class Mpd < Formula
   desc "Music Player Daemon"
-  homepage "http://www.musicpd.org/"
-  revision 1
-
-  stable do
-    url "http://www.musicpd.org/download/mpd/0.19/mpd-0.19.14.tar.xz"
-    sha256 "2fd23805132e5002a4d24930001a7c7d3aaf55e3bd0cd71af5385895160e99e7"
-
-    # Fixes build because of missing patch on 0.19 branch
-    patch :DATA
-  end
+  homepage "https://www.musicpd.org/"
+  url "https://www.musicpd.org/download/mpd/0.20/mpd-0.20.15.tar.xz"
+  sha256 "c69c4f67e665380ea3bbde6cff8958edc85f7cd40e7918ae5ce0a2184ca9eb40"
 
   bottle do
-    cellar :any
-    sha256 "40f3fcd1bd8e6f801cb19f56bc5d8bb5afcc277c4b592209e52c97fd6877065e" => :el_capitan
-    sha256 "e9003be255c7df1063ed662a2fdf434d7bc43997766ba43c9ad9fab20d3fa2ed" => :yosemite
-    sha256 "8c2826daf44d99a76dfabcaa5955a0d527da57cc345d461da6a2b2e7b7c9f515" => :mavericks
+    sha256 "fe1b8a4e05c0eb884392977a92e2b60711deaebdbdc30dcf79245d338195d398" => :high_sierra
+    sha256 "e77ac62afe771d9f4c206e9938a9cbb5a3099a318b45cd20d79354d1439b554f" => :sierra
+    sha256 "c01a81a89ccc5d8e205177b40213eeb48f9a5ab953ee2013415fb410aabd7a00" => :el_capitan
   end
 
   head do
-    url "git://git.musicpd.org/master/mpd.git"
+    url "https://github.com/MusicPlayerDaemon/MPD.git"
     depends_on "autoconf" => :build
     depends_on "automake" => :build
   end
@@ -33,6 +25,8 @@ class Mpd < Formula
   option "with-yajl", "Build with yajl support (for playing from soundcloud)"
   option "with-opus", "Build with opus support (for Opus encoding and decoding)"
   option "with-libmodplug", "Build with modplug support (for decoding modules supported by MODPlug)"
+  option "with-pulseaudio", "Build with PulseAudio support (for sending audio output to a PulseAudio sound server)"
+  option "with-upnp", "Build with upnp database plugin support"
 
   deprecated_option "with-vorbis" => "with-libvorbis"
 
@@ -66,6 +60,12 @@ class Mpd < Formula
   depends_on "libnfs" => :optional
   depends_on "mad" => :optional
   depends_on "libmodplug" => :optional  # MODPlug decoder
+  depends_on "pulseaudio" => :optional
+  depends_on "libao" => :optional       # Output to libao
+  if build.with? "upnp"
+    depends_on "expat"
+    depends_on "libupnp"
+  end
 
   def install
     # mpd specifies -std=gnu++0x, but clang appears to try to build
@@ -88,8 +88,6 @@ class Mpd < Formula
     ]
 
     args << "--disable-mad" if build.without? "mad"
-    args << "--disable-curl" if MacOS.version <= :leopard
-
     args << "--enable-zzip" if build.with? "libzzip"
     args << "--enable-lastfm" if build.with? "lastfm"
     args << "--disable-lame-encoder" if build.without? "lame"
@@ -97,10 +95,16 @@ class Mpd < Formula
     args << "--enable-vorbis-encoder" if build.with? "libvorbis"
     args << "--enable-nfs" if build.with? "libnfs"
     args << "--enable-modplug" if build.with? "libmodplug"
+    args << "--enable-pulse" if build.with? "pulseaudio"
+    args << "--enable-ao" if build.with? "libao"
+    if build.with? "upnp"
+      args << "--enable-upnp"
+      args << "--enable-expat"
+    end
 
     system "./configure", *args
     system "make"
-    ENV.j1 # Directories are created in parallel, so let's not do that
+    ENV.deparallelize # Directories are created in parallel, so let's not do that
     system "make", "install"
 
     (etc/"mpd").install "doc/mpdconf.example" => "mpd.conf"
@@ -108,7 +112,7 @@ class Mpd < Formula
 
   plist_options :manual => "mpd"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -126,6 +130,8 @@ class Mpd < Formula
         <true/>
         <key>KeepAlive</key>
         <true/>
+        <key>ProcessType</key>
+        <string>Interactive</string>
     </dict>
     </plist>
     EOS
@@ -139,24 +145,10 @@ class Mpd < Formula
 
     begin
       assert_match "OK MPD", shell_output("curl localhost:6600")
+      assert_match "ACK", shell_output("(sleep 2; echo playid foo) | nc localhost 6600")
     ensure
       Process.kill "SIGINT", pid
       Process.wait pid
     end
   end
 end
-
-__END__
-diff --git a/src/notify.hxx b/src/notify.hxx
-index 3e62a01..c96390b 100644
---- a/src/notify.hxx
-+++ b/src/notify.hxx
-@@ -28,7 +28,7 @@ struct notify {
-	Cond cond;
-	bool pending;
-
--#if !defined(WIN32) && !defined(__NetBSD__) && !defined(__BIONIC__)
-+#ifdef __GLIBC__
-	constexpr
- #endif
-	notify():pending(false) {}

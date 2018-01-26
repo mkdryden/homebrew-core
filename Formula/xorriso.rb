@@ -1,25 +1,30 @@
 class Xorriso < Formula
   desc "ISO9660+RR manipulation tool"
   homepage "https://www.gnu.org/software/xorriso/"
-  url "http://ftpmirror.gnu.org/xorriso/xorriso-1.4.0.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/xorriso/xorriso-1.4.0.tar.gz"
-  sha256 "0bd1e085015b28c24f57697d6def2fe84517967dc417554c0c3ccf1685ed0e56"
+  url "https://ftp.gnu.org/gnu/xorriso/xorriso-1.4.8.tar.gz"
+  mirror "https://ftpmirror.gnu.org/xorriso/xorriso-1.4.8.tar.gz"
+  sha256 "ec82069e04096cd9c18be9b12b87b750ade0b5e37508978feabcde36b2278481"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "9166d527cb3b26aadf5a7304e4110e38c30e34e94721c120ea1334205f1d275e" => :el_capitan
-    sha256 "99291dcf6826ec15b82c9d32ddae8279244f304661f23e1086f69392ce14f34c" => :yosemite
-    sha256 "611ac7bb03593af3216d772b0d4d0b3b5797257dd656b3eb04db3da0f7582f7d" => :mavericks
-    sha256 "88442ed4676b021a09bafeef4cd3b40a7e822bb7b4239a1de0518360eefbd5a6" => :mountain_lion
+    sha256 "c7f85c8568eda3ebd6679c20fcc637abaa92993d66ad1818bf9c21a9918a1c46" => :high_sierra
+    sha256 "ec7b002127b53ef237e0c7004e567b0b15ee23deca813ae9ba93dbbc8e9d37d5" => :sierra
+    sha256 "050eba14607cb39d805ac97cd2869f59e617b01b537c4ee4d7189a6a2bb11d46" => :el_capitan
   end
 
   def install
     system "./configure", "--disable-debug", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
-    system "make", "install"
+    system "make"
+
+    # `make install` has to be deparallelized due to the following error:
+    #   mkdir: /usr/local/Cellar/xorriso/1.4.2/bin: File exists
+    #   make[1]: *** [install-binPROGRAMS] Error 1
+    # Reported 14 Jun 2016: https://lists.gnu.org/archive/html/bug-xorriso/2016-06/msg00003.html
+    ENV.deparallelize { system "make", "install" }
   end
 
   test do
-    system "#{bin}/xorriso", "--help"
+    system bin/"xorriso", "--help"
   end
 end

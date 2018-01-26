@@ -3,163 +3,179 @@ require "language/go"
 class Acmetool < Formula
   desc "Automatic certificate acquisition tool for ACME (Let's Encrypt)"
   homepage "https://github.com/hlandau/acme"
-  url "https://github.com/hlandau/acme/archive/v0.0.49.tar.gz"
-  sha256 "2132c5e461d0be85932365da28f12a2fef0f820e0674200b91c48dcf1f49c56b"
+  url "https://github.com/hlandau/acme.git",
+      :tag => "v0.0.63",
+      :revision => "92d19257791c249fff272bf381020d374fa1c484"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "25548d779aa3f94534ebe01637887b627d8f25d3e4ecc9b31504934f825044e9" => :el_capitan
-    sha256 "03ee95de4a237e11a523380789dfc777aeab36dd4a5bf2eb960e58d6bb6bdeb5" => :yosemite
-    sha256 "c1316f4f3694bff1dff55965d79d24345fa4d83b011e1c9081d937c9023a7798" => :mavericks
+    sha256 "fb8bb06957147d6fa2f03b471874d13a04628d0553bbb3c67c79222ce4371430" => :high_sierra
+    sha256 "87759321bc4f2a73ac20c335a3496048ee278afa865029a2172c0cf5df0b8326" => :sierra
+    sha256 "ea5417bd22944257a11424c93e8a047620f02142a340eb6c8f6b86c7daf31dd0" => :el_capitan
   end
 
   depends_on "go" => :build
 
   go_resource "github.com/alecthomas/template" do
     url "https://github.com/alecthomas/template.git",
-      :revision => "14fd436dd20c3cc65242a9f396b61bfc8a3926fc"
+        :revision => "a0175ee3bccc567396460bf5acd36800cb10c49c"
   end
 
   go_resource "github.com/alecthomas/units" do
     url "https://github.com/alecthomas/units.git",
-      :revision => "2efee857e7cfd4f3d0138cc3cbb1b4966962b93a"
+        :revision => "2efee857e7cfd4f3d0138cc3cbb1b4966962b93a"
   end
 
   go_resource "github.com/coreos/go-systemd" do
     url "https://github.com/coreos/go-systemd.git",
-      :revision => "7b2428fec40033549c68f54e26e89e7ca9a9ce31"
+        :revision => "cc4f39464dc797b91c8025330de585294c2a6950"
   end
 
-  go_resource "github.com/hlandau/degoutils" do
-    url "https://github.com/hlandau/degoutils.git",
-      :revision => "16c74ccb617a3a6c45ff5631cb4679d10b20ad2c"
+  go_resource "github.com/hlandau/buildinfo" do
+    url "https://github.com/hlandau/buildinfo.git",
+        :revision => "337a29b5499734e584d4630ce535af64c5fe7813"
+  end
+
+  go_resource "github.com/hlandau/dexlogconfig" do
+    url "https://github.com/hlandau/dexlogconfig.git",
+        :revision => "244f29bd260884993b176cd14ef2f7631f6f3c18"
+  end
+
+  go_resource "github.com/hlandau/goutils" do
+    url "https://github.com/hlandau/goutils.git",
+        :revision => "0cdb66aea5b843822af6fdffc21286b8fe8379c4"
   end
 
   go_resource "github.com/hlandau/xlog" do
     url "https://github.com/hlandau/xlog.git",
-      :revision => "c18de5703f79e62275a7282dc8979ff6c2d5f7d8"
-  end
-
-  go_resource "github.com/hlandauf/gspt" do
-    url "https://github.com/hlandauf/gspt.git",
-      :revision => "25f3bd3f5948489aa5f31c949310ae9f2b0e956c"
-  end
-
-  go_resource "github.com/hlandauf/pb" do
-    url "https://github.com/hlandauf/pb.git",
-      :revision => "0c1cdefd84b3b1937c4e54309f3a817d9c683bab"
+        :revision => "197ef798aed28e08ed3e176e678fda81be993a31"
   end
 
   go_resource "github.com/jmhodges/clock" do
     url "https://github.com/jmhodges/clock.git",
-      :revision => "3c4ebd218625c9364c33db6d39c276d80c3090c6"
+        :revision => "880ee4c335489bc78d01e4d0a254ae880734bc15"
   end
 
   go_resource "github.com/mattn/go-isatty" do
     url "https://github.com/mattn/go-isatty.git",
-      :revision => "56b76bdf51f7708750eac80fa38b952bb9f32639"
+        :revision => "6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c"
+  end
+
+  go_resource "github.com/mattn/go-runewidth" do
+    url "https://github.com/mattn/go-runewidth.git",
+        :revision => "97311d9f7767e3d6f422ea06661bc2c7a19e8a5d"
   end
 
   go_resource "github.com/mitchellh/go-wordwrap" do
     url "https://github.com/mitchellh/go-wordwrap.git",
-      :revision => "ad45545899c7b13c020ea92b2072220eefad42b8"
+        :revision => "ad45545899c7b13c020ea92b2072220eefad42b8"
   end
 
   go_resource "github.com/ogier/pflag" do
     url "https://github.com/ogier/pflag.git",
-      :revision => "45c278ab3607870051a2ea9040bb85fcb8557481"
+        :revision => "45c278ab3607870051a2ea9040bb85fcb8557481"
   end
 
   go_resource "github.com/peterhellberg/link" do
     url "https://github.com/peterhellberg/link.git",
-      :revision => "1053d3b2893eeebd482fce32550ec24bebed308c"
+        :revision => "8768c6d4dc563b4a09f58ecda04997024452c057"
   end
 
   go_resource "github.com/satori/go.uuid" do
     url "https://github.com/satori/go.uuid.git",
-      :revision => "e673fdd4dea8a7334adbbe7f57b7e4b00bdc5502"
+        :revision => "36e9d2ebbde5e3f13ab2e25625fd453271d6522e"
   end
 
   go_resource "github.com/shiena/ansicolor" do
     url "https://github.com/shiena/ansicolor.git",
-      :revision => "a422bbe96644373c5753384a59d678f7d261ff10"
-  end
-
-  go_resource "github.com/square/go-jose" do
-    url "https://github.com/square/go-jose.git",
-      :revision => "7465d2baefd097ef32054b46be7d9c41185869a1"
+        :revision => "a422bbe96644373c5753384a59d678f7d261ff10"
   end
 
   go_resource "golang.org/x/crypto" do
     url "https://go.googlesource.com/crypto.git",
-      :revision => "5dc8cb4b8a8eb076cbb5a06bc3b8682c15bdbbd3"
+        :revision => "a6600008915114d9c087fad9f03d75087b1a74df"
   end
 
   go_resource "golang.org/x/net" do
     url "https://go.googlesource.com/net.git",
-      :revision => "3e5cd1ed149001198e582f9d3f5bfd564cde2896"
+        :revision => "5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec"
+  end
+
+  go_resource "golang.org/x/sys" do
+    url "https://go.googlesource.com/sys.git",
+        :revision => "2c42eef0765b9837fbdab12011af7830f55f88f0"
+  end
+
+  go_resource "golang.org/x/text" do
+    url "https://go.googlesource.com/text.git",
+        :revision => "e19ae1496984b1c655b8044a65c0300a3c878dd3"
   end
 
   go_resource "gopkg.in/alecthomas/kingpin.v2" do
     url "https://gopkg.in/alecthomas/kingpin.v2.git",
-      :revision => "8cccfa8eb2e3183254457fb1749b2667fbc364c7"
+        :revision => "947dcec5ba9c011838740e680966fd7087a71d0d"
+  end
+
+  go_resource "gopkg.in/cheggaaa/pb.v1" do
+    url "https://gopkg.in/cheggaaa/pb.v1.git",
+        :revision => "43d64de27312b32812ca7e994fa0bb03ccf08fdf"
   end
 
   go_resource "gopkg.in/hlandau/configurable.v1" do
     url "https://gopkg.in/hlandau/configurable.v1.git",
-      :revision => "41496864a1fe3e0fef2973f22372b755d2897402"
+        :revision => "41496864a1fe3e0fef2973f22372b755d2897402"
   end
 
   go_resource "gopkg.in/hlandau/easyconfig.v1" do
     url "https://gopkg.in/hlandau/easyconfig.v1.git",
-      :revision => "f38184c467a3200c92ac929527daf77497b7ec69"
+        :revision => "7589cb96edce2f94f8c1e6eb261f8c2b06220fe7"
   end
 
   go_resource "gopkg.in/hlandau/service.v2" do
     url "https://gopkg.in/hlandau/service.v2.git",
-      :revision => "601cce2a79c1e61856e27f43c28ed4d7d2c7a619"
+        :revision => "b64b3467ebd16f64faec1640c25e318efc0c0d7b"
   end
 
   go_resource "gopkg.in/hlandau/svcutils.v1" do
     url "https://gopkg.in/hlandau/svcutils.v1.git",
-      :revision => "09c5458e23bda3b8e4d925fd587bd44fbdb5950e"
+        :revision => "c25dac49e50cbbcbef8c81b089f56156f4067729"
+  end
+
+  go_resource "gopkg.in/square/go-jose.v1" do
+    url "https://gopkg.in/square/go-jose.v1.git",
+        :revision => "aa2e30fdd1fe9dd3394119af66451ae790d50e0d"
   end
 
   go_resource "gopkg.in/tylerb/graceful.v1" do
     url "https://gopkg.in/tylerb/graceful.v1.git",
-      :revision => "119c58e176bce26fd40698146d9a106c8f1723a5"
+        :revision => "4654dfbb6ad53cb5e27f37d99b02e16c1872fbbb"
   end
 
   go_resource "gopkg.in/yaml.v2" do
     url "https://gopkg.in/yaml.v2.git",
-      :revision => "a83829b6f1293c91addabc89d0571c246397bbf4"
+        :revision => "d670f9405373e636a5a2765eea47fac0c9bc91a4"
   end
 
   def install
-    ENV["GOBIN"] = bin
     ENV["GOPATH"] = buildpath
-    ENV["GOHOME"] = buildpath
 
-    mkdir_p buildpath/"src/github.com/hlandau/"
+    (buildpath/"src/github.com/hlandau").mkpath
     ln_sf buildpath, buildpath/"src/github.com/hlandau/acme"
     Language::Go.stage_deps resources, buildpath/"src"
 
-    # https://github.com/hlandau/acme/blob/master/_doc/PACKAGING-PATHS.md
-    builddate = `date -u "+%Y%m%d%H%M%S"`.strip
-    ldflags = <<-LDFLAGS
+    cd "cmd/acmetool" do
+      # https://github.com/hlandau/acme/blob/master/_doc/PACKAGING-PATHS.md
+      ldflags = %W[
         -X github.com/hlandau/acme/storage.RecommendedPath=#{var}/lib/acmetool
-        -X github.com/hlandau/acme/notify.DefaultHookPath=#{lib}/hooks
+        -X github.com/hlandau/acme/hooks.DefaultPath=#{lib}/hooks
         -X github.com/hlandau/acme/responder.StandardWebrootPath=#{var}/run/acmetool/acme-challenge
-        -X github.com/hlandau/degoutils/buildinfo.BuildInfo=v#{version}-#{builddate}-Homebrew
-    LDFLAGS
+        #{Utils.popen_read("#{buildpath}/src/github.com/hlandau/buildinfo/gen")}
+      ]
+      system "go", "build", "-o", bin/"acmetool", "-ldflags", ldflags.join(" ")
+    end
 
-    system "go", "build", "-o", bin/"acmetool", "-ldflags", ldflags,
-        "github.com/hlandau/acme/cmd/acmetool"
+    (man8/"acmetool.8").write Utils.popen_read(bin/"acmetool", "--help-man")
 
-    system "#{bin}/acmetool --help-man >> acmetool.8"
-    man8.install "acmetool.8"
-
-    doc.install "README.md", Dir["_doc/*"]
+    doc.install Dir["_doc/*"]
   end
 
   def post_install
@@ -168,6 +184,6 @@ class Acmetool < Formula
   end
 
   test do
-    system "#{bin}/acmetool", "help"
+    assert_match version.to_s, shell_output("#{bin}/acmetool --version", 2)
   end
 end

@@ -1,22 +1,26 @@
 class Le < Formula
   desc "Text editor with block and binary operations"
   homepage "https://github.com/lavv17/le"
-  url "http://lav.yar.ru/download/le/le-1.15.1.tar.xz"
-  sha256 "d9895ef82c89ae9cf30946bd43fa18b294f645e6a2bacd3ed9d39a3ccf324a4f"
+  url "http://lav.yar.ru/download/le/le-1.16.5.tar.xz"
+  sha256 "258d586f83e8abd55144dc3f09d9ddaf6ef55e8a90543fdb0932fb77d089dd78"
 
   bottle do
-    sha256 "d63b77a681d74c2c97314fac32c93c4881c66b3c4e05ec2e207838ddda45ac90" => :el_capitan
-    sha256 "895ac3308015381bbc23de9000df04c60f030eba9893fc2a5d036ff7d2c91355" => :yosemite
-    sha256 "4118ed76a761d851a05a2886da41a984175ad25938ab0e91f878d405fbc19618" => :mavericks
-    sha256 "696ba6e3163b72f35825f7f17b1c11cacf044efda4b6fbf14324f7c5688178d1" => :mountain_lion
+    sha256 "614516096f3fa5bb72f68fa747e611401098239d72c7e31274b1fdf41a4d0c59" => :high_sierra
+    sha256 "bb670b11e7bf2813cf89cf35ad7e04b67c330cef6c1c07ab5b65fbe1879af67a" => :sierra
+    sha256 "285e9bf7c3debedb6286ca34971d939c673a35d4553817fdc48dc915e649ba0c" => :el_capitan
+    sha256 "82e83a7c1f1a030429b013d4fd138327003605193e683e092924e80b5e02bf8e" => :yosemite
   end
 
   conflicts_with "logentries", :because => "both install a le binary"
 
   def install
-    ENV.j1
+    ENV.deparallelize
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make", "install"
+  end
+
+  test do
+    assert_match "Usage", shell_output("#{bin}/le --help", 1)
   end
 end

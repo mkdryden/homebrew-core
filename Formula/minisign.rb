@@ -1,15 +1,15 @@
 class Minisign < Formula
-  desc "Sign files & verify signatures. Works with signify in OpenBSD."
+  desc "Sign files & verify signatures. Works with signify in OpenBSD"
   homepage "https://jedisct1.github.io/minisign/"
-  url "https://github.com/jedisct1/minisign/archive/0.6.tar.gz"
-  sha256 "f2267a07bece923d4d174ccacccc56eff9c05b28c4d971e601de896355442f09"
+  url "https://github.com/jedisct1/minisign/archive/0.7.tar.gz"
+  sha256 "0c9f25ae647b6ba38cf7e6aea1da4e8fb20e1bc64ef0c679da737a38c8ad43ef"
   revision 1
 
   bottle do
     cellar :any
-    sha256 "27bb5e1323dc41c2aef2d50296140084099cc4d1ee312945e639ff1e73d80fbc" => :el_capitan
-    sha256 "798b1e19d4c6ec78109fb01b7a23081f9859d8a38da2cf09fd683b5ad527dd81" => :yosemite
-    sha256 "41d91f7e5acdde7c04534e7c7e896f9ca4586f0ef57a7bf77e5df7c25d374222" => :mavericks
+    sha256 "a970943a3b17e6ba9550af0eaad04f85323cf3cc48c8c251e8aec5ef313246f0" => :high_sierra
+    sha256 "d59b465ca65ca6379891aca251945ca46ac6377439ff46be05881c505d99c14c" => :sierra
+    sha256 "f80d1749268802ec6a71e91bd45a7d54e3db4b186ad353b85054e4940427d552" => :el_capitan
   end
 
   depends_on "libsodium"
@@ -23,7 +23,7 @@ class Minisign < Formula
 
   test do
     (testpath/"homebrew.txt").write "Hello World!"
-    (testpath/"keygen.sh").write <<-EOS.undent
+    (testpath/"keygen.sh").write <<~EOS
       #!/usr/bin/expect -f
       set timeout -1
       spawn #{bin}/minisign -G
@@ -39,10 +39,10 @@ class Minisign < Formula
     chmod 0755, testpath/"keygen.sh"
 
     system "./keygen.sh"
-    assert File.exist?("minisign.pub")
-    assert File.exist?("minisign.key")
+    assert_predicate testpath/"minisign.pub", :exist?
+    assert_predicate testpath/".minisign/minisign.key", :exist?
 
-    (testpath/"signing.sh").write <<-EOS.undent
+    (testpath/"signing.sh").write <<~EOS
       #!/usr/bin/expect -f
       set timeout -1
       spawn #{bin}/minisign -Sm homebrew.txt
@@ -53,6 +53,6 @@ class Minisign < Formula
     chmod 0755, testpath/"signing.sh"
 
     system "./signing.sh"
-    assert File.exist?("homebrew.txt.minisig")
+    assert_predicate testpath/"homebrew.txt.minisig", :exist?
   end
 end

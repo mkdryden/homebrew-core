@@ -1,6 +1,8 @@
 class Libswiften < Formula
   desc "C++ library for implementing XMPP applications"
   homepage "https://swift.im/swiften"
+  revision 2
+  head "https://swift.im/git/swift"
 
   stable do
     url "https://swift.im/downloads/releases/swift-3.0/swift-3.0.tar.gz"
@@ -12,24 +14,33 @@ class Libswiften < Formula
   end
 
   bottle do
-    revision 1
-    sha256 "6d3d8a4097fbd44527cf5a004bdcd8eb50a40b55a30f42ec478bbe64a0ea608b" => :el_capitan
-    sha256 "11b961dd62d3550b9189d1a42cc4ff99baad95b545c876719ec8852ab27125dc" => :yosemite
-    sha256 "d7c505b62c124c409804a6428e9896249fea174bdbd55406c2e3629ea68f71bd" => :mavericks
+    sha256 "7fad4a62d37b43fade07734f26864bc3b71f32a4e6809fc91ac079483bd1a3ec" => :high_sierra
+    sha256 "0bec243071c491fc01ba04f7d2f5c01897ac004f18ffb3d67e77c87a56a364c3" => :sierra
+    sha256 "3fd70667904b41f02676b117380dff2903ee9f5418d487fa0ed26fdc268b2be2" => :el_capitan
   end
 
   depends_on "scons" => :build
   depends_on "boost"
   depends_on "libidn"
-  depends_on "lua" => :recommended
+  depends_on "lua@5.1" => :recommended
+
+  deprecated_option "without-lua" => "without-lua@5.1"
 
   def install
+    inreplace "Sluift/main.cpp", "#include <string>",
+                                 "#include <iostream>\n#include <string>"
+
+    inreplace "BuildTools/SCons/SConstruct",
+              /(\["BOOST_SIGNALS_NO_DEPRECATION_WARNING")\]/,
+              "\\1, \"__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0\"]"
+
     boost = Formula["boost"]
     libidn = Formula["libidn"]
 
     args = %W[
       -j #{ENV.make_jobs}
       V=1
+      linkflags=-headerpad_max_install_names
       optimize=1 debug=0
       allow_warnings=1
       swiften_dll=1
@@ -41,17 +52,17 @@ class Libswiften < Formula
       openssl=no
     ]
 
-    if build.with? "lua"
-      lua = Formula["lua"]
+    if build.with? "lua@5.1"
+      lua = Formula["lua@5.1"]
       args << "SLUIFT_INSTALLDIR=#{prefix}"
-      args << "lua_includedir=#{lua.include}"
+      args << "lua_includedir=#{lua.include}/lua-5.1"
       args << "lua_libdir=#{lua.lib}"
+      args << "lua_libname=lua.5.1"
     end
 
     args << prefix
 
     scons *args
-    man1.install "Swift/Packaging/Debian/debian/swiften-config.1" unless build.stable?
   end
 
   test do

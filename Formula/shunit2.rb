@@ -1,16 +1,16 @@
 class Shunit2 < Formula
   desc "xUnit unit testing framework for Bourne-based shell scripts"
-  homepage "https://code.google.com/p/shunit2/"
-  url "https://shunit2.googlecode.com/files/shunit2-2.1.6.tgz"
-  sha256 "65a313a76fd5cc1c58c9e19fbc80fc0e418a4cbfbd46d54b35ed5b6e0025d4ee"
+  homepage "https://github.com/kward/shunit2"
+  url "https://github.com/kward/shunit2/archive/v2.1.7.tar.gz"
+  sha256 "41a103aa984bfdeea3fec426edb0b3dda19153a5ce448d4b4bbe52a85c4d7fee"
 
   bottle :unneeded
 
   def install
-    bin.install "src/shunit2"
+    bin.install "shunit2"
   end
 
   test do
-    system "#{bin}/shunit2"
+    system bin/"shunit2"
   end
 end

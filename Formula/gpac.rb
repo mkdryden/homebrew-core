@@ -9,15 +9,15 @@
 class Gpac < Formula
   desc "Multimedia framework for research and academic purposes"
   homepage "https://gpac.wp.mines-telecom.fr/"
-  url "https://github.com/gpac/gpac/archive/v0.6.0.tar.gz"
-  sha256 "b50a772ff55b5fa3680f50a06127262f43dcedf75143788101880e6f2c4e25b8"
-  revision 1
+  url "https://github.com/gpac/gpac/archive/v0.7.1.tar.gz"
+  sha256 "c7a18b9eea1264fee392e7222d16b180e0acdd6bb173ff6b8baadbf50b3b1d7f"
   head "https://github.com/gpac/gpac.git"
 
   bottle do
-    sha256 "d711ffb2ba85dc62a67dbedf5bd1abb3c9cbc4bf55fabb968130fbf5f4fb4ccb" => :el_capitan
-    sha256 "0be1701105c9c72b08fc3aad37792c43a53c9e4287cd53a88944ae55b15baaf2" => :yosemite
-    sha256 "97bda5a3f31d4341eb14c0f0bc7b5c54ddda5f086507e986ab4e29c7f8f5abff" => :mavericks
+    sha256 "f804e53b18a3ce388ebd48b0e14ee159835b38bc0c917b7f8ee09858f809b40a" => :high_sierra
+    sha256 "d685f84d817cfc62818f37d0eac9d743458973d7ec261a90fc9e8d1524f9f8bd" => :sierra
+    sha256 "fa0031a62d043da3a90d3d63113bcc8206313cf0ce649d6e8ca5b5edfb23818c" => :el_capitan
+    sha256 "d0ae48d8fd147077cf818df012921e7ae7e39a1768d61d9f82a9f361c1fff067" => :yosemite
   end
 
   depends_on "openssl"
@@ -32,7 +32,6 @@ class Gpac < Formula
   depends_on "sdl" => :optional
   depends_on "theora" => :optional
   depends_on "ffmpeg" => :optional
-  depends_on "openjpeg" => :optional
 
   def install
     args = ["--disable-wx",
@@ -48,6 +47,6 @@ class Gpac < Formula
 
   test do
     system "#{bin}/MP4Box", "-add", test_fixtures("test.mp3"), "#{testpath}/out.mp4"
-    File.exist? "#{testpath}/out.mp4"
+    assert_predicate testpath/"out.mp4", :exist?
   end
 end

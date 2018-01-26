@@ -1,18 +1,16 @@
 class Mlt < Formula
   desc "Author, manage, and run multitrack audio/video compositions"
-  homepage "http://www.mltframework.org/"
-  url "https://github.com/mltframework/mlt/archive/v6.0.0.tar.gz"
-  sha256 "34f0cb60eb2e7400e9964de5ee439851b3e51a942206cccc2961fd41b42ee5d2"
-  revision 1
+  homepage "https://www.mltframework.org/"
+  url "https://github.com/mltframework/mlt/archive/v6.6.0.tar.gz"
+  sha256 "11515546516b3c54719b6b402cacf46e8d5172450d6e9fe2655b237582490315"
 
   bottle do
-    sha256 "b12a98b91f51fa92d9b170556a1e622bba20a65734ba12eaefb79ed52a0357bd" => :el_capitan
-    sha256 "c144f768f4f12f2b54771f6f108ade717a8aefd1af1ff03659a07a2e4f39f868" => :yosemite
-    sha256 "31d9b9d88ee5e76c8635c00af0951e06430d9ee20d721f420b0f539ecfbf4eac" => :mavericks
+    sha256 "be45b8ddd63ac480058581c5c79dd4a1860a6bf8574c40560458ebe0b3477625" => :high_sierra
+    sha256 "3996449d69751983dd01f0367d4843d496bfc46d76d4a9d190f499fbbbb0e612" => :sierra
+    sha256 "00600cc103b87b00591ebb1ba3622cc4c2df401033b18ad941694261f61b11c3" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
-
   depends_on "ffmpeg"
   depends_on "frei0r"
   depends_on "libdv"
@@ -22,13 +20,11 @@ class Mlt < Formula
   depends_on "sox"
 
   def install
-    args = ["--prefix=#{prefix}",
-            "--disable-jackrack",
-            "--disable-swfdec",
-            "--disable-gtk"]
-
-    system "./configure", *args
-
+    system "./configure", "--prefix=#{prefix}",
+                          "--disable-jackrack",
+                          "--disable-swfdec",
+                          "--disable-gtk",
+                          "--enable-gpl"
     system "make"
     system "make", "install"
   end

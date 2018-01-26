@@ -1,15 +1,16 @@
 class Jlog < Formula
   desc "Pure C message queue with subscribers and publishers for logs"
   homepage "https://labs.omniti.com/labs/jlog"
-  url "https://github.com/omniti-labs/jlog/archive/2.1.3.2.tar.gz"
-  sha256 "2915a964cade8fbc7f392b454ef33ef999a33a53457f503762e6108b86c4d979"
+  url "https://github.com/omniti-labs/jlog/archive/2.3.0.tar.gz"
+  sha256 "b8912e8de791701d664965c30357c4bbc68df3206b22f7ea0029e7179b02079a"
   head "https://github.com/omniti-labs/jlog.git"
 
   bottle do
     cellar :any
-    sha256 "69c2aa1f1d241eeb2cfb4662367649467627263bb7f4ab03352fe15dff599314" => :el_capitan
-    sha256 "8430563a9007fbfe9381ee2e551341fd24bd196c41ce337737ab18756f8ee2e9" => :yosemite
-    sha256 "cd53653f705bcdef61426a1a35938b8a836a91846b8b5680010d7ce7987dad8f" => :mavericks
+    sha256 "68d1057ab73d4b1548bbcbfe27e16789d4a2ed66abbe87b49950824287c1c356" => :high_sierra
+    sha256 "32a6766cb3c60af8e6b47bd80b81362a95e0c27ce57e078f42385af443af49f1" => :sierra
+    sha256 "b7a9ed90a1f393772747a0c64b60fe07569f963f03f294455cbf569969b3319e" => :el_capitan
+    sha256 "1479a30b96d3b41eee289a2ffb01ed4d0bb1b45c325bb80c8cc8430f9e7f4052" => :yosemite
   end
 
   depends_on "automake" => :build
@@ -18,12 +19,11 @@ class Jlog < Formula
   def install
     system "autoconf"
     system "./configure", "--prefix=#{prefix}"
-    system "make"
     system "make", "install"
   end
 
   test do
-    (testpath/"jlogtest.c").write <<-EOF.undent
+    (testpath/"jlogtest.c").write <<~EOS
       #include <stdio.h>
       #include <jlog.h>
       int main() {
@@ -58,8 +58,8 @@ class Jlog < Formula
         }
         jlog_ctx_close(ctx);
       }
-    EOF
-    system ENV.cc, "jlogtest.c", "-I#{include}", "-ljlog", "-o", "jlogtest"
+    EOS
+    system ENV.cc, "jlogtest.c", "-I#{include}", "-L#{lib}", "-ljlog", "-o", "jlogtest"
     system testpath/"jlogtest"
   end
 end

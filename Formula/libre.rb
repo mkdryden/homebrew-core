@@ -1,30 +1,29 @@
 class Libre < Formula
   desc "Toolkit library for asynchronous network I/O with protocol stacks"
   homepage "http://www.creytiv.com"
-  url "http://www.creytiv.com/pub/re-0.4.14.tar.gz"
-  sha256 "9eb507e6358725d2cff69e3df169a572a1ab7b331131c78b02de6a79ce3e9b7a"
+  url "http://www.creytiv.com/pub/re-0.5.7.tar.gz"
+  sha256 "5dcc15610c28ff1df147d28266b29b934adcff43bfc3fdac58767fd789101039"
 
   bottle do
     cellar :any
-    sha256 "d7eef5f22d8ec76b95d010dfed8a08cfad74fcf0674324d0b83306ff7d60317d" => :el_capitan
-    sha256 "949957e3b098a6554dc60da2ff79242f8a54c19a9c4c14e307999b61a05fb1ba" => :yosemite
-    sha256 "ae8ad0853256ee12f73ea78d5043e74c3866a7c5f5e93916b34f9414fe722220" => :mavericks
+    sha256 "1a6685679f1e26b0a77013714d8e47234e8e72b292980203550bf0924890da4b" => :high_sierra
+    sha256 "41e126cd681c2aaf8b6cab6431487d5458f549f697dc1e7f1fea2cdb71ca3b07" => :sierra
+    sha256 "6ff38e8060c4f59fce104db8dc13e7620ae024545e84783694682f09b81eae7a" => :el_capitan
   end
 
   depends_on "openssl"
-  depends_on "lzlib"
 
   def install
     system "make", "install", "PREFIX=#{prefix}"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <re/re.h>
       int main() {
         return libre_init();
       }
     EOS
-    system ENV.cc, "test.c", "-lre"
+    system ENV.cc, "test.c", "-L#{lib}", "-lre"
   end
 end

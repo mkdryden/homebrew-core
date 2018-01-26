@@ -6,7 +6,9 @@ class Arpoison < Formula
 
   bottle do
     cellar :any
-    revision 1
+    rebuild 1
+    sha256 "eb37399841022351ef5551de5a63ecfc93d061d03518d62f01852a1d8e663e4e" => :high_sierra
+    sha256 "2ed60cb186440c24eaf0c8e040acb89ba60cdd730c83f4c6793add25c80a67ca" => :sierra
     sha256 "33e496f9d1ca384ad23c50a1868fc2682352176d1cf5b37472299a9e36dc7e6c" => :el_capitan
     sha256 "9d902ac3611dd0422783aecb7d46f39dd0278f65f5cab1aa99490fb527de5e22" => :yosemite
     sha256 "0737a954fa5f4d6794f7a373b90b5d2b2008a0bf7cdc4e2fd51266485e86b983" => :mavericks
@@ -18,5 +20,10 @@ class Arpoison < Formula
     system "make"
     bin.install "arpoison"
     man8.install "arpoison.8"
+  end
+
+  test do
+    # arpoison needs to run as root to do anything useful
+    assert_match "target MAC", shell_output("#{bin}/arpoison", 1)
   end
 end

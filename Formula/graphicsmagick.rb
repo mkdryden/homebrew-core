@@ -1,66 +1,45 @@
 class Graphicsmagick < Formula
   desc "Image processing tools collection"
   homepage "http://www.graphicsmagick.org/"
-  url "https://downloads.sourceforge.net/project/graphicsmagick/graphicsmagick/1.3.23/GraphicsMagick-1.3.23.tar.bz2"
-  sha256 "6e14a9e9e42ec074239b2de4db37ebebb8268b0361332d5bc86d7c3fbfe5aabf"
-  revision 1
-
+  url "https://downloads.sourceforge.net/project/graphicsmagick/graphicsmagick/1.3.28/GraphicsMagick-1.3.28.tar.xz"
+  sha256 "942a68a9a8a5af6f682b896fd4f0ad617d8b49907e474acfe59549956bcc994a"
   head "http://hg.code.sf.net/p/graphicsmagick/code", :using => :hg
 
   bottle do
-    sha256 "a77f97d5e497e26cbc73568b42f6b9d26fd4efec83b49adf9fa079961d0ba739" => :el_capitan
-    sha256 "71144976c74ef0afac37fc9e00b278f746a5c02c04322654078a5a127fbaecf4" => :yosemite
-    sha256 "66057aa95ba0524fc9bf9903eb5ca734b69faec5f95c09bca519e29e76c4f670" => :mavericks
+    sha256 "999255f3842b6184ec9fd9f8398611074b6642c25d0a3a707244f9c4f4c9e2c6" => :high_sierra
+    sha256 "f170545068ad94562775d481b21988c5b3692b5c4a252e7f2f7cc07ab8537a11" => :sierra
+    sha256 "9baa3988debf4eb1234fbb49e5bfc542bfd9db3dc6e8d155eec2b45705ac41e4" => :el_capitan
   end
 
-  option "with-quantum-depth-8", "Compile with a quantum depth of 8 bit"
-  option "with-quantum-depth-16", "Compile with a quantum depth of 16 bit (default)"
-  option "with-quantum-depth-32", "Compile with a quantum depth of 32 bit"
   option "without-magick-plus-plus", "disable build/install of Magick++"
   option "without-svg", "Compile without svg support"
   option "with-perl", "Build PerlMagick; provides the Graphics::Magick module"
 
-  depends_on "libtool" => :run
-
   depends_on "pkg-config" => :build
-
+  depends_on "libtool" => :run
   depends_on "jpeg" => :recommended
   depends_on "libpng" => :recommended
   depends_on "libtiff" => :recommended
   depends_on "freetype" => :recommended
-
-  depends_on :x11 => :optional
   depends_on "little-cms2" => :optional
   depends_on "jasper" => :optional
   depends_on "libwmf" => :optional
   depends_on "ghostscript" => :optional
   depends_on "webp" => :optional
-
-  fails_with :llvm do
-    build 2335
-  end
+  depends_on :x11 => :optional
 
   skip_clean :la
 
-  def ghostscript_fonts?
-    File.directory? "#{HOMEBREW_PREFIX}/share/ghostscript/fonts"
-  end
-
   def install
-    quantum_depth = [8, 16, 32].select { |n| build.with? "quantum-depth-#{n}" }
-    if quantum_depth.length > 1
-      odie "graphicsmagick: --with-quantum-depth-N options are mutually exclusive"
-    end
-    quantum_depth = quantum_depth.first || 16 # user choice or default
-
     args = %W[
       --prefix=#{prefix}
       --disable-dependency-tracking
       --enable-shared
       --disable-static
       --with-modules
+      --without-lzma
       --disable-openmp
-      --with-quantum-depth=#{quantum_depth}
+      --with-quantum-depth=16
     ]
 
     args << "--without-gslib" if build.without? "ghostscript"
@@ -89,7 +68,7 @@ class Graphicsmagick < Formula
 
   def caveats
     if build.with? "perl"
-      <<-EOS.undent
+      <<~EOS
         The Graphics::Magick perl module has been installed under:
 
           #{lib}
@@ -99,6 +78,7 @@ class Graphicsmagick < Formula
   end
 
   test do
-    system "#{bin}/gm", "identify", test_fixtures("test.png")
+    fixture = test_fixtures("test.png")
+    assert_match "PNG 8x8+0+0", shell_output("#{bin}/gm identify #{fixture}")
   end
 end

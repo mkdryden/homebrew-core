@@ -1,25 +1,27 @@
 class GitTest < Formula
   desc "Run tests on each distinct tree in a revision list"
   homepage "https://github.com/spotify/git-test"
-  url "https://github.com/spotify/git-test/archive/v1.0.1.tar.gz"
-  sha256 "1273d97644edf3690cc0310a1f6f33856f83bf736599c54150db7a7ad9e43983"
+  url "https://github.com/spotify/git-test/archive/v1.0.4.tar.gz"
+  sha256 "7c2331c8dc3c815e440ffa1a4dc7a9ff8a28a0a8cbfd195282f53c3e4cb2ee00"
 
   bottle :unneeded
 
   def install
-    share.install "test.sh"
     bin.install "git-test"
     man1.install "git-test.1"
+    pkgshare.install "test.sh"
   end
 
   test do
+    ENV["XDG_CONFIG_HOME"] = testpath/".config"
+    ENV["GIT_CONFIG_NOSYSTEM"] = "1"
     system "git", "init"
-    ln_s "#{bin}/git-test", testpath
-    cp "#{share}/test.sh", testpath
+    ln_s bin/"git-test", testpath
+    cp pkgshare/"test.sh", testpath
     chmod 0755, "test.sh"
     system "git", "add", "test.sh"
     system "git", "commit", "-m", "initial commit"
     ENV["TERM"] = "xterm"
-    system "#{bin}/git-test", "-v", "HEAD", "--verify='./test.sh'"
+    system bin/"git-test", "-v", "HEAD", "--verify='./test.sh'"
   end
 end

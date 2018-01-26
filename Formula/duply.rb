@@ -1,8 +1,8 @@
 class Duply < Formula
   desc "Frontend to the duplicity backup system"
   homepage "http://duply.net"
-  url "https://downloads.sourceforge.net/project/ftplicity/duply%20%28simple%20duplicity%29/1.11.x/duply_1.11.2.tgz"
-  sha256 "06843960ae5753395cb5be72a9c9f2fe78e6ea81a17c6d8d28f2ae49ab50d5aa"
+  url "https://downloads.sourceforge.net/project/ftplicity/duply%20%28simple%20duplicity%29/2.0.x/duply_2.0.3.tgz"
+  sha256 "34b4c544a92faf190c29cbc9eda5f1420ae1550fc7e0a33126a1775d3187b9e1"
 
   bottle :unneeded
 

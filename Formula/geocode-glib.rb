@@ -1,13 +1,14 @@
 class GeocodeGlib < Formula
   desc "GNOME library for gecoding and reverse geocoding"
   homepage "https://developer.gnome.org/geocode-glib"
-  url "https://download.gnome.org/sources/geocode-glib/3.18/geocode-glib-3.18.2.tar.xz"
-  sha256 "95b11ef2697ac5dbb2f397e7117e08e157b2168624c71507656928095012494e"
+  url "https://download.gnome.org/sources/geocode-glib/3.24/geocode-glib-3.24.0.tar.xz"
+  sha256 "19c1fef4fd89eb4bfe6decca45ac45a2eca9bb7933be560ce6c172194840c35e"
 
   bottle do
-    sha256 "dad6f3fbbb15e9964b4d754ce82de4466c3f3079f8d1686b96230c01fb2e914b" => :el_capitan
-    sha256 "5f793b1eb08cdfa39596edf4adf9ee9fccc0ff7827ba9461dda0a0c53dcf89e2" => :yosemite
-    sha256 "5c4ac97212c4ba832658efd625e182d1574569280b02975772a7b07413dd169a" => :mavericks
+    sha256 "ccae27aef89fe0b73c44c79645b16f9cb76f2a9961c2fe3c40621f71fa6b69ec" => :high_sierra
+    sha256 "3af6bf5e3659bfc8dac46ebaecb0417725be9fc7bd134dd3e8353c2df2717eec" => :sierra
+    sha256 "260248e1447facf30f3f37a3104967d4798a4093ed93b1cff618e8ae62c26c53" => :el_capitan
+    sha256 "5f50e0e5db2c81fb487586ed701490a2253836cb1804fe051137007bb4af34bd" => :yosemite
   end
 
   depends_on "pkg-config" => :build
@@ -36,7 +37,7 @@ class GeocodeGlib < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <geocode-glib/geocode-glib.h>
 
       int main(int argc, char *argv[]) {
@@ -46,8 +47,7 @@ class GeocodeGlib < Formula
     EOS
     gettext = Formula["gettext"]
     glib = Formula["glib"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{gettext.opt_include}
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include

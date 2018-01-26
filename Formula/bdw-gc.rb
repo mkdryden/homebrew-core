@@ -1,15 +1,14 @@
 class BdwGc < Formula
   desc "Garbage collector for C and C++"
   homepage "http://www.hboehm.info/gc/"
-  url "http://www.hboehm.info/gc/gc_source/gc-7.4.2.tar.gz"
-  sha256 "63320ad7c45460e4a40e03f5aa4c6893783f21a16416c3282b994f933312afa2"
+  url "https://github.com/ivmai/bdwgc/releases/download/v7.6.2/gc-7.6.2.tar.gz"
+  sha256 "bd112005563d787675163b5afff02c364fc8deb13a99c03f4e80fdf6608ad41e"
 
   bottle do
-    revision 2
-    sha256 "ba0257546369cd1879d66d3f1302194ae39767ccb5b012a20d16fdf5595b4326" => :el_capitan
-    sha256 "bb654d5b6952c8b22ce74d0081f900f3fd8628bb79105ba1b1ddc672fea6b067" => :yosemite
-    sha256 "ebbedf4fe84fbc6ccf621c7da954623443f1bc7596ca8c95efe72d4cba353d25" => :mavericks
-    sha256 "e5725f4c6b23ce7dc75e3e8fff51cd1f9f90858bad20d1ce00cf33499edf8f6b" => :mountain_lion
+    cellar :any
+    sha256 "d32b513240cc4fea5cd4c0148c2f5338f393528c9ebabecbaff210b3f4fe511e" => :high_sierra
+    sha256 "adea8d4192119dc2cc29448e5a5d2f82845a9a090087d056a6b281ad0009f75e" => :sierra
+    sha256 "2b5e7e9fdd5efb7b043fff8b38b0a9b9a7730bb669841acf692f73b3ae736b99" => :el_capitan
   end
 
   head do
@@ -19,14 +18,10 @@ class BdwGc < Formula
     depends_on "libtool"  => :build
   end
 
-  option :universal
-
   depends_on "pkg-config" => :build
   depends_on "libatomic_ops" => :build
 
   def install
-    ENV.universal_binary if build.universal?
-
     system "./autogen.sh" if build.head?
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
@@ -35,5 +30,31 @@ class BdwGc < Formula
     system "make"
     system "make", "check"
     system "make", "install"
+  end
+
+  test do
+    (testpath/"test.c").write <<~EOS
+      #include <assert.h>
+      #include <stdio.h>
+      #include "gc.h"
+
+      int main(void)
+      {
+        int i;
+
+        GC_INIT();
+        for (i = 0; i < 10000000; ++i)
+        {
+          int **p = (int **) GC_MALLOC(sizeof(int *));
+          int *q = (int *) GC_MALLOC_ATOMIC(sizeof(int));
+          assert(*p == 0);
+          *p = (int *) GC_REALLOC(q, 2 * sizeof(int));
+        }
+        return 0;
+      }
+    EOS
+
+    system ENV.cc, "-I#{include}", "-L#{lib}", "-lgc", "-o", "test", "test.c"
+    system "./test"
   end
 end

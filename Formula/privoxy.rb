@@ -1,14 +1,16 @@
 class Privoxy < Formula
   desc "Advanced filtering web proxy"
-  homepage "http://www.privoxy.org"
-  url "https://downloads.sourceforge.net/project/ijbswa/Sources/3.0.24%20%28stable%29/privoxy-3.0.24-stable-src.tar.gz"
-  sha256 "a381f6dc78f08de0d4a2342d47a5949a6608073ada34b933137184f3ca9fb012"
+  homepage "https://www.privoxy.org/"
+  url "https://downloads.sourceforge.net/project/ijbswa/Sources/3.0.26%20%28stable%29/privoxy-3.0.26-stable-src.tar.gz"
+  sha256 "57e415b43ee5dfdca74685cc034053eaae962952fdabd086171551a86abf9cd8"
 
   bottle do
     cellar :any
-    sha256 "edb1d08efa2d25658a2d4d1d2643233529c6228fe6289536e7c48f5829c6e9ad" => :el_capitan
-    sha256 "0764f6e68913ea279c29a84dae2292eadcf542eacda5c21e26addd5497524cd1" => :yosemite
-    sha256 "fd48bf5bee38bbca0124d7e2dc39e52f97f99536f1f04d4fcff1ba3716ebdfa2" => :mavericks
+    rebuild 1
+    sha256 "6d73d0568bf02dc31bce3e87a92ed8a90c67d19340ecbc2d22102522dc12a74b" => :high_sierra
+    sha256 "bd606ba22bca049b7f0457cdfa846aefa09eaf2c9d1e18ff3584254e1fc05048" => :sierra
+    sha256 "4aa50d19fa164c7bb5b6a14f5ef562fb9b40acebe8575cd5af4dffac78fa3400" => :el_capitan
+    sha256 "8a0e661df5d221ae65b6367791a923d1f2b769b0206b3fb50c1e6a84f2830d7b" => :yosemite
   end
 
   depends_on "autoconf" => :build
@@ -34,7 +36,7 @@ class Privoxy < Formula
 
   plist_options :manual => "privoxy #{HOMEBREW_PREFIX}/etc/privoxy/config"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -53,8 +55,23 @@ class Privoxy < Formula
       </array>
       <key>RunAtLoad</key>
       <true/>
+      <key>StandardErrorPath</key>
+      <string>#{var}/log/privoxy/logfile</string>
     </dict>
     </plist>
     EOS
+  end
+
+  test do
+    bind_address = "127.0.0.1:8118"
+    (testpath/"config").write("listen-address #{bind_address}\n")
+    begin
+      server = IO.popen("#{sbin}/privoxy --no-daemon #{testpath}/config")
+      sleep 1
+      assert_match "200 OK", shell_output("/usr/bin/curl -I -x #{bind_address} https://github.com")
+    ensure
+      Process.kill("SIGINT", server.pid)
+      Process.wait(server.pid)
+    end
   end
 end

@@ -5,16 +5,18 @@ class Darcs < Formula
 
   desc "Distributed version control system that tracks changes, via Haskell"
   homepage "http://darcs.net/"
-  url "http://darcs.net/releases/darcs-2.10.3.tar.gz"
-  sha256 "ca00c40d08276f94868c7c1bbc6dbd9b6b41a15c1907c34947aaa51d4dbbf642"
+  url "https://hackage.haskell.org/package/darcs-2.12.5/darcs-2.12.5.tar.gz"
+  sha256 "355b04c85c27bca43c8c380212988d9c1e9a984b0b593ceb2884de4295063553"
 
   bottle do
-    sha256 "a65c9d857fd868ff6768c3076511b6bfe5d11f893b58a3d943ae7b0319db73d3" => :el_capitan
-    sha256 "7e76c59e699d4941880fea6986d13d62ceb4d0b60736e54f813f4d79ec4810da" => :yosemite
-    sha256 "c7f60a61ab519b61d7ea229e3e67c9d1c75b1c39d49da5b07dfcdf8fe4e11658" => :mavericks
+    cellar :any_skip_relocation
+    sha256 "ed165766c4f5ae94fe7e5744155bd7e9e71bdf80e54f0998af2a96c4312e4c3f" => :high_sierra
+    sha256 "92a148502ee81e0be44a12531fa8b45331742cb28f28e83fb351b23c93a7a7b3" => :sierra
+    sha256 "e11d1841f356e3f0ce47fc26951a81a23098d709fc726cbc786fa5451a002f14" => :el_capitan
+    sha256 "1c0522297c9eb1c858888fa28434305d149e474329890137ff9827a3424cef82" => :yosemite
   end
 
-  depends_on "ghc" => :build
+  depends_on "ghc@8.0" => :build
   depends_on "cabal-install" => :build
   depends_on "gmp"
 
@@ -24,13 +26,13 @@ class Darcs < Formula
 
   test do
     mkdir "my_repo" do
-      system "darcs", "init"
+      system bin/"darcs", "init"
       (Pathname.pwd/"foo").write "hello homebrew!"
-      system "darcs", "add", "foo"
-      system "darcs", "record", "-am", "add foo", "--author=homebrew"
+      system bin/"darcs", "add", "foo"
+      system bin/"darcs", "record", "-am", "add foo", "--author=homebrew"
     end
-    system "darcs", "get", "my_repo", "my_repo_clone"
-    Dir.chdir "my_repo_clone" do
+    system bin/"darcs", "get", "my_repo", "my_repo_clone"
+    cd "my_repo_clone" do
       assert_match "hello homebrew!", (Pathname.pwd/"foo").read
     end
   end

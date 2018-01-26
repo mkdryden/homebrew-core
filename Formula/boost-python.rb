@@ -1,37 +1,25 @@
 class BoostPython < Formula
   desc "C++ library for C++/Python interoperability"
-  homepage "http://www.boost.org"
-  url "https://downloads.sourceforge.net/project/boost/boost/1.60.0/boost_1_60_0.tar.bz2"
-  sha256 "686affff989ac2488f79a97b9479efb9f2abae035b5ed4d8226de6857933fd3b"
+  homepage "https://www.boost.org/"
+  url "https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.bz2"
+  sha256 "5721818253e6a0989583192f96782c4a98eb6204965316df9f5ad75819225ca9"
   head "https://github.com/boostorg/boost.git"
 
   bottle do
     cellar :any
-    sha256 "c3d8a80d9bb7783ef7e8b3018ed5feaaa8d1f32a306ba4b75bd3a45629f57872" => :el_capitan
-    sha256 "37e1c31ebae10162368b496fbe377b3b36fa007d1dbf14325686df717c6ce339" => :yosemite
-    sha256 "aaba8bc94797a6f4d79ad7b07c8abc23fd915aa6699eb7a6948aa189cc8e6d78" => :mavericks
+    sha256 "7eb61418c5c91034a7bc00cd5b56070a901afa4adfd3a7c0551e3809da4673a1" => :high_sierra
+    sha256 "1821cfeabaeafe8ab6e003a8715fdff1c481afee0ebdef423082a321bc24d505" => :sierra
+    sha256 "0d49ef79a0be83226cdb0fb2b010f6bcc867ce343fa980aee2ddb6356327688f" => :el_capitan
   end
-
-  option :universal
-  option :cxx11
 
   option "without-python", "Build without python 2 support"
-  depends_on :python3 => :optional
 
-  if build.cxx11?
-    depends_on "boost" => "c++11"
-  else
-    depends_on "boost"
-  end
+  depends_on "python3" => :optional
+  depends_on "boost"
 
-  fails_with :llvm do
-    build 2335
-    cause "Dropped arguments to functions when linking with boost"
-  end
+  needs :cxx11
 
   def install
-    ENV.universal_binary if build.universal?
-
     # "layout" should be synchronized with boost
     args = ["--prefix=#{prefix}",
             "--libdir=#{lib}",
@@ -42,18 +30,11 @@ class BoostPython < Formula
             "threading=multi,single",
             "link=shared,static"]
 
-    args << "address-model=32_64" << "architecture=x86" << "pch=off" if build.universal?
-
-    # Build in C++11 mode if boost was built in C++11 mode.
     # Trunk starts using "clang++ -x c" to select C compiler which breaks C++11
     # handling using ENV.cxx11. Using "cxxflags" and "linkflags" still works.
-    if build.cxx11?
-      args << "cxxflags=-std=c++11"
-      if ENV.compiler == :clang
-        args << "cxxflags=-stdlib=libc++" << "linkflags=-stdlib=libc++"
-      end
-    elsif Tab.for_name("boost").cxx11?
-      odie "boost was built in C++11 mode so boost-python must be built with --c++11."
+    args << "cxxflags=-std=c++11"
+    if ENV.compiler == :clang
+      args << "cxxflags=-stdlib=libc++" << "linkflags=-stdlib=libc++"
     end
 
     # disable python detection in bootstrap.sh; it guesses the wrong include directory
@@ -66,7 +47,7 @@ class BoostPython < Formula
       open("user-config.jam", "w") do |file|
         # Force boost to compile with the desired compiler
         file.write "using darwin : : #{ENV.cxx} ;\n"
-        file.write <<-EOS.undent
+        file.write <<~EOS
           using python : #{version}
                        : #{python}
                        : #{py_include}
@@ -87,7 +68,7 @@ class BoostPython < Formula
   end
 
   test do
-    (testpath/"hello.cpp").write <<-EOS.undent
+    (testpath/"hello.cpp").write <<~EOS
       #include <boost/python.hpp>
       char const* greet() {
         return "Hello, world!";
@@ -98,9 +79,9 @@ class BoostPython < Formula
       }
     EOS
     Language::Python.each_python(build) do |python, _|
-      pyflags = (`#{python}-config --includes`.strip +
+      pyflags = (`#{python}-config --includes`.strip + " " +
                  `#{python}-config --ldflags`.strip).split(" ")
-      system ENV.cxx, "-shared", "hello.cpp", "-lboost_#{python}", "-o", "hello.so", *pyflags
+      system ENV.cxx, "-shared", "hello.cpp", "-L#{lib}", "-lboost_#{python}", "-o", "hello.so", *pyflags
       output = `#{python} -c "from __future__ import print_function; import hello; print(hello.greet())"`
       assert_match "Hello, world!", output
     end

@@ -1,21 +1,21 @@
 class Nettle < Formula
   desc "Low-level cryptographic library"
   homepage "https://www.lysator.liu.se/~nisse/nettle/"
-  url "https://www.lysator.liu.se/~nisse/archive/nettle-3.2.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/nettle/nettle-3.2.tar.gz"
-  sha256 "ea4283def236413edab5a4cf9cf32adf540c8df1b9b67641cfc2302fca849d97"
+  url "https://ftp.gnu.org/gnu/nettle/nettle-3.4.tar.gz"
+  mirror "https://ftpmirror.gnu.org/nettle/nettle-3.4.tar.gz"
+  sha256 "ae7a42df026550b85daca8389b6a60ba6313b0567f374392e54918588a411e94"
 
   bottle do
     cellar :any
-    sha256 "149db1957c10656b05dd887d70ec699dc5e3776790fd2208a37b3a6fafa47f66" => :el_capitan
-    sha256 "9d26a23ec1699a09d84dba677eba18944f9c7480e2061b36bb4c8ec2bca13a9e" => :yosemite
-    sha256 "f86d2cf88360585545fb7309c8d631717801d90ecdfd9fdaf094aff32f4829f5" => :mavericks
+    sha256 "d5f8ed7557a26c0a2a34031b10a34b12c0c8f518782ed1d17fb13930ecfcdf45" => :high_sierra
+    sha256 "d03831c4b2217900338b2316bf73b0074271b0007c2aaaa8fddf606a5f71d7ee" => :sierra
+    sha256 "a8f3221e9f9281d5493e09b9cbbddc7038de24fbb6375e0255294cae822b866a" => :el_capitan
   end
 
   depends_on "gmp"
 
   def install
-    # OS X doesn't use .so libs. Emailed upstream 04/02/2016.
+    # macOS doesn't use .so libs. Emailed upstream 04/02/2016.
     inreplace "testsuite/dlopen-test.c", "libnettle.so", "libnettle.dylib"
 
     system "./configure", "--disable-dependency-tracking",
@@ -27,7 +27,7 @@ class Nettle < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <nettle/sha1.h>
       #include <stdio.h>
 
@@ -50,7 +50,7 @@ class Nettle < Formula
         return 0;
       }
     EOS
-    system ENV.cc, "test.c", "-lnettle", "-o", "test"
+    system ENV.cc, "test.c", "-L#{lib}", "-lnettle", "-o", "test"
     system "./test"
   end
 end

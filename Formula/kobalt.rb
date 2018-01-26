@@ -1,29 +1,27 @@
 class Kobalt < Formula
   desc "Build system"
   homepage "http://beust.com/kobalt"
-  url "https://github.com/cbeust/kobalt/releases/download/0.737/kobalt-0.737.zip"
-  sha256 "f511aa9f68c9f7ddbd60ea044f5c2970627e11e584c578770387b02d73836e98"
+  url "https://github.com/cbeust/kobalt/releases/download/1.0.100/kobalt-1.0.100.zip"
+  sha256 "22cde7f271c353a7bdb1f930cec87f7b53a0c3a1e1aeab940b3c0194fafa8bd8"
 
   bottle :unneeded
 
   def install
     libexec.install %w[kobalt]
 
-    (bin/"kobaltw").write <<-EOS.undent
+    (bin/"kobaltw").write <<~EOS
       #!/bin/bash
       java -jar #{libexec}/kobalt/wrapper/kobalt-wrapper.jar $*
     EOS
   end
 
   test do
-    ENV.java_cache
-
-    (testpath/"src/main/kotlin/com/A.kt").write <<-EOS.undent
+    (testpath/"src/main/kotlin/com/A.kt").write <<~EOS
       package com
       class A
       EOS
 
-    (testpath/"kobalt/src/Build.kt").write <<-EOS.undent
+    (testpath/"kobalt/src/Build.kt").write <<~EOS
       import com.beust.kobalt.*
       import com.beust.kobalt.api.*
       import com.beust.kobalt.plugin.packaging.*
@@ -39,6 +37,6 @@ class Kobalt < Formula
 
     system "#{bin}/kobaltw", "assemble"
     output = "kobaltBuild/libs/test-1.0.jar"
-    assert File.exist?(output), "Couldn't find #{output}"
+    assert_predicate testpath/output, :exist?, "Couldn't find #{output}"
   end
 end

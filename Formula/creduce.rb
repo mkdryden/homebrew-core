@@ -1,21 +1,32 @@
 class Creduce < Formula
   desc "Reduce a C/C++ program while keeping a property of interest"
   homepage "https://embed.cs.utah.edu/creduce/"
-  url "https://github.com/csmith-project/creduce/archive/creduce-2.3.0.tar.gz"
-  sha256 "47a42751aab8b51bc10d8df62f359bdc1b4a644f16feb85b9f7325f0c5bce4a3"
   revision 2
   head "https://github.com/csmith-project/creduce.git"
 
+  stable do
+    url "https://embed.cs.utah.edu/creduce/creduce-2.7.0.tar.gz"
+    sha256 "36dca859c97a988e71b1a08e0cbd5849e4da051d248c5e483494194c4a231a41"
+
+    # LLVM 5 compat
+    # Fix "error: use of undeclared identifier 'IK_C'" and similar errors
+    # Upstream commit from 27 Apr 2017 "Fix build failure with LLVM trunk"
+    patch do
+      url "https://github.com/csmith-project/creduce/commit/97e2b299.patch?full_index=1"
+      sha256 "89197f11c1c32bc234a4ba2102c65b96cc2141286e74cb838189c074c9a750d2"
+    end
+  end
+
   bottle do
-    revision 1
-    sha256 "6070b901245a2cfa692c3f1746d4fc73fd21c9a15bd89ba05c4a3af022623032" => :el_capitan
-    sha256 "9e36fb530f52ca85deb0501ba36c8024d0f0b33988d86292268a2b7f875933ed" => :yosemite
-    sha256 "a56a7dce5b49cb531698ab81a9f3ba594ef3d729895d65602c6fc53a4655a726" => :mavericks
+    cellar :any
+    sha256 "b869d3283c9f0cd1c84e07dad451a5fe7375816a43ea36c0eb1d45b3288f3419" => :high_sierra
+    sha256 "fb3948df94350cfd4fb00bff141641a35187abb2529246619137810a2606afb6" => :sierra
+    sha256 "7b2bb9028a3fbcb118d7826c2d0e3db2445dc2676cf65f6f5e0938b43b9cb546" => :el_capitan
   end
 
   depends_on "astyle"
   depends_on "delta"
-  depends_on "llvm" => "with-clang"
+  depends_on "llvm"
 
   depends_on :macos => :mavericks
 
@@ -26,15 +37,15 @@ class Creduce < Formula
   end
 
   resource "Exporter::Lite" do
-    url "https://cpan.metacpan.org/authors/id/N/NE/NEILB/Exporter-Lite-0.06.tar.gz"
-    mirror "http://search.cpan.org/CPAN/authors/id/N/NE/NEILB/Exporter-Lite-0.06.tar.gz"
-    sha256 "f252562176c48cdc29c543d31ba3e0eed71042e9ad2b20f9f6283bd2e29e8f4c"
+    url "https://cpan.metacpan.org/authors/id/N/NE/NEILB/Exporter-Lite-0.08.tar.gz"
+    mirror "http://search.cpan.org/CPAN/authors/id/N/NE/NEILB/Exporter-Lite-0.08.tar.gz"
+    sha256 "c05b3909af4cb86f36495e94a599d23ebab42be7a18efd0d141fc1586309dac2"
   end
 
   resource "File::Which" do
-    url "https://cpan.metacpan.org/authors/id/A/AD/ADAMK/File-Which-1.09.tar.gz"
-    mirror "http://search.cpan.org/CPAN/authors/id/A/AD/ADAMK/File-Which-1.09.tar.gz"
-    sha256 "b72fec6590160737cba97293c094962adf4f7d44d9e68dde7062ecec13f4b2c3"
+    url "https://cpan.metacpan.org/authors/id/P/PL/PLICEASE/File-Which-1.21.tar.gz"
+    mirror "http://search.cpan.org/CPAN/authors/id/P/PL/PLICEASE/File-Which-1.21.tar.gz"
+    sha256 "9def5f10316bfd944e56b7f8a2501be1d44c288325309462aa9345e340854bcc"
   end
 
   resource "Getopt::Tabular" do
@@ -44,9 +55,9 @@ class Creduce < Formula
   end
 
   resource "Regexp::Common" do
-    url "https://cpan.metacpan.org/authors/id/A/AB/ABIGAIL/Regexp-Common-2013031301.tar.gz"
-    mirror "http://search.cpan.org/CPAN/authors/id/A/AB/ABIGAIL/Regexp-Common-2013031301.tar.gz"
-    sha256 "729a8198d264aa64ecbb233ff990507f97fbb66bda746b95f3286f50f5f25c84"
+    url "https://cpan.metacpan.org/authors/id/A/AB/ABIGAIL/Regexp-Common-2017040401.tar.gz"
+    mirror "http://search.cpan.org/CPAN/authors/id/A/AB/ABIGAIL/Regexp-Common-2017040401.tar.gz"
+    sha256 "0664c26bb69d7c862849432fde921d4c201fabefd36bff6a9e0996d295053ab8"
   end
 
   resource "Sys::CPU" do
@@ -56,7 +67,10 @@ class Creduce < Formula
   end
 
   def install
-    ENV.prepend_create_path "PERL5LIB", libexec+"lib/perl5"
+    ENV.prepend_create_path "PERL5LIB", libexec/"lib/perl5"
+
+    # Avoid ending up with llvm's Cellar path hard coded.
+    ENV["CLANG_FORMAT"] = Formula["llvm"].opt_bin/"clang-format"
 
     resources.each do |r|
       r.stage do
@@ -73,11 +87,11 @@ class Creduce < Formula
     system "make"
     system "make", "install"
 
-    (bin+"creduce").write_env_script("#{libexec}/creduce", :PERL5LIB => ENV["PERL5LIB"])
+    (bin/"creduce").write_env_script("#{libexec}/creduce", :PERL5LIB => ENV["PERL5LIB"])
   end
 
   test do
-    (testpath/"test1.c").write(<<-EOS.undent)
+    (testpath/"test1.c").write <<~EOS
       #include <stdio.h>
 
       int main() {
@@ -87,7 +101,7 @@ class Creduce < Formula
       }
 
     EOS
-    (testpath/"test1.sh").write(<<-EOS.undent)
+    (testpath/"test1.sh").write <<~EOS
       #!/usr/bin/env bash
 
       clang -Weverything "$(dirname "${BASH_SOURCE[0]}")"/test1.c 2>&1 | \

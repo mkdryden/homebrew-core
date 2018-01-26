@@ -1,14 +1,15 @@
 class Cairomm < Formula
   desc "Vector graphics library with cross-device output support"
-  homepage "http://cairographics.org/cairomm/"
-  url "https://download.gnome.org/sources/cairomm/1.12/cairomm-1.12.0.tar.xz"
-  sha256 "a54ada8394a86182525c0762e6f50db6b9212a2109280d13ec6a0b29bfd1afe6"
+  homepage "https://cairographics.org/cairomm/"
+  url "https://cairographics.org/releases/cairomm-1.12.2.tar.gz"
+  sha256 "45c47fd4d0aa77464a75cdca011143fea3ef795c4753f6e860057da5fb8bd599"
 
   bottle do
     cellar :any
-    sha256 "b05ec638711634ad01ab1aec44eb9397e7a67278eaa5fefd16403b240a5261b0" => :el_capitan
-    sha256 "98648d8f66c07f55192908271f80233a78dfe65af96c6d8f06af209e30b3d980" => :yosemite
-    sha256 "960d0180b4e5137d56d8d2051e21fdcbcf23ebd18ff94fa03f0d39a20853b70d" => :mavericks
+    sha256 "80db0528a9b198b3cf17d3b450982a26fd1619a15ace2087f6f52f1347b89499" => :high_sierra
+    sha256 "da41ea7c4cd90ab7183f4eba82f6921fd70b8a3ad0301054f2152214efe33373" => :sierra
+    sha256 "4fec10a5e15cceceee0b93e11bf000d9f6365cfc1c97dbc255b4a4d7d7d6c8dd" => :el_capitan
+    sha256 "ce58504dbe14cd1a27aeecd7eed1d95c6fa7819b8ff6ab451e02462cdc699e83" => :yosemite
   end
 
   needs :cxx11
@@ -27,7 +28,7 @@ class Cairomm < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <cairomm/cairomm.h>
 
       int main(int argc, char *argv[])
@@ -45,8 +46,7 @@ class Cairomm < Formula
     libpng = Formula["libpng"]
     libsigcxx = Formula["libsigc++"]
     pixman = Formula["pixman"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{cairo.opt_include}/cairo
       -I#{fontconfig.opt_include}
       -I#{freetype.opt_include}/freetype2

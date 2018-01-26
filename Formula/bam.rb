@@ -1,17 +1,15 @@
 class Bam < Formula
   desc "Build system that uses Lua to describe the build process"
   homepage "https://matricks.github.io/bam/"
-  url "https://github.com/downloads/matricks/bam/bam-0.4.0.tar.gz"
-  sha256 "5e4e4920b4d265da582f66774e9b1ec8ddfbe75ddc028fba86c12f686ea18db3"
-
+  url "https://github.com/matricks/bam/archive/v0.5.1.tar.gz"
+  sha256 "cc8596af3325ecb18ebd6ec2baee550e82cb7b2da19588f3f843b02e943a15a9"
   head "https://github.com/matricks/bam.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "40501301dcb3d0af9ca402535d91b79729a684978299d52f3595274f0385a9a6" => :el_capitan
-    sha256 "832033a89e90b4152690ac9738af8db839f322e79b7169bc8bdf1a866707cf22" => :yosemite
-    sha256 "ba4ee90c3fc9001761bf2c09906c5c3df66c6175d7b763fa3527c3c512c2f2d5" => :mavericks
-    sha256 "73362b46dfe24dc3d6c4bb59bdb9d0403ec717054428f78bc9dd32a93343a187" => :mountain_lion
+    sha256 "59aebec505aba51189ccedb1872affd1c48ca84598caa591c2e0c955817e7cd7" => :high_sierra
+    sha256 "f237da39dd743732f3cfa0a5029b3cce4b332fb08e4326183eece8fd50dcf789" => :sierra
+    sha256 "4ded8f152aa05211053796e77b9b7a9e5671b9d5871c374a85ee74e6b9cb8e50" => :el_capitan
   end
 
   def install
@@ -20,18 +18,21 @@ class Bam < Formula
   end
 
   test do
-    (testpath/"hello.c").write <<-EOS.undent
+    (testpath/"hello.c").write <<~EOS
       #include <stdio.h>
-      int main(void) { printf("hello\\n"); return 0; }
+      int main() {
+        printf("hello\\n");
+        return 0;
+      }
     EOS
 
-    (testpath/"bam.lua").write <<-EOS.undent
+    (testpath/"bam.lua").write <<~EOS
       settings = NewSettings()
       objs = Compile(settings, Collect("*.c"))
       exe = Link(settings, "hello", objs)
     EOS
 
-    system "bam", "-v"
-    assert_equal "hello\n", shell_output("./hello")
+    system bin/"bam", "-v"
+    assert_equal "hello", shell_output("./hello").chomp
   end
 end

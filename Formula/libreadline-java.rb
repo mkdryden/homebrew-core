@@ -1,26 +1,35 @@
 class LibreadlineJava < Formula
   desc "Port of GNU readline for Java"
-  homepage "http://java-readline.sourceforge.net/"
+  homepage "https://java-readline.sourceforge.io/"
   url "https://downloads.sourceforge.net/project/java-readline/java-readline/0.8.0/libreadline-java-0.8.0-src.tar.gz"
   sha256 "cdcfd9910bfe2dca4cd08b2462ec05efee7395e9b9c3efcb51e85fa70548c890"
+  revision 1
 
   bottle do
     cellar :any
-    revision 1
-    sha256 "f4577832ad395d95b5eafed87f7b9383a674886bbc0944956348b721c63030e5" => :yosemite
-    sha256 "50849b0c88536b0ba32bf844b652a3b784dce4e5add2dc22463a94fc07292669" => :mavericks
-    sha256 "861edbe4b8e9fa0d4cd3113cf87d3eb2cce4b52618deb2609b621c9fb2255dfc" => :mountain_lion
+    sha256 "fafccc3cee1c6e0fbc9cf517258e655cbb12d64b3ac1590731d9d1e7a63a92c9" => :high_sierra
+    sha256 "f608ae47b39418b975f21b435749c64b414325f9933cf70fee257888f6a58934" => :sierra
+    sha256 "eb99d1a6ae9817c90e228bd145450819417758007baf1ef78c763a05c4a0ac82" => :el_capitan
+    sha256 "21a487377ac0dae6c47753dd25d3f850b10fcc7ccde8f6a726b4f730bb05a3da" => :yosemite
   end
 
   depends_on "readline"
-  depends_on :java => "1.6"
+  depends_on :java => "1.6+"
 
   # Fix "non-void function should return a value"-Error
-  # https://sourceforge.net/tracker/?func=detail&atid=453822&aid=3566332&group_id=48669
+  # https://sourceforge.net/p/java-readline/patches/2/
   patch :DATA
 
   def install
     java_home = ENV["JAVA_HOME"]
+
+    # Reported 4th May 2016: https://sourceforge.net/p/java-readline/bugs/12/
+    # JDK 8 doclint for Javadoc complains about minor HTML conformance issues
+    if `javadoc -X`.include? "doclint"
+      inreplace "Makefile",
+        "-version -author org.gnu.readline test",
+        "-version -author org.gnu.readline -Xdoclint:none test"
+    end
 
     # Current Oracle JDKs put the jni.h and jni_md.h in a different place than the
     # original Apple/Sun JDK used to.
@@ -53,10 +62,11 @@ class LibreadlineJava < Formula
       s.change_make_var! "LIBPATH", "-L#{readline.opt_lib}"
       s.change_make_var! "CC", "cc"
       s.gsub! "LIB_EXT := so", "LIB_EXT := jnilib"
-      s.gsub! "$(CC) -shared $(OBJECTS) $(LIBPATH) $($(TG)_LIBS) -o $@", "$(CC) -install_name #{HOMEBREW_PREFIX}/lib/$(LIB_PRE)$(TG).$(LIB_EXT) -dynamiclib $(OBJECTS) $(LIBPATH) $($(TG)_LIBS) -o $@"
+      s.gsub! "$(CC) -shared $(OBJECTS) $(LIBPATH) $($(TG)_LIBS) -o $@",
+        "$(CC) -install_name #{HOMEBREW_PREFIX}/lib/$(LIB_PRE)$(TG).$(LIB_EXT) -dynamiclib $(OBJECTS) $(LIBPATH) $($(TG)_LIBS) -o $@"
     end
 
-    (share/"libreadline-java").mkpath
+    pkgshare.mkpath
 
     system "make", "jar"
     system "make", "build-native"
@@ -65,7 +75,7 @@ class LibreadlineJava < Formula
     doc.install "api"
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     You may need to set JAVA_HOME:
       export JAVA_HOME="$(/usr/libexec/java_home)"
     EOS
@@ -73,7 +83,7 @@ class LibreadlineJava < Formula
 
   # Testing libreadline-java (can we execute and exit libreadline without exceptions?)
   test do
-    assert /Exception/ !~ pipe_output("java -Djava.library.path=#{lib} -cp #{share}/libreadline-java/libreadline-java.jar test.ReadlineTest", "exit")
+    assert /Exception/ !~ pipe_output("java -Djava.library.path=#{lib} -cp #{pkgshare}/libreadline-java.jar test.ReadlineTest", "exit")
   end
 end
 

@@ -1,86 +1,69 @@
 class Openvpn < Formula
-  desc "SSL VPN implementing OSI layer 2 or 3 secure network extension"
+  desc "SSL/TLS VPN implementing OSI layer 2 or 3 secure network extension"
   homepage "https://openvpn.net/index.php/download/community-downloads.html"
-  url "https://swupdate.openvpn.org/community/releases/openvpn-2.3.10.tar.gz"
-  mirror "http://build.openvpn.net/downloads/releases/openvpn-2.3.10.tar.gz"
-  sha256 "f8b0b5b92e35bbca1db1a7e6b49e04639e45634e9accd460459b40b2c99ec8f6"
+  url "https://swupdate.openvpn.org/community/releases/openvpn-2.4.4.tar.xz"
+  mirror "https://build.openvpn.net/downloads/releases/openvpn-2.4.4.tar.xz"
+  sha256 "96cd1b8fe1e8cb2920f07c3fd3985faea756e16fdeebd11d3e146d5bd2b04a80"
 
   bottle do
-    cellar :any
-    sha256 "0306a9f03cc1dfbb13e7f694cc1212b71d258f792077f1cc44d0b5f8d5ac14ac" => :el_capitan
-    sha256 "6a7849f46f06b0e090f489974cbb474751b14284a25f41b40d1cecd1430833c4" => :yosemite
-    sha256 "35e58ca6072dc8cb48fb9cfe85d9518f9b0530d4578f5f6ccf7d720cef7593da" => :mavericks
+    sha256 "e2d50964da926f31d012647b97031ebd48b032a315f1f02e8c219dd33a381c24" => :high_sierra
+    sha256 "5ed1394dca18113182e4564f001521908a4bdb8f71f6adc5eb713adb4a4e014f" => :sierra
+    sha256 "ba28ad817104b3e953d2743e45a4c5554cea731c1016997bead7233755ff9a4d" => :el_capitan
   end
 
-  depends_on "lzo"
-  depends_on :tuntap if MacOS.version < :yosemite
-  depends_on "openssl"
-  depends_on "pkcs11-helper" => [:optional, "without-threading", "without-slotevent"]
+  # Requires tuntap for < 10.10
+  depends_on :macos => :yosemite
 
-  if build.with? "pkcs11-helper"
-    depends_on "pkg-config" => :build
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "libtool" => :build
+  depends_on "pkg-config" => :build
+  depends_on "lzo"
+  depends_on "openssl"
+
+  resource "pkcs11-helper" do
+    url "https://github.com/OpenSC/pkcs11-helper/releases/download/pkcs11-helper-1.22/pkcs11-helper-1.22.tar.bz2"
+    sha256 "fbc15f5ffd5af0200ff2f756cb4388494e0fb00b4f2b186712dce6c48484a942"
   end
 
   def install
-    # pam_appl header is installed in a different location on Leopard
-    # and older; reported upstream https://community.openvpn.net/openvpn/ticket/326
-    if MacOS.version < :snow_leopard
-      inreplace Dir["src/plugins/auth-pam/{auth-pam,pamdl}.c"],
-        "security/pam_appl.h", "pam/pam_appl.h"
+    vendor = buildpath/"brew_vendor"
+
+    resource("pkcs11-helper").stage do
+      system "./configure", "--disable-debug",
+                            "--disable-dependency-tracking",
+                            "--prefix=#{vendor}/pkcs11-helper",
+                            "--disable-threading",
+                            "--disable-slotevent",
+                            "--disable-shared"
+      system "make", "install"
     end
 
-    args = %W[
-      --disable-debug
-      --disable-dependency-tracking
-      --disable-silent-rules
-      --with-crypto-library=openssl
-      --prefix=#{prefix}
-      --enable-password-save
-    ]
+    ENV.prepend_path "PKG_CONFIG_PATH", vendor/"pkcs11-helper/lib/pkgconfig"
 
-    args << "--enable-pkcs11" if build.with? "pkcs11-helper"
-
-    system "./configure", *args
-
+    system "./configure", "--disable-debug",
+                          "--disable-dependency-tracking",
+                          "--disable-silent-rules",
+                          "--with-crypto-library=openssl",
+                          "--enable-pkcs11",
+                          "--prefix=#{prefix}"
     system "make", "install"
 
     inreplace "sample/sample-config-files/openvpn-startup.sh",
-      "/etc/openvpn", "#{etc}/openvpn"
+              "/etc/openvpn", "#{etc}/openvpn"
 
-    (doc/"sample").install Dir["sample/sample-*"]
+    (doc/"samples").install Dir["sample/sample-*"]
+    (etc/"openvpn").install doc/"samples/sample-config-files/client.conf"
+    (etc/"openvpn").install doc/"samples/sample-config-files/server.conf"
 
-    (etc+"openvpn").mkpath
-    (var+"run/openvpn").mkpath
-    # We don't use PolarSSL, so this file is unnecessary and somewhat confusing.
-    rm "#{share}/doc/openvpn/README.polarssl"
+    # We don't use mbedtls, so this file is unnecessary & somewhat confusing.
+    rm doc/"README.mbedtls"
   end
 
-  def caveats
-    s = ""
-
-    if MacOS.version < :yosemite
-      s += <<-EOS.undent
-        If you have installed the Tuntap dependency as a source package you will
-        need to follow the instructions found in `brew info tuntap`. If you have
-        installed the binary Tuntap package, no further action is necessary.
-
-      EOS
-    end
-
-    s += <<-EOS.undent
-      For OpenVPN to work as a server, you will need to create configuration file
-      in #{etc}/openvpn, samples can be found in #{share}/doc/openvpn
-    EOS
-
-    s
+  def post_install
+    (var/"run/openvpn").mkpath
   end
 
   plist_options :startup => true
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd";>
     <plist version="1.0">
@@ -111,6 +94,6 @@ class Openvpn < Formula
   end
 
   test do
-    system "#{sbin}/openvpn", "--show-ciphers"
+    system sbin/"openvpn", "--show-ciphers"
   end
 end

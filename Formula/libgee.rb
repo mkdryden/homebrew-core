@@ -1,15 +1,15 @@
 class Libgee < Formula
   desc "Collection library providing GObject-based interfaces"
   homepage "https://wiki.gnome.org/Projects/Libgee"
-  url "https://download.gnome.org/sources/libgee/0.18/libgee-0.18.0.tar.xz"
-  sha256 "4ad99ef937d071b4883c061df40bfe233f7649d50c354cf81235f180b4244399"
+  url "https://download.gnome.org/sources/libgee/0.20/libgee-0.20.0.tar.xz"
+  sha256 "21308ba3ed77646dda2e724c0e8d5a2f8d101fb05e078975a532d7887223c2bb"
 
   bottle do
     cellar :any
-    sha256 "9d9c52c6ad5cd4734d90ff140ba21ef33518657235f665991026e6a93fc051f9" => :el_capitan
-    sha256 "f9c73a58993bb17cbf54a8737007b06f4ed509673683f4bc423656aaa26b6313" => :yosemite
-    sha256 "b720258004feb4202d63b5933f1e2a4562d62d3921ee09f1e7de153bc018c5ee" => :mavericks
-    sha256 "1986e24106d5c6611a529d0ae82d2b57fd0098f8a120f943a78fb6bd5876c24e" => :mountain_lion
+    sha256 "930647e21105e90f0b0bb56f5fe097ab44657fe9624e1810b053cbc59c42c1bb" => :high_sierra
+    sha256 "def51b848030a5079529f08b9886177e93fa88133b39a7db5fc94f681cbca19d" => :sierra
+    sha256 "cd590c7857ad9bc2485d057cf7d4ec1e55555af4875479bfa7a416ddc02618ec" => :el_capitan
+    sha256 "c05334f4f4a72e3185ea1130a10ab939dce5ba3cf7d40a9056fc1973957c5dd3" => :yosemite
   end
 
   depends_on "pkg-config" => :build
@@ -31,7 +31,7 @@ class Libgee < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gee.h>
 
       int main(int argc, char *argv[]) {
@@ -41,8 +41,7 @@ class Libgee < Formula
     EOS
     gettext = Formula["gettext"]
     glib = Formula["glib"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{gettext.opt_include}
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include

@@ -1,14 +1,16 @@
 class Libssh2 < Formula
   desc "C library implementing the SSH2 protocol"
   homepage "https://libssh2.org/"
-  url "https://libssh2.org/download/libssh2-1.7.0.tar.gz"
-  sha256 "e4561fd43a50539a8c2ceb37841691baf03ecb7daf043766da1b112e4280d584"
+  url "https://libssh2.org/download/libssh2-1.8.0.tar.gz"
+  sha256 "39f34e2f6835f4b992cafe8625073a88e5a28ba78f83e8099610a7b3af4676d4"
 
   bottle do
     cellar :any
-    sha256 "3b9cef10df7eb69305daaf5a2f3bc13bd16b42e318f742de31541592a3da1f36" => :el_capitan
-    sha256 "5bcdd6ec9369bebadeef640262e7034a92024b353122ab40a1a26d1d5dcc7761" => :yosemite
-    sha256 "75a02f552af40d6ed0802a610daf4b86f14dec925b671fe86deb24c8eaacfb22" => :mavericks
+    rebuild 1
+    sha256 "22327eb5bbff660935db0c5106d5a43069ee23e5cb33d5125bad4e144e83ee34" => :high_sierra
+    sha256 "4a1e39137bc9461d779a7a84626354928788aeb0650fb0fed75e0fbecb95c0cd" => :sierra
+    sha256 "d6693c1417f0deb8f1b0c6a7c338491a7f60f2cc516675186e572329c1fcaa6c" => :el_capitan
+    sha256 "f7fab0024a104c43a3139b0e70cbc04606c20409b36ffb6deebb326c168c4547" => :yosemite
   end
 
   head do
@@ -19,10 +21,7 @@ class Libssh2 < Formula
     depends_on "libtool" => :build
   end
 
-  option "with-libressl", "build with LibreSSL instead of OpenSSL"
-
-  depends_on "openssl" => :recommended
-  depends_on "libressl" => :optional
+  depends_on "openssl"
 
   def install
     args = %W[
@@ -33,13 +32,8 @@ class Libssh2 < Formula
       --disable-examples-build
       --with-openssl
       --with-libz
+      --with-libssl-prefix=#{Formula["openssl"].opt_prefix}
     ]
-
-    if build.with? "libressl"
-      args << "--with-libssl-prefix=#{Formula["libressl"].opt_prefix}"
-    else
-      args << "--with-libssl-prefix=#{Formula["openssl"].opt_prefix}"
-    end
 
     system "./buildconf" if build.head?
     system "./configure", *args
@@ -47,7 +41,7 @@ class Libssh2 < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <libssh2.h>
 
       int main(void)

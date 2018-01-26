@@ -4,15 +4,16 @@ class Shellcheck < Formula
   include Language::Haskell::Cabal
 
   desc "Static analysis and lint tool, for (ba)sh scripts"
-  homepage "http://www.shellcheck.net"
-  url "https://github.com/koalaman/shellcheck/archive/v0.4.3.tar.gz"
-  sha256 "229a3bd5e38c4da2ce7ddf43c06ca388454e0406f3dbfc44865208b6b334109e"
+  homepage "https://www.shellcheck.net/"
+  url "https://github.com/koalaman/shellcheck/archive/v0.4.7.tar.gz"
+  sha256 "3fd7ebec821b96585ba9137b7b8c7bd9410876490f4ec89f2cca9975080a8206"
   head "https://github.com/koalaman/shellcheck.git"
 
   bottle do
-    sha256 "daf97f6a1ff883a55039074774c30a049635207d2c9af573c2cacd2d700a09a7" => :el_capitan
-    sha256 "a3ba4ae51b06d96ef1275938a0183f7590a437dce5f015011d1a104aaa092274" => :yosemite
-    sha256 "62e937dccd8b7f49c3e5f15b49b8fa26f3a71e51ae04af41a6dd5d83721b055e" => :mavericks
+    cellar :any_skip_relocation
+    sha256 "4670b4952117677a171f4e3312d5b6660ad6b443c1e2c65aed8fb17fe46b2342" => :high_sierra
+    sha256 "8eb344f3f20995bd7210f12b337116b0295755bf78990ea824ba160e8e6b0bf9" => :sierra
+    sha256 "7136c486a8faf29e840b96abc02a68420b641261ba3ed252fbc5ac0da7161721" => :el_capitan
   end
 
   depends_on "ghc" => :build
@@ -27,12 +28,12 @@ class Shellcheck < Formula
 
   test do
     sh = testpath/"test.sh"
-    sh.write <<-EOS.undent
+    sh.write <<~EOS
       for f in $(ls *.wav)
       do
         echo "$f"
       done
     EOS
-    assert_match "[SC2045]", shell_output("shellcheck -f gcc #{sh}", 1)
+    assert_match "[SC2045]", shell_output("#{bin}/shellcheck -f gcc #{sh}", 1)
   end
 end

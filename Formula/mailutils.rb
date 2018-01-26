@@ -1,26 +1,27 @@
 class Mailutils < Formula
   desc "Swiss Army knife of email handling"
-  homepage "http://mailutils.org/"
-  url "http://ftpmirror.gnu.org/mailutils/mailutils-2.2.tar.gz"
-  sha256 "97591debcd32ac1f4c4d16eaa8f21690d9dfefcb79e29bd293871d57c4a5e05d"
-  revision 1
+  homepage "https://mailutils.org/"
+  url "https://ftp.gnu.org/gnu/mailutils/mailutils-3.4.tar.gz"
+  mirror "https://ftpmirror.gnu.org/mailutils/mailutils-3.4.tar.gz"
+  sha256 "a3e83b1450222ffdbc7fa42e7171d530fcd568b6871158a489d86840ae130df7"
 
   bottle do
-    sha256 "fccedf57a8a126a59070d2038ff46b5fc12ef98a2e5d4a670d43360258904471" => :el_capitan
-    sha256 "2b427bbb6d4043c70441b037916ca60a0abb2bdbc78c255162d63f87bbdce86c" => :yosemite
-    sha256 "79fb430c09ce7803450a55d8be2185d62bb1c3b6bd880ff76826928a067a9453" => :mavericks
+    sha256 "bbd0305336adc02ee5da9d5cd84d267212fad59e6aa67e7d8564531eeaaabad7" => :high_sierra
+    sha256 "241d546b7d97fc8cc8150b61d3a7c1770868f235ffe76634a08e98ae9b6daefc" => :sierra
+    sha256 "752f777cafe9eb7434c900882bdb7eda9cf100d5f3a177a05ae4e164aa98c2a4" => :el_capitan
   end
 
+  depends_on "libtool" => :run
   depends_on "gnutls"
   depends_on "gsasl"
+  depends_on "readline"
 
   def install
-    # Python breaks the build (2014-05-01)
-    # Don't want bin/mu-mh/ directory
-    system "./configure", "--without-python",
-                          "--disable-mh",
-                          "--prefix=#{prefix}"
-    system "make", "install"
+    system "./configure", "--disable-mh",
+                          "--prefix=#{prefix}",
+                          "--without-guile",
+                          "--without-tokyocabinet"
+    system "make", "PYTHON_LIBS=-undefined dynamic_lookup", "install"
   end
 
   test do

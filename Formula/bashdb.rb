@@ -1,15 +1,16 @@
 class Bashdb < Formula
   desc "Bash shell debugger"
-  homepage "http://bashdb.sourceforge.net"
-  url "https://downloads.sourceforge.net/project/bashdb/bashdb/4.3-0.91/bashdb-4.3-0.91.tar.bz2"
-  version "4.3-0.91"
-  sha256 "60117745813f29070a034c590c9d70153cc47f47024ae54bfecdc8cd86d9e3ea"
+  homepage "https://bashdb.sourceforge.io"
+  url "https://downloads.sourceforge.net/project/bashdb/bashdb/4.4-0.94/bashdb-4.4-0.94.tar.bz2"
+  version "4.4-0.94"
+  sha256 "5931afc2f153aa595b4c59e53d303d845952ab6101227c34654a1b83686dc006"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "acaeaec58a610b8ee53f3ef1ebbee800991b1790a50bf38f6496e4c3e07a8a40" => :el_capitan
-    sha256 "407d84f8f4e34a1f9accaf6a5cb74c50028b97009842c592b969020e5a04630e" => :yosemite
-    sha256 "f715486224a5d5625b9cc5645235e7f977fce749254dbde3254028b2700d8860" => :mavericks
+    sha256 "b28d68c233e0aeea8c1f690d60ad4ab3a3a861f3479a0c9910ea38c7930beb04" => :high_sierra
+    sha256 "c16468585dfc75cdc28379afdbd5a506e7a842be3cbbb91249063b614b6ab94f" => :sierra
+    sha256 "c16468585dfc75cdc28379afdbd5a506e7a842be3cbbb91249063b614b6ab94f" => :el_capitan
+    sha256 "c16468585dfc75cdc28379afdbd5a506e7a842be3cbbb91249063b614b6ab94f" => :yosemite
   end
 
   depends_on "bash"
@@ -25,6 +26,6 @@ class Bashdb < Formula
   end
 
   test do
-    system "#{bin}/bashdb", "--version"
+    assert_match version.to_s, pipe_output("#{bin}/bashdb --version 2>&1")
   end
 end

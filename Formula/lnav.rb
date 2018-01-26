@@ -1,14 +1,15 @@
 class Lnav < Formula
   desc "Curses-based tool for viewing and analyzing log files"
-  homepage "http://lnav.org"
-  url "https://github.com/tstack/lnav/releases/download/v0.8.0/lnav-0.8.0.tar.gz"
-  sha256 "fbebe3f4656c89b307fe06e7746e6146ae856048413a7cd98aaf8fc2bb34fc33"
+  # lnav.org has an SSL issue: https://github.com/tstack/lnav/issues/401
+  homepage "https://github.com/tstack/lnav"
+  url "https://github.com/tstack/lnav/releases/download/v0.8.2/lnav-0.8.2.tar.gz"
+  sha256 "0f6a235aa3719f84067d510127730f5834a8874795494c9292c2f0de43db8c70"
 
   bottle do
-    revision 2
-    sha256 "d34926a00d4aca2e8045ddbe12b948042b2dfa262e403b67f303cfb01c7af482" => :el_capitan
-    sha256 "ab14e46f5a4c0570a3437ae1703ec152e86d57e5a47192d3f81d74665e74649d" => :yosemite
-    sha256 "457250f40c4f012722c23b23beed1ab8eaee7dda2184581bbec66ad981c270f7" => :mavericks
+    sha256 "cba3ec43a680bbafb94a76111b677cfbef2aa1e5c0d97bd0b9b954213c6daf15" => :high_sierra
+    sha256 "6d10c74d64d4ea6ad0bf1e28feb03081164f6466984b18b1f35426c4b65ecf98" => :sierra
+    sha256 "a9517f28d9765a56c5012726e392ac577de272b7a7c5dc998b66d20873e56271" => :el_capitan
+    sha256 "d24c2db2e9a8954fb01326e458281699f1d8609bbdd99a0505967d5102aea0bc" => :yosemite
   end
 
   head do
@@ -21,16 +22,20 @@ class Lnav < Formula
 
   depends_on "readline"
   depends_on "pcre"
+  depends_on "sqlite" if MacOS.version < :sierra
   depends_on "curl" => ["with-libssh2", :optional]
 
   def install
+    # Fix errors such as "use of undeclared identifier 'sqlite3_value_subtype'"
+    ENV.delete("SDKROOT")
+
     args = %W[
       --disable-dependency-tracking
       --prefix=#{prefix}
       --with-readline=#{Formula["readline"].opt_prefix}
     ]
 
-    # OS X ships with libcurl by default, albeit without sftp support. If we
+    # macOS ships with libcurl by default, albeit without sftp support. If we
     # want lnav to use the keg-only curl formula that we specify as a
     # dependency, we need to pass in the path.
     args << "--with-libcurl=#{Formula["curl"].opt_lib}" if build.with? "curl"

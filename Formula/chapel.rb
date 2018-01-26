@@ -1,14 +1,14 @@
 class Chapel < Formula
   desc "Emerging programming language designed for parallel computing"
   homepage "http://chapel.cray.com/"
-  url "https://github.com/chapel-lang/chapel/releases/download/1.13.0/chapel-1.13.0.tar.gz"
-  sha256 "d24ecd32b92817714dae5ae214883aa3929b7b77778e85e4873670223c06ecae"
+  url "https://github.com/chapel-lang/chapel/releases/download/1.16.0/chapel-1.16.0.tar.gz"
+  sha256 "5748431119d17c8a864162194797679ca3772eb2ee251eee4369afc2ed024b95"
   head "https://github.com/chapel-lang/chapel.git"
 
   bottle do
-    sha256 "c894182491763d53c8a4f8cf9f0596360dd2950a12be0675523152747f551be2" => :el_capitan
-    sha256 "8cace8d42b8ab5123445efedb5ba2273de56b3f639222c5262dcebc6df1c94a2" => :yosemite
-    sha256 "b08dd7f10e37ee603ae3c27d4a26cdeec5de03a1875fd9cec26cd94b59cb0820" => :mavericks
+    sha256 "aef33e77ac7a768aa247a0197e807b826bd4ab6477e86fb8842fc30e66d513ac" => :high_sierra
+    sha256 "8865b2220f717d719e9d7ead254dc85ac90b912d121cffe1b32bde5f19f7e374" => :sierra
+    sha256 "76c77426a0eb19f236a318428dcae598ae718a71380969795d151c06542c96f9" => :el_capitan
   end
 
   def install
@@ -17,11 +17,12 @@ class Chapel < Formula
     ENV["CHPL_HOME"] = libexec
 
     # Must be built from within CHPL_HOME to prevent build bugs.
-    # https://gist.github.com/DomT4/90dbcabcc15e5d4f786d
-    # https://github.com/Homebrew/homebrew/pull/35166
+    # https://github.com/Homebrew/legacy-homebrew/pull/35166
     cd libexec do
       system "make"
       system "make", "chpldoc"
+      system "make", "test-venv"
+      system "make", "cleanall"
     end
 
     prefix.install_metafiles

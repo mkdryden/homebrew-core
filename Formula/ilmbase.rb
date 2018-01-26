@@ -6,24 +6,22 @@ class Ilmbase < Formula
   sha256 "ecf815b60695555c1fbc73679e84c7c9902f4e8faa6e8000d2f905b8b86cedc7"
 
   bottle do
-    revision 1
-    sha256 "1d4bcd7e058e1b629bcd608d063d64266253e2e671084c2f54df69061b1bd439" => :el_capitan
-    sha256 "c660a7b84cf84a03a17c3bf5cd1b86dd1e0357cb9e2d854665f4d538786c8014" => :yosemite
-    sha256 "db95cf0582acc259b987fe194eb50cc760b25d733b9ff195c25448e21e21e039" => :mavericks
+    cellar :any
+    rebuild 3
+    sha256 "f53b502c8a59462466c610d127cdc2be288b472c4fbe76fa6affbff9498dac44" => :high_sierra
+    sha256 "6fee028cc8dc306fc1c48b9015c48c02049f3c281e496af1448ca65d13c8405c" => :sierra
+    sha256 "a18e2d6ecd45ff0ea78f856374aa11386b5fd2c2e82a335271b62c917f33caf4" => :el_capitan
   end
 
-  option :universal
-
   def install
-    ENV.universal_binary if build.universal?
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make", "install"
-    (share/"ilmbase").install %W[Half HalfTest Iex IexMath IexTest IlmThread Imath ImathTest]
+    pkgshare.install %w[Half HalfTest Iex IexMath IexTest IlmThread Imath ImathTest]
   end
 
   test do
-    cd share/"ilmbase/IexTest" do
+    cd pkgshare/"IexTest" do
       system ENV.cxx, "-I#{include}/OpenEXR", "-I./", "-c",
              "testBaseExc.cpp", "-o", testpath/"test"
     end

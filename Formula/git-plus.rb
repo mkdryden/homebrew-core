@@ -1,25 +1,20 @@
 class GitPlus < Formula
   desc "Git utilities: git multi, git relation, git old-branches, git recent"
   homepage "https://github.com/tkrajina/git-plus"
-  url "https://github.com/tkrajina/git-plus/archive/v0.2.0.tar.gz"
-  sha256 "b7ab54ad4079fab9f7ddef1bb0fb280eb25315c3da7750786fed4d43d2dd892f"
+  url "https://github.com/tkrajina/git-plus/archive/v0.3.1.tar.gz"
+  sha256 "ec650cca2e5d26d89f099e3124fbf927c5ab31a56b8c2191b723c4b6a6a50b21"
   head "https://github.com/tkrajina/git-plus.git"
 
   bottle :unneeded
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python" if MacOS.version <= :snow_leopard
 
   def install
-    site_packages = libexec/"lib/python2.7/site-packages"
-    libexec_bin = libexec/"bin"
+    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python2.7/site-packages"
+    system "python", *Language::Python.setup_install_args(libexec)
 
-    ENV.prepend_create_path "PYTHONPATH", site_packages
-
-    site_packages.install "gitutils.py"
-    libexec_bin.install Dir["git-*"]
-
-    bin.install Dir[libexec_bin/"*"]
-    bin.env_script_all_files libexec_bin, :PYTHONPATH => ENV["PYTHONPATH"]
+    bin.install Dir[libexec/"bin/*"]
+    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
   end
 
   test do
@@ -31,6 +26,6 @@ class GitPlus < Formula
       rm "README"
     end
 
-    assert_match /D README/, shell_output("#{bin}/git-multi")
+    assert_match "D README", shell_output("#{bin}/git-multi")
   end
 end

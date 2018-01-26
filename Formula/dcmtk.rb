@@ -1,36 +1,32 @@
 class Dcmtk < Formula
   desc "OFFIS DICOM toolkit command-line utilities"
   homepage "http://dicom.offis.de/dcmtk.php.en"
-
-  # Current snapshot used for stable now.
-  url "http://dicom.offis.de/download/dcmtk/snapshot/dcmtk-3.6.1_20160216.tar.gz"
-  version "3.6.1-20160216"
-  sha256 "51c1075a5c0b631ac0849a967862eaa55466df0aa8c4704f9d67b541bedba812"
-
-  head "git://git.dcmtk.org/dcmtk.git"
+  url "http://dicom.offis.de/download/dcmtk/dcmtk362/dcmtk-3.6.2.tar.gz"
+  sha256 "1b5cf1dcb23cad401310c3afeb961c3613e3d20ab2d161dcc8bf0735b443218d"
+  head "http://git.dcmtk.org/dcmtk.git"
 
   bottle do
-    sha256 "177f217df6e3eccb68e5306222b136ed87609f89f041f4451459e4a78f5eaf33" => :el_capitan
-    sha256 "15ce712721b1a1d52095dda6ccaee211920357834f26e39241673e6513a1fa9a" => :yosemite
-    sha256 "8d788453c0221597d65effe0b814aedb371d1b28170bc38be904823d28d5c0d7" => :mavericks
+    sha256 "9b328afaa927a5001da453c3020ce895e2456c532289dd09b7a570a7517c54df" => :high_sierra
+    sha256 "667469116e8e934360205c525fc3cf30290e64f44bc99ee85adf516dfcb39298" => :sierra
+    sha256 "b245dc0c76c6075b9756a16ff50337b4fdfe33ded46c788f19925635c09344b2" => :el_capitan
   end
 
   option "with-docs", "Install development libraries/headers and HTML docs"
   option "with-libiconv", "Build with brewed libiconv. Dcmtk and system libiconv can have problems with utf8."
+  option "with-dicomdict", "Build with baked-in DICOM data dictionary."
 
   depends_on "cmake" => :build
   depends_on "doxygen" => :build if build.with? "docs"
   depends_on "libpng"
   depends_on "libtiff"
-  depends_on "openssl"
-  depends_on "homebrew/dupes/libiconv" => :optional
+  depends_on "openssl" => :recommended
+  depends_on "libiconv" => :optional
 
   def install
-    ENV.m64 if MacOS.prefer_64_bit?
-
     args = std_cmake_args
-    args << "-DDCMTK_WITH_OPENSSL=YES"
+    args << "-DDCMTK_WITH_OPENSSL=NO" if build.without? "openssl"
     args << "-DDCMTK_WITH_DOXYGEN=YES" if build.with? "docs"
+    args << "-DDCMTK_ENABLE_BUILTIN_DICTIONARY=YES -DDCMTK_ENABLE_EXTERNAL_DICTIONARY=NO" if build.with? "dicomdict"
     args << "-DDCMTK_WITH_ICONV=YES -DLIBICONV_DIR=#{Formula["libiconv"].opt_prefix}" if build.with? "libiconv"
     args << ".."
 

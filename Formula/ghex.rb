@@ -1,20 +1,22 @@
 class Ghex < Formula
   desc "GNOME hex editor"
   homepage "https://wiki.gnome.org/Apps/Ghex"
-  url "https://download.gnome.org/sources/ghex/3.18/ghex-3.18.0.tar.xz"
-  sha256 "c5b1eb50a8dd1334880b37617871498b778ea137f79bb43894ec68e4f63dc925"
+  url "https://download.gnome.org/sources/ghex/3.18/ghex-3.18.3.tar.xz"
+  sha256 "c67450f86f9c09c20768f1af36c11a66faf460ea00fbba628a9089a6804808d3"
 
   bottle do
-    sha256 "9eb6931e7ac0fb1ea0e5403cc02cd403a19874269b9d23946a2cfb17c3b8c588" => :el_capitan
-    sha256 "2bf38162e119817cf5151c7ac1152fcb722fd9305a5555db865e3a83b027ab6b" => :yosemite
-    sha256 "d20ac82df9e830d9579a4ad7689a9162744f1373d601f91edd18b80e3d4fe386" => :mavericks
+    rebuild 1
+    sha256 "18abbf00cd515f2346c10393ff9e5adef3d477c7478578489398efd1fa3337fd" => :high_sierra
+    sha256 "02c744417d58dc442de342f0277ca4d320dde285365d5c88d002932cad2538de" => :sierra
+    sha256 "8123441a65bd5d45a1baf9a227911a1edeb514240d8c81fa563de5cc756b3fc8" => :el_capitan
+    sha256 "378e85b6e1f712c2415430f426a6381e03c692f8e8f72b93a77f94c2e205fe5a" => :yosemite
   end
 
   depends_on "pkg-config" => :build
   depends_on "intltool" => :build
   depends_on "itstool" => :build
-  depends_on "libxml2" => [:build, "with-python"]
-  depends_on :python => :build if MacOS.version <= :snow_leopard
+  depends_on "libxml2" => :build
+  depends_on "python" => :build if MacOS.version <= :snow_leopard
   depends_on "gtk+3"
   depends_on "hicolor-icon-theme"
 

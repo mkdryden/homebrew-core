@@ -1,8 +1,8 @@
 class Jruby < Formula
   desc "Ruby implementation in pure Java"
   homepage "http://www.jruby.org"
-  url "https://s3.amazonaws.com/jruby.org/downloads/9.0.5.0/jruby-bin-9.0.5.0.tar.gz"
-  sha256 "9ef392bd859690c9a838f6475040345e0c512f7fcc0b37c809a91cf671f5daf3"
+  url "https://search.maven.org/remotecontent?filepath=org/jruby/jruby-dist/9.1.15.0/jruby-dist-9.1.15.0-bin.tar.gz"
+  sha256 "4a0d9305867ed327a8cf4f7ff8a65c7ff62094a495ec85463d0792656762469e"
 
   bottle :unneeded
 
@@ -20,13 +20,13 @@ class Jruby < Formula
       rm "irb" # irb is an identical copy of jirb
     end
 
-    # Only keep the OS X native libraries
+    # Only keep the macOS native libraries
     rm_rf Dir["lib/jni/*"] - ["lib/jni/Darwin"]
     libexec.install Dir["*"]
     bin.install_symlink Dir["#{libexec}/bin/*"]
   end
 
   test do
-    system "#{bin}/jruby", "-e", "puts 'hello'"
+    assert_equal "hello\n", shell_output("#{bin}/jruby -e \"puts 'hello'\"")
   end
 end

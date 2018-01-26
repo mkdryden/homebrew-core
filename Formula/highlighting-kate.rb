@@ -5,15 +5,17 @@ class HighlightingKate < Formula
 
   desc "Haskell syntax highlighting library, based on the Kate editor"
   homepage "https://github.com/jgm/highlighting-kate"
-  url "https://hackage.haskell.org/package/highlighting-kate-0.6.2/highlighting-kate-0.6.2.tar.gz"
-  sha256 "728f10ccba6dfa1604398ae527520d2debeef870472fe104c2bf0714c513b411"
+  url "https://hackage.haskell.org/package/highlighting-kate-0.6.4/highlighting-kate-0.6.4.tar.gz"
+  sha256 "d8b83385f5da2ea7aa59f28eb860fd7eba0d35a4c36192a5044ee7ea1e001baf"
 
   head "https://github.com/jgm/highlighting-kate.git"
 
   bottle do
-    sha256 "cc5f019b34a5838ef52928bbf30e42191c96ed1e1e602193e6b71cc8ddf2d5f7" => :el_capitan
-    sha256 "99f8faf09ffb0852acc90e5e1f1bfbf6ec21e09fd2b1da748fd25dd960666f6d" => :yosemite
-    sha256 "be3f9ad7b797304a0403bf168f4a2519c44c8a790731004ab5c6862615f90fee" => :mavericks
+    cellar :any_skip_relocation
+    rebuild 1
+    sha256 "5bc082453692f0d95f5e09fdcc85732b987da5a1ce33be520389e957bc2f5393" => :high_sierra
+    sha256 "29ad60e21820b116e4f91c8000e2c890c081f08c4ccfc02340ca44ae9892084b" => :sierra
+    sha256 "bce28e772d40cc270aa78c376a1d6fed78eaba841ca7b90e4290daad0f72d058" => :el_capitan
   end
 
   depends_on "ghc" => :build

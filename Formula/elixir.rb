@@ -1,42 +1,17 @@
-class Erlang18Requirement < Requirement
-  fatal true
-  env :userpaths
-  default_formula "erlang"
-
-  satisfy do
-    erl = which("erl")
-    next unless erl
-    `#{erl} -noshell -eval 'io:fwrite("~s", [erlang:system_info(otp_release) >= "18"])' -s erlang halt | grep -q '^true'`
-    $?.exitstatus == 0
-  end
-
-  def message; <<-EOS.undent
-    Erlang 18+ is required to install.
-
-    You can install this with:
-      brew install erlang
-
-    Or you can use an official installer from:
-      http://www.erlang.org/
-    EOS
-  end
-end
-
 class Elixir < Formula
   desc "Functional metaprogramming aware language built on Erlang VM"
-  homepage "http://elixir-lang.org/"
-  url "https://github.com/elixir-lang/elixir/archive/v1.2.4.tar.gz"
-  sha256 "16759ff84d08b480b7e5499716e663b2fffd26e20cf2863de5613bc7bb05c817"
-
+  homepage "https://elixir-lang.org/"
+  url "https://github.com/elixir-lang/elixir/archive/v1.6.0.tar.gz"
+  sha256 "28d93afac480a279b75c3e57ce53fb4c027217c8db55a19d364efe8ceccd1b40"
   head "https://github.com/elixir-lang/elixir.git"
 
   bottle do
-    sha256 "6f591430b6088ce017564b52dcffdbe1272970efdc429b12ee124a97b349d2f6" => :el_capitan
-    sha256 "99032d65dd735455ff9a517ec9a0b989b33020b22c5bcf91882cddb4f904983a" => :yosemite
-    sha256 "df2c122f5937eafe8aa3b9a87c6cfdd0bc4a17b9c57ebf7c9f12082d793c60db" => :mavericks
+    sha256 "2674d6347ddad33a77771264e49f91e3dd7b49b64ea8bac5cde11476a352c7e0" => :high_sierra
+    sha256 "fcb95bb5b7415303c272da91e4a369233c4cb466f6af16eb1e6a5396ee3e7111" => :sierra
+    sha256 "8d3380a735359b041d72fa5a2f2d6125b059601a4a50bdb7ff8b73256eb601d2" => :el_capitan
   end
 
-  depends_on Erlang18Requirement
+  depends_on "erlang"
 
   def install
     system "make"

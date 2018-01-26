@@ -1,20 +1,20 @@
 class Hydra < Formula
   desc "Network logon cracker which supports many services"
   homepage "https://www.thc.org/thc-hydra/"
-  url "https://www.thc.org/releases/hydra-8.1.tar.gz"
-  sha256 "e4bc2fd11f97a8d985a38a31785c86d38cc60383e47a8f4a5c436351e5135f19"
-  head "https://github.com/vanhauser-thc/thc-hydra.git"
+  url "https://github.com/vanhauser-thc/thc-hydra/archive/8.6.tar.gz"
+  sha256 "05a87eb018507b24afca970081f067e64441460319fb75ca1e64c4a1f322b80b"
   revision 1
+  head "https://github.com/vanhauser-thc/thc-hydra.git"
 
   bottle do
     cellar :any
-    sha256 "13e14223d88e3b3357952d1f4096e1f336f00c642ac01c42840b59d1a41e1bb3" => :el_capitan
-    sha256 "e2276f9b274e3a5a8f76b3e2a44d99e3accc2eb6b8c07cec7ffe7ee5b76675af" => :yosemite
-    sha256 "26048c21e5dbac4796ebc0f23b4e7e77b21df35e002fe5a46bfe21c92da2498e" => :mavericks
+    sha256 "5f7dac7a0761023b70750c19db74027fd2eaded578d49192c20554a0f7bdedad" => :high_sierra
+    sha256 "474ee0cfcf4e20992f66c6104067311ad48885d708134bb7930c5edc9214a53e" => :sierra
+    sha256 "cfa0416738af22ba2b45833de89e19697f10e2c2392f7d866fa9d6e17a7a882f" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
-  depends_on :mysql
+  depends_on "mysql"
   depends_on "openssl"
   depends_on "subversion" => :optional
   depends_on "libidn" => :optional
@@ -23,12 +23,16 @@ class Hydra < Formula
   depends_on "gtk+" => :optional
 
   def install
-    # Dirty hack to permit linking against our OpenSSL.
-    # https://github.com/vanhauser-thc/thc-hydra/issues/80
     inreplace "configure" do |s|
+      # Link against our OpenSSL
+      # https://github.com/vanhauser-thc/thc-hydra/issues/80
       s.gsub! "/opt/local/lib", Formula["openssl"].opt_lib
       s.gsub! "/opt/local/*ssl", Formula["openssl"].opt_lib
       s.gsub! "/opt/*ssl/include", Formula["openssl"].opt_include
+      # Avoid opportunistic linking of subversion
+      s.gsub! "libsvn", "oh_no_you_dont" if build.without? "subversion"
+      # Avoid opportunistic linking of libssh
+      s.gsub! "libssh", "certainly_not" if build.without? "libssh"
     end
 
     # Having our gcc in the PATH first can cause issues. Monitor this.

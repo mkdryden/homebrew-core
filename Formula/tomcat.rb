@@ -3,31 +3,30 @@ class Tomcat < Formula
   homepage "https://tomcat.apache.org/"
 
   stable do
-    url "https://www.apache.org/dyn/closer.cgi?path=tomcat/tomcat-8/v8.0.33/bin/apache-tomcat-8.0.33.tar.gz"
-    mirror "https://archive.apache.org/dist/tomcat/tomcat-8/v8.0.33/bin/apache-tomcat-8.0.33.tar.gz"
-    sha256 "c77873c1861ed81617abb8bedc392fb0ff5ebf871de33cd1fcd49d4c072e38b7"
+    url "https://www.apache.org/dyn/closer.cgi?path=tomcat/tomcat-8/v8.5.27/bin/apache-tomcat-8.5.27.tar.gz"
+    mirror "https://archive.apache.org/dist/tomcat/tomcat-8/v8.5.27/bin/apache-tomcat-8.5.27.tar.gz"
+    sha256 "ad78d0908a5dabf722cd378364ba02b1cbd58f3515ba2f1833f334bf6dcec448"
 
     depends_on :java => "1.7+"
 
     resource "fulldocs" do
-      url "https://www.apache.org/dyn/closer.cgi?path=/tomcat/tomcat-8/v8.0.33/bin/apache-tomcat-8.0.33-fulldocs.tar.gz"
-      mirror "https://archive.apache.org/dist/tomcat/tomcat-8/v8.0.33/bin/apache-tomcat-8.0.33-fulldocs.tar.gz"
-      version "8.0.33"
-      sha256 "211dd1d95fbb838914169828de64cf8a12ffc0ae6d3c77b8027592849c89ebb4"
+      url "https://www.apache.org/dyn/closer.cgi?path=/tomcat/tomcat-8/v8.5.27/bin/apache-tomcat-8.5.27-fulldocs.tar.gz"
+      mirror "https://archive.apache.org/dist/tomcat/tomcat-8/v8.5.27/bin/apache-tomcat-8.5.27-fulldocs.tar.gz"
+      sha256 "ca68b78217c14a35d4deb8485017b0efe1cda88c751b95b29c2974ae948e1367"
     end
   end
 
   devel do
-    url "https://www.apache.org/dyn/closer.cgi?path=/tomcat/tomcat-9/v9.0.0.M4/bin/apache-tomcat-9.0.0.M4.tar.gz"
-    version "9.0.0.M4"
-    sha256 "7586582b3498d4fb874a82f96f408ee51c8d3bf38eb5af1ea987f65de90ac685"
+    url "https://www.apache.org/dyn/closer.cgi?path=/tomcat/tomcat-9/v9.0.4/bin/apache-tomcat-9.0.4.tar.gz"
+    mirror "https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.4/bin/apache-tomcat-9.0.4.tar.gz"
+    sha256 "791529a4289d3d5356f8f93afcfa0ee20f4b31e454be650f1dd469524ebfa1fc"
 
     depends_on :java => "1.8+"
 
     resource "fulldocs" do
-      url "https://www.apache.org/dyn/closer.cgi?path=/tomcat/tomcat-9/v9.0.0.M4/bin/apache-tomcat-9.0.0.M4-fulldocs.tar.gz"
-      version "9.0.0.M4"
-      sha256 "3311cdbf18696090b233bd2bf59740c5583dbf19d3de6b7c97e2f348c625b2b5"
+      url "https://www.apache.org/dyn/closer.cgi?path=/tomcat/tomcat-9/v9.0.4/bin/apache-tomcat-9.0.4-fulldocs.tar.gz"
+      mirror "https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.4/bin/apache-tomcat-9.0.4-fulldocs.tar.gz"
+      sha256 "ad14b2f473bb1d47ccfd47415241d7c49fad292fbb2bd2e1f3a88323b7c97b9f"
     end
   end
 
@@ -40,11 +39,34 @@ class Tomcat < Formula
     rm_rf Dir["bin/*.bat"]
 
     # Install files
-    prefix.install %w[ NOTICE LICENSE RELEASE-NOTES RUNNING.txt ]
+    prefix.install %w[NOTICE LICENSE RELEASE-NOTES RUNNING.txt]
     libexec.install Dir["*"]
     bin.install_symlink "#{libexec}/bin/catalina.sh" => "catalina"
 
-    (share/"fulldocs").install resource("fulldocs") if build.with? "fulldocs"
+    (pkgshare/"fulldocs").install resource("fulldocs") if build.with? "fulldocs"
+  end
+
+  plist_options :manual => "catalina run"
+
+  def plist; <<~EOS
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+      <dict>
+        <key>Disabled</key>
+        <false/>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_bin}/catalina</string>
+          <string>run</string>
+        </array>
+        <key>KeepAlive</key>
+        <true/>
+      </dict>
+    </plist>
+    EOS
   end
 
   test do
@@ -61,6 +83,6 @@ class Tomcat < Formula
     ensure
       Process.wait pid
     end
-    File.exist? testpath/"logs/catalina.out"
+    assert_predicate testpath/"logs/catalina.out", :exist?
   end
 end

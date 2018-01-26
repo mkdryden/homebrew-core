@@ -1,35 +1,41 @@
 class Plplot < Formula
   desc "Cross-platform software package for creating scientific plots"
-  homepage "http://plplot.sourceforge.net"
-  url "https://downloads.sourceforge.net/project/plplot/plplot/5.11.1%20Source/plplot-5.11.1.tar.gz"
-  sha256 "289dff828c440121e57b70538b3f0fb4056dc47159bc1819ea444321f2ff1c4c"
+  homepage "https://plplot.sourceforge.io"
+  url "https://downloads.sourceforge.net/project/plplot/plplot/5.13.0%20Source/plplot-5.13.0.tar.gz"
+  sha256 "ec36bbee8b03d9d1c98f8fd88f7dc3415560e559b53eb1aa991c2dcf61b25d2b"
+  revision 1
 
   bottle do
-    sha256 "1a0ebd2560517328652cce3600af9c715da25aa461cb21a621c2dbb9904f0c16" => :el_capitan
-    sha256 "81eb90e08ac42f6f5ea9f41159baf2cbf95f93f6f1390ddd1b12f00bb415e079" => :yosemite
-    sha256 "7e4c364b66c61d7f35cb6a5417ee5ef1d06fe7a30d78b8d237a36b4beaa458f8" => :mavericks
-    sha256 "b779762659e485d6c9cad54206b1e72f2db5e82950b19a356439e9ce3ef79138" => :mountain_lion
+    sha256 "7873de96195718c4af1ce1165690317e4d6facc819d9c25e49768fbbbb042a95" => :high_sierra
+    sha256 "d5e22de8397071f257f009c04a83baae99e0d281923b9e7973cbae4a9dda6e9a" => :sierra
+    sha256 "cbf6d10dc59e1e27bcb6cdfafa49d6d26d52bc322af386a83e2706a0b86b35b0" => :el_capitan
   end
-
-  option "with-java"
 
   depends_on "cmake" => :build
   depends_on "pkg-config" => :build
-  depends_on "pango"
-  depends_on "libtool" => :run
+  depends_on "cairo"
   depends_on "freetype"
+  depends_on "gcc" # for gfortran
+  depends_on "libtool" => :run
+  depends_on "pango"
+  depends_on :java => :optional
   depends_on :x11 => :optional
-  depends_on :fortran => :optional
 
   def install
-    args = std_cmake_args
+    args = std_cmake_args + %w[
+      -DENABLE_ada=OFF
+      -DENABLE_d=OFF
+      -DENABLE_qt=OFF
+      -DENABLE_lua=OFF
+      -DENABLE_tk=OFF
+      -DENABLE_python=OFF
+      -DENABLE_tcl=OFF
+      -DPLD_xcairo=OFF
+      -DPLD_wxwidgets=OFF
+      -DENABLE_wxwidgets=OFF
+    ]
     args << "-DENABLE_java=OFF" if build.without? "java"
     args << "-DPLD_xwin=OFF" if build.without? "x11"
-    args << "-DENABLE_f95=OFF" if build.without? "fortran"
-    args << "-DENABLE_ada=OFF" << "-DENABLE_d=OFF" << "-DENABLE_qt=OFF" \
-         << "-DENABLE_lua=OFF" << "-DENABLE_tk=OFF" << "-DENABLE_python=OFF" \
-         << "-DENABLE_tcl=OFF" << "-DPLD_xcairo=OFF" << "-DPLD_wxwidgets=OFF" \
-         << "-DENABLE_wxwidgets=OFF"
 
     mkdir "plplot-build" do
       system "cmake", "..", *args
@@ -39,27 +45,17 @@ class Plplot < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <plplot.h>
-
       int main(int argc, char *argv[]) {
-        plparseopts( &argc, argv, PL_PARSE_FULL );
-        plsdev( "extcairo" );
+        plparseopts(&argc, argv, PL_PARSE_FULL);
+        plsdev("extcairo");
         plinit();
         return 0;
       }
     EOS
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
-      -I#{include}/plplot
-      -L#{lib}
-      -lcsirocsa
-      -lltdl
-      -lm
-      -lplplot
-      -lqsastime
-    ]
-    system ENV.cc, "test.c", "-o", "test", *flags
+    system ENV.cc, "test.c", "-o", "test", "-I#{include}/plplot", "-L#{lib}",
+                   "-lcsirocsa", "-lltdl", "-lm", "-lplplot", "-lqsastime"
     system "./test"
   end
 end

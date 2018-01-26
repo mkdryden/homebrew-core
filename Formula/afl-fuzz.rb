@@ -1,33 +1,23 @@
 class AflFuzz < Formula
   desc "American fuzzy lop: Security-oriented fuzzer"
   homepage "http://lcamtuf.coredump.cx/afl/"
-  url "http://lcamtuf.coredump.cx/afl/releases/afl-2.10b.tgz"
-  sha256 "8141291646024dcdd2e67c51fb68b4205d34c52e4b5693c88f6ce4a6bf1ebfe3"
+  url "http://lcamtuf.coredump.cx/afl/releases/afl-2.52b.tgz"
+  sha256 "43614b4b91c014d39ef086c5cc84ff5f068010c264c2c05bf199df60898ce045"
 
   bottle do
-    revision 1
-    sha256 "cac3bcc7e0955afa373a4b3f13b8dced52d463557feac53bf284b57f2bcaa16f" => :el_capitan
-    sha256 "0e5c3298d296ab7ecb684a16ca6718c5d8de5b85cc17914f1db2bac62dff9677" => :yosemite
-    sha256 "b326e3657a81b0d9bb120cf715fd5bd19f96b1ceb5c28b4bf2e18ff9aaf990e7" => :mavericks
+    sha256 "4cd6b08ecfe35a62136b7a52222c59e055b80aef599404e29c7c9b8bf4f8fd50" => :high_sierra
+    sha256 "b45ff3036dddc75cf64689b3f2660938834f393256315ed33ba72ed1924c695e" => :sierra
+    sha256 "ef5e7c2e25020bf2d468c81ced4fdd9014dbdc0bb523f5acd8d91d8badc97d59" => :el_capitan
   end
 
   def install
-    # test_build dies with "Oops, the instrumentation does not seem to be
-    # behaving correctly!" in a nested login shell.
-    # Reported to lcamtuf@coredump.cx 6th Apr 2016.
-    inreplace "Makefile" do |s|
-      s.gsub! "all: test_x86 $(PROGS) afl-as test_build all_done", "all: test_x86 $(PROGS) afl-as all_done"
-      s.gsub! "all_done: test_build", "all_done:"
-    end
     system "make", "PREFIX=#{prefix}"
     system "make", "install", "PREFIX=#{prefix}"
   end
 
   test do
     cpp_file = testpath/"main.cpp"
-    exe_file = testpath/"test"
-
-    cpp_file.write <<-EOS.undent
+    cpp_file.write <<~EOS
       #include <iostream>
 
       int main() {
@@ -35,9 +25,7 @@ class AflFuzz < Formula
       }
     EOS
 
-    system "#{bin}/afl-clang++", "-g", cpp_file, "-o", exe_file
-    output = `#{exe_file}`
-    assert_equal 0, $?.exitstatus
-    assert_equal output, "Hello, world!"
+    system bin/"afl-clang++", "-g", cpp_file, "-o", "test"
+    assert_equal "Hello, world!", shell_output("./test")
   end
 end

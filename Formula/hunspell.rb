@@ -1,36 +1,39 @@
 class Hunspell < Formula
   desc "Spell checker and morphological analyzer"
-  homepage "http://hunspell.sourceforge.net/"
-  url "https://downloads.sourceforge.net/hunspell/hunspell-1.3.3.tar.gz"
-  sha256 "a7b2c0de0e2ce17426821dc1ac8eb115029959b3ada9d80a81739fa19373246c"
+  homepage "https://hunspell.github.io"
+  url "https://github.com/hunspell/hunspell/archive/v1.6.2.tar.gz"
+  sha256 "3cd9ceb062fe5814f668e4f22b2fa6e3ba0b339b921739541ce180cac4d6f4c4"
 
   bottle do
-    sha256 "cafeaa28d6684e743f52094975f46b962316c2263520d20e013606e2fac49f60" => :el_capitan
-    sha256 "b43f5e8e6588fef04b7201c7b9998f88d45118132306c09adad09fbaa394ba33" => :yosemite
-    sha256 "88afd83f16058a5a0ca55eb30469f7cebbb61c479e681c8d41195be3356da5cd" => :mavericks
+    cellar :any
+    sha256 "e220d787540d49550dae83b7f6fb1c439b2aa1a559a718d7d9453f6be2bed373" => :high_sierra
+    sha256 "2b6cae66f0659142df3993cd30c4d22caf0ec8de61f038727eaf7d06d64d38cc" => :sierra
+    sha256 "8b4bdf6b04972cf041748ae8e3d68f6a15dede6c830683a127badcba725d003d" => :el_capitan
+    sha256 "1c19690997d3c77923691a779553e9277d9fc52fd075d79768d70e74c25cc2a4" => :yosemite
   end
 
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "libtool" => :build
+  depends_on "gettext"
   depends_on "readline"
 
   conflicts_with "freeling", :because => "both install 'analyze' binary"
 
-  # hunspell does not prepend $HOME to all USEROODIRs
-  # http://sourceforge.net/p/hunspell/bugs/236/
-  patch :p0, :DATA
-
   def install
+    system "autoreconf", "-fiv"
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--with-ui",
                           "--with-readline"
     system "make"
-    ENV.deparallelize
+    system "make", "check"
     system "make", "install"
 
     pkgshare.install "tests"
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     Dictionary files (*.aff and *.dic) should be placed in
     ~/Library/Spelling/ or /Library/Spelling/.  Homebrew itself
     provides no dictionaries for Hunspell, but you can download
@@ -40,49 +43,6 @@ class Hunspell < Formula
   end
 
   test do
-    cp_r "#{pkgshare}/tests/.", testpath
-    system "./test.sh"
+    system bin/"hunspell", "--help"
   end
 end
-
-__END__
---- src/tools/hunspell.cxx.old	2013-08-02 18:21:49.000000000 +0200
-+++ src/tools/hunspell.cxx	2013-08-02 18:20:27.000000000 +0200
-@@ -28,7 +28,7 @@
- #ifdef WIN32
-
- #define LIBDIR "C:\\Hunspell\\"
--#define USEROOODIR "Application Data\\OpenOffice.org 2\\user\\wordbook"
-+#define USEROOODIR { "Application Data\\OpenOffice.org 2\\user\\wordbook" }
- #define OOODIR \
-     "C:\\Program files\\OpenOffice.org 2.4\\share\\dict\\ooo\\;" \
-     "C:\\Program files\\OpenOffice.org 2.3\\share\\dict\\ooo\\;" \
-@@ -65,11 +65,11 @@
-     "/usr/share/myspell:" \
-     "/usr/share/myspell/dicts:" \
-     "/Library/Spelling"
--#define USEROOODIR \
--    ".openoffice.org/3/user/wordbook:" \
--    ".openoffice.org2/user/wordbook:" \
--    ".openoffice.org2.0/user/wordbook:" \
--    "Library/Spelling"
-+#define USEROOODIR { \
-+    ".openoffice.org/3/user/wordbook:", \
-+    ".openoffice.org2/user/wordbook:", \
-+    ".openoffice.org2.0/user/wordbook:", \
-+    "Library/Spelling" }
- #define OOODIR \
-     "/opt/openoffice.org/basis3.0/share/dict/ooo:" \
-     "/usr/lib/openoffice.org/basis3.0/share/dict/ooo:" \
-@@ -1664,7 +1664,10 @@
- 	path = add(path, PATHSEP);          // <- check path in root directory
- 	if (getenv("DICPATH")) path = add(add(path, getenv("DICPATH")), PATHSEP);
- 	path = add(add(path, LIBDIR), PATHSEP);
--	if (HOME) path = add(add(add(add(path, HOME), DIRSEP), USEROOODIR), PATHSEP);
-+  const char* userooodir[] = USEROOODIR;
-+  for (int i = 0; i < (sizeof(userooodir) / sizeof(userooodir[0])); i++) {
-+    if (HOME) path = add(add(add(add(path, HOME), DIRSEP), userooodir[i]), PATHSEP);
-+  }
- 	path = add(path, OOODIR);
-
- 	if (showpath) {

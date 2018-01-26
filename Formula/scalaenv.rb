@@ -1,9 +1,9 @@
 class Scalaenv < Formula
   desc "Command-line tool to manage Scala environments"
-  homepage "https://github.com/mazgi/scalaenv"
-  url "https://github.com/mazgi/scalaenv/archive/version/0.0.8.tar.gz"
-  sha256 "5c11a0876696a4948fdc1ded4d813e2a30c9aa55a55d675bc7d14af4edef87fa"
-  head "https://github.com/mazgi/scalaenv.git"
+  homepage "https://github.com/scalaenv/scalaenv"
+  url "https://github.com/scalaenv/scalaenv/archive/version/0.1.0.tar.gz"
+  sha256 "544182049b53c75699dd3238f95357ed50f84e8ef641452ab8fbae060e883916"
+  head "https://github.com/scalaenv/scalaenv.git"
 
   bottle :unneeded
 
@@ -26,15 +26,6 @@ class Scalaenv < Formula
     end
 
     (var_lib/"plugins").install_symlink "#{prefix}/default-plugins/scala-install"
-  end
-
-  def caveats; <<-EOS.undent
-    To use Homebrew's directories rather than ~/.scalaenv add to your profile:
-      export SCALAENV_ROOT=#{var}/scalaenv
-
-    To enable shims and autocompletion add to your profile:
-      eval "$(scalaenv init -)"
-    EOS
   end
 
   test do

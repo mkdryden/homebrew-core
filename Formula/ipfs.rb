@@ -1,49 +1,52 @@
-require "language/go"
-
 class Ipfs < Formula
-  desc "IPFS is The Permanent Web - A new peer-to-peer hypermedia protocol"
+  desc "Peer-to-peer hypermedia protocol"
   homepage "https://ipfs.io/"
   url "https://github.com/ipfs/go-ipfs.git",
-    :tag => "v0.3.11",
-    :revision => "7070b4d878baad57dcc8da80080dd293aa46cabd"
+      :tag => "v0.4.13",
+      :revision => "cc01b7f188622e7148ce041b9d09252c85041d9f"
   head "https://github.com/ipfs/go-ipfs.git"
 
   bottle do
     cellar :any_skip_relocation
-    revision 1
-    sha256 "6744fb99a312598513e260adbd3b5895db82c0f0b6f447a58b0cc9084bf4b5cc" => :el_capitan
-    sha256 "3b641f107ec102859819afcea8ed5b8265e7b295fba1913af6b1b55593d5956e" => :yosemite
-    sha256 "dd9de372d81abb5e624b320fa4fb00f175c991bf3b6705b12423973b4cafaa97" => :mavericks
+    sha256 "fe4eeb4a7e62352b7fea0a279f2826f66a5efbb7d75f379d24f0fa0c2b5d0fb5" => :high_sierra
+    sha256 "d7a6736094edcca57bc4c6a9c63a4934f818f5efc6edaf82765deee3416068c7" => :sierra
+    sha256 "016cf5df0044524e8fd8129ef420293971c9c0d25b956c3855571bfc41252873" => :el_capitan
   end
 
   depends_on "go" => :build
   depends_on "godep" => :build
-
-  go_resource "github.com/kr/fs" do
-    url "https://github.com/kr/fs.git",
-      :revision => "2788f0dbd16903de03cb8186e5c7d97b69ad387b"
-  end
-
-  go_resource "golang.org/x/tools" do
-    url "https://go.googlesource.com/tools",
-      :using => :git,
-      :revision => "d02228d1857b9f49cd0252788516ff5584266eb6"
-  end
+  depends_on "gx"
+  depends_on "gx-go"
 
   def install
     ENV["GOPATH"] = buildpath
-    ENV["GO15VENDOREXPERIMENT"] = "0"
-    mkdir_p buildpath/"src/github.com/ipfs/"
-    ln_sf buildpath, buildpath/"src/github.com/ipfs/go-ipfs"
-    Language::Go.stage_deps resources, buildpath/"src"
+    (buildpath/"src/github.com/ipfs/go-ipfs").install buildpath.children
+    cd("src/github.com/ipfs/go-ipfs") { system "make", "install" }
+    bin.install "bin/ipfs"
+  end
 
-    cd "cmd/ipfs" do
-      system "make", "build"
-      bin.install "ipfs"
-    end
+  plist_options :manual => "ipfs daemon"
+
+  def plist; <<~EOS
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+      <key>Label</key>
+      <string>#{plist_name}</string>
+      <key>ProgramArguments</key>
+      <array>
+        <string>#{opt_bin}/ipfs</string>
+        <string>daemon</string>
+      </array>
+      <key>RunAtLoad</key>
+      <true/>
+    </dict>
+    </plist>
+    EOS
   end
 
   test do
-    system "#{bin}/ipfs", "version"
+    system bin/"ipfs", "version"
   end
 end

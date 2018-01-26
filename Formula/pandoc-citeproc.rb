@@ -5,17 +5,18 @@ class PandocCiteproc < Formula
 
   desc "Library and executable for using citeproc with pandoc"
   homepage "https://github.com/jgm/pandoc-citeproc"
-  url "https://hackage.haskell.org/package/pandoc-citeproc-0.9/pandoc-citeproc-0.9.tar.gz"
-  sha256 "ae880aa27b5fcaf93886844bd9473c764329dc96211482bf014f350335887fbd"
+  url "https://hackage.haskell.org/package/pandoc-citeproc-0.14/pandoc-citeproc-0.14.tar.gz"
+  sha256 "a2906864e0312f59c644e4e7bb86c888c84e7f78d7b66d6e789864beb39b6bdd"
+  head "https://github.com/jgm/pandoc-citeproc.git"
 
   bottle do
-    sha256 "8b2b518f68c14e679ddb069386dd2f158c2c1a36a90ac7f6c321abbc54467c4c" => :el_capitan
-    sha256 "c544453b5305e5f317ca820c0df40edbe791992288d29bd1e777516d790d8c38" => :yosemite
-    sha256 "5b5ca08d646fab7ba22888540904fab55606ca14e2e526d582a170b55aca76c6" => :mavericks
+    sha256 "dae3fbb40f5db40d530a6ae0a9e9de775df13297206821116eeed0aeab05608e" => :high_sierra
+    sha256 "f999b43bfb052384a669af2573e56436bfd50c06cb102ce862340eae50c0b4b9" => :sierra
+    sha256 "aab25851baa2c1a3423c677e667d6b61407a8cef40d4b39f2b88b66e08e2000b" => :el_capitan
   end
 
-  depends_on "ghc" => :build
   depends_on "cabal-install" => :build
+  depends_on "ghc" => :build
   depends_on "pandoc"
 
   def install
@@ -25,8 +26,7 @@ class PandocCiteproc < Formula
   end
 
   test do
-    bib = testpath/"test.bib"
-    bib.write <<-EOS.undent
+    (testpath/"test.bib").write <<~EOS
       @Book{item1,
       author="John Doe",
       title="First Book",
@@ -35,6 +35,21 @@ class PandocCiteproc < Formula
       publisher="Cambridge University Press"
       }
     EOS
-    system "pandoc-citeproc", "--bib2yaml", bib
+    expected = <<~EOS
+      ---
+      references:
+      - id: item1
+        type: book
+        author:
+        - family: Doe
+          given: John
+        issued:
+        - year: 2005
+        title: First book
+        publisher: Cambridge University Press
+        publisher-place: Cambridge
+      ...
+    EOS
+    assert_equal expected, shell_output("#{bin}/pandoc-citeproc -y test.bib")
   end
 end

@@ -1,17 +1,13 @@
 class Pango < Formula
   desc "Framework for layout and rendering of i18n text"
   homepage "http://www.pango.org/"
-
-  stable do
-    url "https://download.gnome.org/sources/pango/1.38/pango-1.38.1.tar.xz"
-    sha256 "1320569f6c6d75d6b66172b2d28e59c56ee864ee9df202b76799c4506a214eb7"
-  end
+  url "https://download.gnome.org/sources/pango/1.40/pango-1.40.14.tar.xz"
+  sha256 "90af1beaa7bf9e4c52db29ec251ec4fd0a8f2cc185d521ad1f88d01b3a6a17e3"
 
   bottle do
-    revision 1
-    sha256 "171c0af90e6c519b65dbce8a3731ca1cb56a001cce9dc03bfae0e9cfcdd8442d" => :el_capitan
-    sha256 "c0a3065069a59fc1f2b130efed5874a8326d79801ab9c4b50aebda08e46089d9" => :yosemite
-    sha256 "cb66f05551ce2c348599417a5d0ae0acf43b4aeabfb7904b26c9bd5a8eb6c78e" => :mavericks
+    sha256 "b475f7b4ff1d51d8b224b626fd53ed85a9945b4afd1ae4f3817295bd8dded8de" => :high_sierra
+    sha256 "3f79d4e771ad92bf6f36a9ab01b87e3ad86011a0c0b2d10761dc0e1d24c0bcd0" => :sierra
+    sha256 "01dc17241762d6a4a7cbc8fad532b69dc4cde941dd5123a6d9624ef0bed62a9d" => :el_capitan
   end
 
   head do
@@ -23,43 +19,31 @@ class Pango < Formula
     depends_on "gtk-doc" => :build
   end
 
-  option :universal
-
   depends_on "pkg-config" => :build
-  depends_on "glib"
   depends_on "cairo"
-  depends_on "harfbuzz"
   depends_on "fontconfig"
+  depends_on "glib"
   depends_on "gobject-introspection"
-
-  fails_with :llvm do
-    build 2326
-    cause "Undefined symbols when linking"
-  end
+  depends_on "harfbuzz"
 
   def install
-    ENV.universal_binary if build.universal?
-
-    args = %W[
-      --disable-dependency-tracking
-      --disable-silent-rules
-      --prefix=#{prefix}
-      --enable-man
-      --with-html-dir=#{share}/doc
-      --enable-introspection=yes
-      --without-xft
-      --enable-static
-    ]
-
     system "./autogen.sh" if build.head?
-    system "./configure", *args
+    system "./configure", "--disable-dependency-tracking",
+                          "--disable-silent-rules",
+                          "--prefix=#{prefix}",
+                          "--with-html-dir=#{share}/doc",
+                          "--enable-introspection=yes",
+                          "--enable-man",
+                          "--enable-static",
+                          "--without-xft"
+
     system "make"
     system "make", "install"
   end
 
   test do
     system "#{bin}/pango-view", "--version"
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <pango/pangocairo.h>
 
       int main(int argc, char *argv[]) {
@@ -79,8 +63,7 @@ class Pango < Formula
     glib = Formula["glib"]
     libpng = Formula["libpng"]
     pixman = Formula["pixman"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{cairo.opt_include}/cairo
       -I#{fontconfig.opt_include}
       -I#{freetype.opt_include}/freetype2

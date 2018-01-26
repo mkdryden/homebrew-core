@@ -1,8 +1,8 @@
 class GitFresh < Formula
   desc "Utility to keep git repos fresh"
   homepage "https://github.com/imsky/git-fresh"
-  url "https://github.com/imsky/git-fresh/archive/v1.6.2.tar.gz"
-  sha256 "dccb33daa14939d53f43e1d02819ecaa960f10a5a479bee32ea47c6e13569623"
+  url "https://github.com/imsky/git-fresh/archive/v1.10.1.tar.gz"
+  sha256 "7c90b6c918c51ef605f2faa60d0e15d804a29fc825965f78175be1aae423b415"
 
   bottle :unneeded
 
@@ -11,6 +11,6 @@ class GitFresh < Formula
   end
 
   test do
-    system "git-fresh", "-T"
+    system "#{bin}/git-fresh", "-T"
   end
 end

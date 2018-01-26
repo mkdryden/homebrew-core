@@ -1,18 +1,24 @@
 class Autogen < Formula
   desc "Automated text file generator"
-  homepage "http://autogen.sourceforge.net"
-  url "http://ftpmirror.gnu.org/autogen/autogen-5.18.7.tar.xz"
-  mirror "https://ftp.gnu.org/gnu/autogen/autogen-5.18.7.tar.xz"
-  sha256 "a7a580a5e18931cb341b255cec2fee2dfd81bea5ddbf0d8ad722703e19aaa405"
+  homepage "https://autogen.sourceforge.io"
+  url "https://ftp.gnu.org/gnu/autogen/rel5.18.12/autogen-5.18.12.tar.xz"
+  mirror "https://ftpmirror.gnu.org/autogen/rel5.18.12/autogen-5.18.12.tar.xz"
+  sha256 "be3ba62e883185b6ee8475edae97d7197d701d6b9ad9c3d2df53697110c1bfd8"
 
   bottle do
-    sha256 "319d4d6c54c3025e590d15553c86ffbe5c2db1c2d7946d5cd8fb4a02786adc27" => :el_capitan
-    sha256 "5805b867cab218e2a1a933f646344cec285d883c5c6c9f04dfb90795e21a7dcc" => :yosemite
-    sha256 "7a00b94115673c045497246de4f1e5b90cb636ae10fa3aea1409f7e4be52c2dc" => :mavericks
+    sha256 "b344e8d6ff855acbb8029b43142cca48653d8b18a87a0e46f59c22fcd979b20a" => :high_sierra
+    sha256 "5b4c2b7662beab2af5045d8919ababd3404ad6aab567cd5853426680d12be6c7" => :sierra
+    sha256 "e2f6a0c2c34c16f50552c40cbe27bf73788cbb978bb572e7adcba0e7d2b94e5c" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
   depends_on "guile"
+
+  # Allow guile 2.2 to be used
+  patch do
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/0de886b/autogen/allow-guile-2.2.diff"
+    sha256 "438fe673432c96d5da449b84daa4d1c6ad238ea0b4ccd13491872df8c51fa978"
+  end
 
   def install
     system "./configure", "--disable-debug",

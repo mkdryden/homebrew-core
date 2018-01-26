@@ -1,120 +1,32 @@
-require "language/go"
-
 class Influxdb < Formula
   desc "Time series, events, and metrics database"
   homepage "https://influxdata.com/time-series-platform/influxdb/"
-  url "https://github.com/influxdata/influxdb/archive/v0.12.1.tar.gz"
-  sha256 "7b0340681e0e755db16da44ac4be30000cddc4e554da90872a238a78aeae55a0"
-
+  url "https://github.com/influxdata/influxdb.git",
+      :tag => "v1.4.2",
+      :revision => "6d2685d1738277a1c2672fc58df7994627769be6"
   head "https://github.com/influxdata/influxdb.git"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "bf6138a2b37653bc7d4fa096004ca5500a392fe5d6be34f67b894c693bae7d99" => :el_capitan
-    sha256 "4c58a861d4b68992ffee4d1d156784e83f45815cfc82ec1e0b825baf26bedeb6" => :yosemite
-    sha256 "547e8832f1393a862119c15b527fad004314b77209c08b1d9168731ec78ed43d" => :mavericks
+    sha256 "9b435192e9d99fae976538e39fe5b5b228b87e0f1dca945a82fbdbac0af2b411" => :high_sierra
+    sha256 "bb76f0040f743225f25b956556e856414605e746c277710e1ca83ba9d1f7faae" => :sierra
+    sha256 "931fd54b8b01494dc05362d3524b7b6979b6f682f0b63fe64c15a3db6e157a73" => :el_capitan
   end
 
+  depends_on "gdm" => :build
   depends_on "go" => :build
-
-  go_resource "collectd.org" do
-    url "https://github.com/collectd/go-collectd.git",
-    :revision => "9fc824c70f713ea0f058a07b49a4c563ef2a3b98"
-  end
-
-  go_resource "github.com/BurntSushi/toml" do
-    url "https://github.com/BurntSushi/toml.git",
-    :revision => "a4eecd407cf4129fc902ece859a0114e4cf1a7f4"
-  end
-
-  go_resource "github.com/bmizerany/pat" do
-    url "https://github.com/bmizerany/pat.git",
-    :revision => "b8a35001b773c267eb260a691f4e5499a3531600"
-  end
-
-  go_resource "github.com/boltdb/bolt" do
-    url "https://github.com/boltdb/bolt.git",
-    :revision => "2f846c3551b76d7710f159be840d66c3d064abbe"
-  end
-
-  go_resource "github.com/davecgh/go-spew" do
-    url "https://github.com/davecgh/go-spew.git",
-    :revision => "fc32781af5e85e548d3f1abaf0fa3dbe8a72495c"
-  end
-
-  go_resource "github.com/dgryski/go-bits" do
-    url "https://github.com/dgryski/go-bits.git",
-    :revision => "86c69b3c986f9d40065df5bd8f765796549eef2e"
-  end
-
-  go_resource "github.com/dgryski/go-bitstream" do
-    url "https://github.com/dgryski/go-bitstream.git",
-    :revision => "27cd5973303fde7d914860be1ea4b927a6be0c92"
-  end
-
-  go_resource "github.com/gogo/protobuf" do
-    url "https://github.com/gogo/protobuf.git",
-    :revision => "82d16f734d6d871204a3feb1a73cb220cc92574c"
-  end
-
-  go_resource "github.com/golang/snappy" do
-    url "https://github.com/golang/snappy.git",
-    :revision => "5979233c5d6225d4a8e438cdd0b411888449ddab"
-  end
-
-  go_resource "github.com/influxdata/usage-client" do
-    url "https://github.com/influxdata/usage-client.git",
-    :revision => "475977e68d79883d9c8d67131c84e4241523f452"
-  end
-
-  go_resource "github.com/jwilder/encoding" do
-    url "https://github.com/jwilder/encoding.git",
-    :revision => "07d88d4f35eec497617bee0c7bfe651a796dae13"
-  end
-
-  go_resource "github.com/kimor79/gollectd" do
-    url "https://github.com/kimor79/gollectd.git",
-    :revision => "61d0deeb4ffcc167b2a1baa8efd72365692811bc"
-  end
-
-  go_resource "github.com/paulbellamy/ratecounter" do
-    url "https://github.com/paulbellamy/ratecounter.git",
-    :revision => "5a11f585a31379765c190c033b6ad39956584447"
-  end
-
-  go_resource "github.com/peterh/liner" do
-    url "https://github.com/peterh/liner.git",
-    :revision => "ad1edfd30321d8f006ccf05f1e0524adeb943060"
-  end
-
-  go_resource "github.com/rakyll/statik" do
-    url "https://github.com/rakyll/statik.git",
-    :revision => "274df120e9065bdd08eb1120e0375e3dc1ae8465"
-  end
-
-  go_resource "golang.org/x/crypto" do
-    url "https://go.googlesource.com/crypto.git",
-    :revision => "1f22c0103821b9390939b6776727195525381532"
-  end
-
-  go_resource "gopkg.in/fatih/pool.v2" do
-    url "https://gopkg.in/fatih/pool.v2.git",
-    :revision => "cba550ebf9bce999a02e963296d4bc7a486cb715"
-  end
 
   def install
     ENV["GOPATH"] = buildpath
     influxdb_path = buildpath/"src/github.com/influxdata/influxdb"
     influxdb_path.install Dir["*"]
-
-    Language::Go.stage_deps resources, buildpath/"src"
+    revision = `git rev-parse HEAD`.strip
+    version = `git describe --tags`.strip
 
     cd influxdb_path do
-      if build.head?
-        system "go", "install", "-ldflags", "-X main.version=0.13.0-HEAD -X main.branch=master -X main.commit=#{`git rev-parse HEAD`.strip}", "./..."
-      else
-        system "go", "install", "-ldflags", "-X main.version=0.12.1 -X main.branch=0.12 -X main.commit=e094138084855d444195b252314dfee9eae34cab", "./..."
-      end
+      system "gdm", "restore"
+      system "go", "install",
+             "-ldflags", "-X main.version=#{version} -X main.commit=#{revision} -X main.branch=master",
+             "./..."
     end
 
     inreplace influxdb_path/"etc/config.sample.toml" do |s|
@@ -127,6 +39,7 @@ class Influxdb < Formula
     bin.install "bin/influx"
     bin.install "bin/influx_tsm"
     bin.install "bin/influx_stress"
+    bin.install "bin/influx_inspect"
     etc.install influxdb_path/"etc/config.sample.toml" => "influxdb.conf"
 
     (var/"influxdb/data").mkpath
@@ -136,7 +49,7 @@ class Influxdb < Formula
 
   plist_options :manual => "influxd -config #{HOMEBREW_PREFIX}/etc/influxdb.conf"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -173,21 +86,20 @@ class Influxdb < Formula
   end
 
   test do
-    (testpath/"config.toml").write shell_output("influxd config")
+    (testpath/"config.toml").write shell_output("#{bin}/influxd config")
     inreplace testpath/"config.toml" do |s|
       s.gsub! %r{/.*/.influxdb/data}, "#{testpath}/influxdb/data"
       s.gsub! %r{/.*/.influxdb/meta}, "#{testpath}/influxdb/meta"
       s.gsub! %r{/.*/.influxdb/wal}, "#{testpath}/influxdb/wal"
     end
 
-    pid = fork do
-      exec "#{bin}/influxd -config #{testpath}/config.toml"
-    end
-    sleep 5
-
     begin
+      pid = fork do
+        exec "#{bin}/influxd -config #{testpath}/config.toml"
+      end
+      sleep 1
       output = shell_output("curl -Is localhost:8086/ping")
-      sleep 2
+      sleep 1
       assert_match /X-Influxdb-Version:/, output
     ensure
       Process.kill("SIGINT", pid)

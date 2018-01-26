@@ -1,14 +1,14 @@
 class Gputils < Formula
   desc "GNU PIC Utilities"
-  homepage "http://gputils.sourceforge.net/"
-  url "https://downloads.sourceforge.net/project/gputils/gputils/1.4.0/gputils-1.4.0-1.tar.gz"
-  sha256 "d0ce93b6bcf266b8dfa0d0d589d5626a04b950a4e450ff27ef62534243ac7edb"
+  homepage "https://gputils.sourceforge.io/"
+  url "https://downloads.sourceforge.net/project/gputils/gputils/1.5.0/gputils-1.5.0-1.tar.bz2"
+  sha256 "6f88a018e85717b57a22f27a0ca41b2157633a82351f7755be92e2d7dc40bb14"
 
   bottle do
-    revision 1
-    sha256 "519dc4bdafc29039dfd5c12db4e58e1514554404b744119cd710f415b00e6290" => :el_capitan
-    sha256 "d2ff0a1800f55f45a83003f1cbfeb4f04d9eec5ff6e029bf88799269af4aad7d" => :yosemite
-    sha256 "d787ebb6410c76e5b983f977da35ee2a1ff150a49f906bd32b7422b1851383eb" => :mavericks
+    sha256 "c5ed95fc323471f635edbc08e81394f66486c4c81953a0881c5b26791d1176bb" => :high_sierra
+    sha256 "aba5cb544582e26bdb212f9782f911b0e9d36c5049d0aed3928c48ae9b74a6e9" => :sierra
+    sha256 "ad3a6688ca0dac1da0a10db36d9119d9bedcd8d0f389920a45832cc0676c67a3" => :el_capitan
+    sha256 "dd69717c349e405ed04eebc07fc86dcc09d3763f892488514528b328a725a3f9" => :yosemite
   end
 
   def install
@@ -20,7 +20,7 @@ class Gputils < Formula
     # assemble with gpasm
     (testpath/"test.asm").write " movlw 0x42\n end\n"
     system "#{bin}/gpasm", "-p", "p16f84", "test.asm"
-    assert File.exist?("test.hex")
+    assert_predicate testpath/"test.hex", :exist?
 
     # disassemble with gpdasm
     output = shell_output("#{bin}/gpdasm -p p16f84 test.hex")

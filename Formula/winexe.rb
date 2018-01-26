@@ -6,6 +6,8 @@ class Winexe < Formula
 
   bottle do
     cellar :any_skip_relocation
+    sha256 "765ad670de08f86b8c9b11ec43493148d1368e6c3ffa5e65d1bca898480996c2" => :high_sierra
+    sha256 "e9594f927f9ef58608951175c0bd118b82cf7b25d5b829453195b66f45c2cbc1" => :sierra
     sha256 "58080b3729c9b261a65c7db2072ec867176bfd6a802c23f9b343feb44592789a" => :el_capitan
     sha256 "fa7654ed5641e517a658fe8852a9ee5459acca047518c433d989f1aef69a7a6d" => :yosemite
     sha256 "32261fefc9c9fd32e91ddb0776d6e43dcdda32b958f9382a8d784972ba09eb3e" => :mavericks
@@ -15,8 +17,8 @@ class Winexe < Formula
   depends_on "autoconf" => :build
 
   # This patch removes second definition of event context, which *should* break the build
-  # virtually everywhere, but for some reason it only breaks it on OS X.
-  # http://miskstuf.tumblr.com/post/6840077505/winexe-1-00-linux-macos-windows-7-finally-working
+  # virtually everywhere, but for some reason it only breaks it on macOS.
+  # https://miskstuf.tumblr.com/post/6840077505/winexe-1-00-linux-macos-windows-7-finally-working
   # Added by @vspy
   patch :DATA
 
@@ -41,7 +43,7 @@ class Winexe < Formula
     cd "source4" do
       system "./autogen.sh"
       system "./configure", "--enable-fhs"
-      system "make basics idl bin/winexe"
+      system "make", "basics", "idl", "bin/winexe"
       bin.install "bin/winexe"
     end
   end

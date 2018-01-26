@@ -1,21 +1,15 @@
 class Libxslt < Formula
   desc "C XSLT library for GNOME"
   homepage "http://xmlsoft.org/XSLT/"
-  url "http://xmlsoft.org/sources/libxslt-1.1.28.tar.gz"
-  mirror "ftp://xmlsoft.org/libxml2/libxslt-1.1.28.tar.gz"
-  sha256 "5fc7151a57b89c03d7b825df5a0fae0a8d5f05674c0e7cf2937ecec4d54a028c"
-  revision 1
+  url "http://xmlsoft.org/sources/libxslt-1.1.32.tar.gz"
+  mirror "ftp://xmlsoft.org/libxml2/libxslt-1.1.32.tar.gz"
+  sha256 "526ecd0abaf4a7789041622c3950c0e7f2c4c8835471515fd77eec684a355460"
 
   bottle do
-    revision 1
-    sha256 "c362e947b994dc21c3f6a8802a1d783996504c4e6a1ec9e957a7b282543badac" => :el_capitan
-    sha256 "8ee39c4e7fe3868b175185632db62d0b2e63e7d76df589492d9e11a720c569d7" => :yosemite
-    sha256 "39820c2f81926fc1aee8854553d3c390c644db068847ceae77c805d65e2303a2" => :mavericks
+    sha256 "502430d08fb7c8d0462ca5421b66caee4d9b8e39f3c7460c2bfca91be37091f9" => :high_sierra
+    sha256 "5d68588f3afbdd93022aeaf81b9c6403c0c6b8aac24e5ba25a195c5ec5bad7e5" => :sierra
+    sha256 "66854da0ffbb83f60863c23b985e5522037db4957aca70e2b49346a243a30991" => :el_capitan
   end
-
-  keg_only :provided_by_osx
-
-  depends_on "libxml2"
 
   head do
     url "https://git.gnome.org/browse/libxslt.git"
@@ -28,6 +22,10 @@ class Libxslt < Formula
     patch :DATA
   end
 
+  keg_only :provided_by_macos
+
+  depends_on "libxml2"
+
   def install
     if build.head?
       ENV["NOCONFIGURE"] = "yes"
@@ -38,18 +36,24 @@ class Libxslt < Formula
     inreplace "configure", /PYTHON_LIBS=.*/, 'PYTHON_LIBS="-undefined dynamic_lookup"'
 
     system "./configure", "--disable-dependency-tracking",
+                          "--disable-silent-rules",
                           "--prefix=#{prefix}",
                           "--with-libxml-prefix=#{Formula["libxml2"].opt_prefix}"
     system "make"
     system "make", "install"
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     To allow the nokogiri gem to link against this libxslt run:
       gem install nokogiri -- --with-xslt-dir=#{opt_prefix}
     EOS
   end
+
+  test do
+    assert_match version.to_s, shell_output("#{bin}/xslt-config --version")
+  end
 end
+
 __END__
 diff --git a/autogen.sh b/autogen.sh
 index 0eeadd3..5e85821 100755

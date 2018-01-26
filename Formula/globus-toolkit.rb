@@ -1,22 +1,19 @@
 class GlobusToolkit < Formula
   desc "Toolkit used for building grids"
-  homepage "http://www.globus.org/toolkit/"
+  homepage "https://www.globus.org/toolkit/"
   # Note: Stable distributions have an even minor version number (e.g. 5.0.3)
-  url "http://toolkit.globus.org/ftppub/gt6/installers/src/globus_toolkit-6.0.1443479657.tar.gz"
-  sha256 "1aebd5599af535c5978bd085c5614f0f28cbd1fd724a53072a30e74a07597cc5"
+  url "https://downloads.globus.org/toolkit/gt6/stable/installers/src/globus_toolkit-6.0.1506371041.tar.gz"
+  sha256 "77911b143a0bee937ecd7ca9d5c646c0d0bf82756bbe5e831bf281d05c0e7bb9"
 
   bottle do
-    sha256 "bac29ffc13caffc83fc7862cc5d9e259ed63134680084959afe057dc97a36f50" => :el_capitan
-    sha256 "091e8b213a1c6338ea1edf85a87c4bbecd8535887263441ac73e28759268861a" => :yosemite
-    sha256 "3f7fed89fd07105e6ff59741c0d8d4449aebf4269d1fdb166d6b4ade077d3cdd" => :mavericks
+    sha256 "be2982e801761c61955f9ac4ec7390fc860bb9049001d722dcd2feef4f35ad78" => :high_sierra
+    sha256 "ea777b778a8c90f71f0e56e44a3a6e1eb4708647102ebccf983b4ed4945615c4" => :sierra
+    sha256 "792897db1d326a27b8185ad49fdddbea89b6b12203a056b9f0eeb91b57bbc93f" => :el_capitan
   end
 
-  option "with-test", "Test the toolkit when installing"
-  deprecated_option "with-check" => "with-test"
-
-  depends_on "openssl"
-  depends_on "libtool" => :run
   depends_on "pkg-config" => :build
+  depends_on "libtool" => :run
+  depends_on "openssl"
 
   def install
     ENV.deparallelize
@@ -26,7 +23,6 @@ class GlobusToolkit < Formula
                           "--mandir=#{man}",
                           "--disable-dependency-tracking"
     system "make"
-    system "make", "check" if build.with? "test"
     system "make", "install"
     bins = Dir["#{libexec}/bin/*"].select { |f| File.executable? f }
     bin.write_exec_script bins

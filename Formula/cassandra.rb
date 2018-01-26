@@ -1,57 +1,58 @@
 class Cassandra < Formula
   desc "Eventually consistent, distributed key-value store"
   homepage "https://cassandra.apache.org"
-  url "https://www.apache.org/dyn/closer.cgi?path=/cassandra/3.4/apache-cassandra-3.4-bin.tar.gz"
-  mirror "https://archive.apache.org/dist/cassandra/3.4/apache-cassandra-3.4-bin.tar.gz"
-  sha256 "6fea829d5c9e3c34448d519fb9744e645de921d12702cf2bc10b36f17d738794"
+  url "https://www.apache.org/dyn/closer.cgi?path=cassandra/3.11.1/apache-cassandra-3.11.1-bin.tar.gz"
+  sha256 "6feed696759e2f3219e0ebde13f4c9080cac0744a77eb3cb43af136ab527f0ed"
 
   bottle do
-    sha256 "802b6dc0f93ba45032613eb8edea3a7c15a20c860c2882c2e7ed305a752382e2" => :el_capitan
-    sha256 "fd145ef3d029cbb9547979d4a170d45dcf29652b360f0ada339be15beaeb35ac" => :yosemite
-    sha256 "3c11c2592941bf29e006535150cf183ede9687629f481653ce9132b81dc648ba" => :mavericks
+    cellar :any_skip_relocation
+    sha256 "b499ca4bc8a68c3feb02d9771862b0423700445e9d221040d4b1c137e9e9e214" => :high_sierra
+    sha256 "60411b38aed6d6a9dd1e43fcb72da7ab6dd1ce65aa0a1410b25e371b922cb364" => :sierra
+    sha256 "3a0f52f778ccaceb6600d794b03d1bf3915df7f65314c4f5607b8a2632eea7c4" => :el_capitan
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python" if MacOS.version <= :snow_leopard
+  depends_on "cython"
 
-  # Only Yosemite has new enough setuptools for successful compile of the below deps.
+  # Only >=Yosemite has new enough setuptools for successful compile of the below deps.
   resource "setuptools" do
-    url "https://pypi.python.org/packages/source/s/setuptools/setuptools-12.0.5.tar.gz"
-    sha256 "bda326cad34921060a45004b0dd81f828d471695346e303f4ca53b8ba6f4547f"
-  end
-
-  resource "thrift" do
-    url "https://pypi.python.org/packages/source/t/thrift/thrift-0.9.2.tar.gz"
-    sha256 "08f665e4b033c9d2d0b6174d869273104362c80e77ee4c01054a74141e378afa"
+    url "https://files.pythonhosted.org/packages/a4/c8/9a7a47f683d54d83f648d37c3e180317f80dc126a304c45dc6663246233a/setuptools-36.5.0.zip"
+    sha256 "ce2007c1cea3359870b80657d634253a0765b0c7dc5a988d77ba803fc86f2c64"
   end
 
   resource "futures" do
-    url "https://pypi.python.org/packages/source/f/futures/futures-2.2.0.tar.gz"
-    sha256 "151c057173474a3a40f897165951c0e33ad04f37de65b6de547ddef107fd0ed3"
+    url "https://files.pythonhosted.org/packages/cc/26/b61e3a4eb50653e8a7339d84eeaa46d1e93b92951978873c220ae64d0733/futures-3.1.1.tar.gz"
+    sha256 "51ecb45f0add83c806c68e4b06106f90db260585b25ef2abfcda0bd95c0132fd"
   end
 
   resource "six" do
-    url "https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz"
-    sha256 "e24052411fc4fbd1f672635537c3fc2330d9481b18c0317695b46259512c91d5"
+    url "https://files.pythonhosted.org/packages/16/d8/bc6316cf98419719bd59c91742194c111b6f2e85abac88e496adefaf7afe/six-1.11.0.tar.gz"
+    sha256 "70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9"
+  end
+
+  resource "thrift" do
+    url "https://files.pythonhosted.org/packages/a3/ea/84a41e03f1ab14fb314c8bcf1c451090efa14c5cdfb9797d1079f502b54e/thrift-0.10.0.zip"
+    sha256 "b7f6c09155321169af03f9fb20dc15a4a0c7481e7c334a5ba8f7f0d864633209"
   end
 
   resource "cql" do
-    url "https://pypi.python.org/packages/source/c/cql/cql-1.4.0.tar.gz"
+    url "https://files.pythonhosted.org/packages/0b/15/523f6008d32f05dd3c6a2e7c2f21505f0a785b6dc8949cad325306858afc/cql-1.4.0.tar.gz"
     sha256 "7857c16d8aab7b736ab677d1016ef8513dedb64097214ad3a50a6c550cb7d6e0"
   end
 
   resource "cassandra-driver" do
-    url "https://pypi.python.org/packages/source/c/cassandra-driver/cassandra-driver-3.0.0.tar.gz"
-    sha256 "b84e3a0716564f1f6a0deba120308d801f0232010d9c2df90579de293e59fa78"
+    url "https://files.pythonhosted.org/packages/5a/96/a5b2458a0483d3cefdf13064d40119754c1552ea34b7f0e8c6e03e66eb0a/cassandra-driver-3.11.0.tar.gz"
+    sha256 "643bed0fac08ee91630f0f35556bb62c3b4b007c20d4e6e8d349f769ea648150"
   end
 
   def install
-    (var+"lib/cassandra").mkpath
-    (var+"log/cassandra").mkpath
+    (var/"lib/cassandra").mkpath
+    (var/"log/cassandra").mkpath
 
     pypath = libexec/"vendor/lib/python2.7/site-packages"
     ENV.prepend_create_path "PYTHONPATH", pypath
-    %w[setuptools thrift futures six cql cassandra-driver].each do |r|
-      resource(r).stage do
+    resources.each do |r|
+      r.stage do
         system "python", *Language::Python.setup_install_args(libexec/"vendor")
       end
     end
@@ -76,15 +77,15 @@ class Cassandra < Formula
 
     # This breaks on `brew uninstall cassandra && brew install cassandra`
     # https://github.com/Homebrew/homebrew/pull/38309
-    (etc+"cassandra").install Dir["conf/*"]
+    (etc/"cassandra").install Dir["conf/*"]
 
     libexec.install Dir["*.txt", "{bin,interface,javadoc,pylib,lib/licenses}"]
     libexec.install Dir["lib/*.jar"]
 
-    share.install [libexec+"bin/cassandra.in.sh", libexec+"bin/stop-server"]
+    pkgshare.install [libexec/"bin/cassandra.in.sh", libexec/"bin/stop-server"]
     inreplace Dir["#{libexec}/bin/cassandra*", "#{libexec}/bin/debug-cql", "#{libexec}/bin/nodetool", "#{libexec}/bin/sstable*"],
               %r{`dirname "?\$0"?`/cassandra.in.sh},
-              "#{share}/cassandra.in.sh"
+              "#{pkgshare}/cassandra.in.sh"
 
     # Make sure tools are installed
     rm Dir[buildpath/"tools/bin/*.bat"] # Delete before install to avoid copying useless files
@@ -105,24 +106,25 @@ class Cassandra < Formula
       s.gsub! "cassandra_storagedir\=\"$CASSANDRA_HOME/data\"", "cassandra_storagedir\=\"#{var}/lib/cassandra\""
     end
 
-    share.install [buildpath/"tools/bin/cassandra-tools.in.sh"]
+    pkgshare.install [buildpath/"tools/bin/cassandra-tools.in.sh"]
 
     # Update tools script files
     inreplace Dir[buildpath/"tools/bin/*"],
               "`dirname \"$0\"`/cassandra.in.sh",
-              "#{share}/cassandra-tools.in.sh"
+              "#{pkgshare}/cassandra-tools.in.sh"
 
     # Make sure tools are available
     bin.install Dir[buildpath/"tools/bin/*"]
-
     bin.write_exec_script Dir["#{libexec}/bin/*"]
-    rm bin/"cqlsh" # Remove existing exec script
+
+    rm %W[#{bin}/cqlsh #{bin}/cqlsh.py] # Remove existing exec scripts
     (bin/"cqlsh").write_env_script libexec/"bin/cqlsh", :PYTHONPATH => pypath
+    (bin/"cqlsh.py").write_env_script libexec/"bin/cqlsh.py", :PYTHONPATH => pypath
   end
 
-  plist_options :manual => "cassandra start"
+  plist_options :manual => "cassandra -f"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -146,9 +148,8 @@ class Cassandra < Formula
   end
 
   test do
-    system "#{bin}/cassandra", "-v"
-    system "#{bin}/cassandra-stressd", "-v"
-    system "#{bin}/sstablesplit", "-h"
-    system "#{bin}/nodetool", "help"
+    assert_match version.to_s, shell_output("#{bin}/cassandra -v")
+    # This is enough to error out if env script is broken/insufficient.
+    system bin/"cqlsh", "--version"
   end
 end

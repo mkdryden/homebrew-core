@@ -1,20 +1,20 @@
 class Nginx < Formula
   desc "HTTP(S) server and reverse proxy, and IMAP/POP3 proxy server"
-  homepage "http://nginx.org/"
-  url "http://nginx.org/download/nginx-1.8.1.tar.gz"
-  sha256 "8f4b3c630966c044ec72715754334d1fdf741caa1d5795fb4646c27d09f797b7"
-  head "http://hg.nginx.org/nginx/", :using => :hg
+  homepage "https://nginx.org/"
+  url "https://nginx.org/download/nginx-1.12.2.tar.gz"
+  sha256 "305f379da1d5fb5aefa79e45c829852ca6983c7cd2a79328f8e084a324cf0416"
+  revision 1
+  head "https://hg.nginx.org/nginx/", :using => :hg
 
   bottle do
-    revision 2
-    sha256 "918a8d4ed3b18a6a7c084ca9dc1f375349b1406f8fb872e9511da8011d31b819" => :el_capitan
-    sha256 "168eaae31708c1f9f0a6274a9769b35c045a9a20ae6f586d3292d3e597ef036b" => :yosemite
-    sha256 "de4808345aa4c6413d2367ecee8f4daf797834041607032c87bbe85f8468692c" => :mavericks
+    sha256 "b773b2394e84c697d5193242589361c611869560200269e4b325634c2ca1464c" => :high_sierra
+    sha256 "817a7928bd81518e419c6837c1483cacf4d969f3d6acbf711567f5d5f731497f" => :sierra
+    sha256 "4e9d4c1ce74bc3b3fea4d90ba6c7c73c6d0457eff26da37163f9393dfc027ac0" => :el_capitan
   end
 
   devel do
-    url "http://nginx.org/download/nginx-1.9.14.tar.gz"
-    sha256 "2b4893076d28e6b4384bba8c4fdebfca6de6f8f68ec48a1ca94b9b855ff457d2"
+    url "https://nginx.org/download/nginx-1.13.8.tar.gz"
+    sha256 "8410b6c31ff59a763abf7e5a5316e7629f5a5033c95a3a0ebde727f9ec8464c5"
   end
 
   # Before submitting more options to this formula please check they aren't
@@ -23,13 +23,11 @@ class Nginx < Formula
   option "with-passenger", "Compile with support for Phusion Passenger module"
   option "with-webdav", "Compile with support for WebDAV module"
   option "with-debug", "Compile with support for debug log"
-  option "with-spdy", "Compile with support for either SPDY or HTTP/2 module"
   option "with-gunzip", "Compile with support for gunzip module"
 
+  depends_on "openssl" # don't switch to 1.1 until passenger is switched, too
   depends_on "pcre"
   depends_on "passenger" => :optional
-  depends_on "openssl" => :recommended
-  depends_on "libressl" => :optional
 
   def install
     # Changes default port to 8080
@@ -38,23 +36,16 @@ class Nginx < Formula
       s.gsub! "    #}\n\n}", "    #}\n    include servers/*;\n}"
     end
 
-    pcre = Formula["pcre"]
     openssl = Formula["openssl"]
-    libressl = Formula["libressl"]
+    pcre = Formula["pcre"]
 
-    if build.with? "libressl"
-      cc_opt = "-I#{pcre.include} -I#{libressl.include}"
-      ld_opt = "-L#{pcre.lib} -L#{libressl.lib}"
-    else
-      cc_opt = "-I#{pcre.include} -I#{openssl.include}"
-      ld_opt = "-L#{pcre.lib} -L#{openssl.lib}"
-    end
+    cc_opt = "-I#{pcre.opt_include} -I#{openssl.opt_include}"
+    ld_opt = "-L#{pcre.opt_lib} -L#{openssl.opt_lib}"
 
     args = %W[
       --prefix=#{prefix}
       --with-http_ssl_module
       --with-pcre
-      --with-ipv6
       --sbin-path=#{bin}/nginx
       --with-cc-opt=#{cc_opt}
       --with-ld-opt=#{ld_opt}
@@ -69,6 +60,7 @@ class Nginx < Formula
       --http-log-path=#{var}/log/nginx/access.log
       --error-log-path=#{var}/log/nginx/error.log
       --with-http_gzip_static_module
+      --with-http_v2_module
     ]
 
     if build.with? "passenger"
@@ -79,17 +71,6 @@ class Nginx < Formula
     args << "--with-http_dav_module" if build.with? "webdav"
     args << "--with-debug" if build.with? "debug"
     args << "--with-http_gunzip_module" if build.with? "gunzip"
-
-    # This became "with-http_v2_module" in 1.9.5
-    # http://nginx.org/en/docs/http/ngx_http_spdy_module.html
-    # We handle devel/stable block variable options badly, so this installs
-    # the expected module rather than fatally bailing out of configure.
-    # The option should be deprecated to the new name when stable.
-    if build.devel? || build.head? && build.with?("spdy")
-      args << "--with-http_v2_module"
-    elsif build.with?("spdy")
-      args << "--with-http_spdy_module"
-    end
 
     if build.head?
       system "./auto/configure", *args
@@ -103,12 +84,12 @@ class Nginx < Formula
     else
       man8.install "man/nginx.8"
     end
-
-    (etc/"nginx/servers").mkpath
-    (var/"run/nginx").mkpath
   end
 
   def post_install
+    (etc/"nginx/servers").mkpath
+    (var/"run/nginx").mkpath
+
     # nginx's docroot is #{prefix}/html, this isn't useful, so we symlink it
     # to #{HOMEBREW_PREFIX}/var/www. The reason we symlink instead of patching
     # is so the user can redirect it easily to something else if they choose.
@@ -134,7 +115,7 @@ class Nginx < Formula
     end
   end
 
-  def passenger_caveats; <<-EOS.undent
+  def passenger_caveats; <<~EOS
     To activate Phusion Passenger, add this to #{etc}/nginx/nginx.conf, inside the 'http' context:
       passenger_root #{Formula["passenger"].opt_libexec}/src/ruby_supportlib/phusion_passenger/locations.ini;
       passenger_ruby /usr/bin/ruby;
@@ -142,13 +123,13 @@ class Nginx < Formula
   end
 
   def caveats
-    s = <<-EOS.undent
-    Docroot is: #{var}/www
+    s = <<~EOS
+      Docroot is: #{var}/www
 
-    The default port has been set in #{etc}/nginx/nginx.conf to 8080 so that
-    nginx can run without sudo.
+      The default port has been set in #{etc}/nginx/nginx.conf to 8080 so that
+      nginx can run without sudo.
 
-    nginx will load all files in #{etc}/nginx/servers/.
+      nginx will load all files in #{etc}/nginx/servers/.
     EOS
     s << "\n" << passenger_caveats if build.with? "passenger"
     s
@@ -156,7 +137,7 @@ class Nginx < Formula
 
   plist_options :manual => "nginx"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -205,6 +186,6 @@ class Nginx < Formula
         }
       }
     EOS
-    system "#{bin}/nginx", "-t", "-c", testpath/"nginx.conf"
+    system bin/"nginx", "-t", "-c", testpath/"nginx.conf"
   end
 end

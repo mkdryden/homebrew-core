@@ -1,39 +1,40 @@
 class Enchant < Formula
   desc "Spellchecker wrapping library"
-  homepage "http://www.abisource.com/projects/enchant/"
-  url "http://www.abisource.com/downloads/enchant/1.6.0/enchant-1.6.0.tar.gz"
-  sha256 "2fac9e7be7e9424b2c5570d8affe568db39f7572c10ed48d4e13cddf03f7097f"
+  homepage "https://abiword.github.io/enchant/"
+  url "https://github.com/AbiWord/enchant/releases/download/v2.2.1/enchant-2.2.1.tar.gz"
+  sha256 "97f2e617b34c66a645b9cfebe33700456c31ca2f4677eb827b364c0d9a7f4e5e"
 
   bottle do
-    sha256 "bbe368cbefd64aed845d98198d6f49fd533bc058b62290414865cca1ffdcc8cd" => :el_capitan
-    sha256 "0315d7b75f8bcae0196e76c192cb514d723fd79df6f043c7ac13b3289d018b14" => :yosemite
-    sha256 "622f8b9b8f008eab4d689c6b39c00887c803fb49b5ec461b7fe520737f179427" => :mavericks
-    sha256 "35e3487d842e8b4be3e4dfa6d7c34a48c17bd875871da738733cb9305585619c" => :mountain_lion
+    sha256 "25067da77a9493c1ab90b886f7663f5afbc7c204d0851f688bb02aa994a45d32" => :high_sierra
+    sha256 "98874c4c51f9dbdf6503229d4dbe4222a28a1cc8c198f73f8056649f2ffbbb6c" => :sierra
+    sha256 "ee787b33a70350864b55494d94321c5319c280f994fd3c7ae2cf8e4e2003edf1" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
-  depends_on :python => :optional
+  depends_on "python" => :optional
   depends_on "glib"
   depends_on "aspell"
 
-  # http://pythonhosted.org/pyenchant/
+  # https://pythonhosted.org/pyenchant/
   resource "pyenchant" do
-    url "https://pypi.python.org/packages/source/p/pyenchant/pyenchant-1.6.5.tar.gz"
-    sha256 "623f332a9fbb70ae6c9c2d0d4e7f7bae5922d36ba0fe34be8e32df32ebbb4f84"
+    url "https://files.pythonhosted.org/packages/9e/54/04d88a59efa33fefb88133ceb638cdf754319030c28aadc5a379d82140ed/pyenchant-2.0.0.tar.gz"
+    sha256 "fc31cda72ace001da8fe5d42f11c26e514a91fa8c70468739216ddd8de64e2a0"
   end
 
   def install
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
-                          "--disable-ispell",
-                          "--disable-myspell"
+                          "--enable-relocatable"
+
     system "make", "install"
+
+    ln_s "enchant-2.pc", lib/"pkgconfig/enchant.pc"
 
     if build.with? "python"
       resource("pyenchant").stage do
         # Don't download and install distribute now
-        inreplace "setup.py", "distribute_setup.use_setuptools()", ""
-        ENV["PYENCHANT_LIBRARY_PATH"] = lib/"libenchant.dylib"
+        inreplace "setup.py", "ez_setup.use_setuptools()", ""
+        ENV["PYENCHANT_LIBRARY_PATH"] = lib/"libenchant-2.dylib"
         system "python", "setup.py", "install", "--prefix=#{prefix}",
                               "--single-version-externally-managed",
                               "--record=installed.txt"
@@ -46,6 +47,6 @@ class Enchant < Formula
     enchant_result = text.sub("fox ", "").split.join("\n")
     file = "test.txt"
     (testpath/file).write text
-    assert_equal enchant_result, shell_output("#{bin}/enchant -l #{file}").chomp
+    assert_equal enchant_result, shell_output("#{bin}/enchant-2 -l #{file}").chomp
   end
 end

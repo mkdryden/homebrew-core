@@ -1,39 +1,31 @@
 class Cereal < Formula
   desc "C++11 library for serialization"
   homepage "https://uscilab.github.io/cereal/"
-  url "https://github.com/USCiLab/cereal/archive/v1.1.2.tar.gz"
-  sha256 "45607d0de1d29e84d03bf8eecf221eb2912005b63f02314fbade9fbabfd37b8d"
-
+  url "https://github.com/USCiLab/cereal/archive/v1.2.2.tar.gz"
+  sha256 "1921f26d2e1daf9132da3c432e2fd02093ecaedf846e65d7679ddf868c7289c4"
   head "https://github.com/USCiLab/cereal.git", :branch => "develop"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "6f845cc133b95ef4ba7cf90412a26033aa643dba905bbdf859c453d0438b5773" => :el_capitan
-    sha256 "08c130ea94d5b20e3314f93deda318f1b2d6177d2be9a490167adb2b021dec81" => :yosemite
-    sha256 "f0504c9cc90d6358fdc10d1f075463905d7e581d80e5a45e374976e7bc797b63" => :mavericks
-    sha256 "00ef7732975fb675326d0dc1f1a8732b995626075cb5f0a3f2740f28c3fcdda6" => :mountain_lion
+    sha256 "f7df56c0cb700d08a326948a052486c3899a0a38c0ede5af78b4d1d69a22fcf0" => :high_sierra
+    sha256 "d0cf1bf42b9a95b861b96d456c528996e5918821b9f63e8d8dbf3bb44381378c" => :sierra
+    sha256 "c4a716ed280100209d328085a3996c3116041bfaa78b9eeb837367de338efb95" => :el_capitan
+    sha256 "c4a716ed280100209d328085a3996c3116041bfaa78b9eeb837367de338efb95" => :yosemite
   end
 
-  option "with-test", "Build and run the test suite"
+  depends_on "cmake" => :build
 
-  deprecated_option "with-tests" => "with-test"
-
-  depends_on "cmake" => :build if build.with? "tests"
-
-  needs :cxx11
+  # error: chosen constructor is explicit in copy-initialization
+  # Reported 3 Sep 2016: https://github.com/USCiLab/cereal/issues/339
+  depends_on :macos => :yosemite
 
   def install
-    ENV.cxx11
-    if build.with? "test"
-      system "cmake", ".", *std_cmake_args
-      system "make"
-      system "make", "test"
-    end
-    include.install "include/cereal"
+    system "cmake", ".", "-DJUST_INSTALL_CEREAL=ON", *std_cmake_args
+    system "make", "install"
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <cereal/types/unordered_map.hpp>
       #include <cereal/types/memory.hpp>
       #include <cereal/archives/binary.hpp>

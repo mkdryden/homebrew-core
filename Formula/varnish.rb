@@ -1,46 +1,32 @@
 class Varnish < Formula
   desc "High-performance HTTP accelerator"
   homepage "https://www.varnish-cache.org/"
-  url "https://repo.varnish-cache.org/source/varnish-4.1.0.tar.gz"
-  sha256 "4a6ea08e30b62fbf25f884a65f0d8af42e9cc9d25bf70f45ae4417c4f1c99017"
+  url "https://varnish-cache.org/_downloads/varnish-5.2.1.tgz"
+  sha256 "b8452c9d78c16f78c8cfd1c1a1e696523bf64b7721c330150dcc0852459014b3"
 
   bottle do
-    sha256 "0eda704c372f73437ee8b29d3d4183f69672e074ceceadae56b630d9f86499e8" => :el_capitan
-    sha256 "aaf399bcddbaec19f164834f6a514a573f9a6016048805729693ff199267ad06" => :yosemite
-    sha256 "b5fda8068aa76e6f580c334ada855796d911a6223150c782696c014968abed51" => :mavericks
+    sha256 "382cd91df3dcb06cb4e741036e061f64bf42cc8f22615baf2c3c88c5e6796dce" => :high_sierra
+    sha256 "4376d9964660db9e28b1075560bfec753d0bfd5c04fbbf9c6f2c2d9eb9d29088" => :sierra
+    sha256 "508da7c537c4d41c9a4af5e5c8faceec47c7768bf5e9542806514f3f718a2f2b" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
+  depends_on "docutils" => :build
   depends_on "pcre"
 
-  resource "docutils" do
-    url "https://pypi.python.org/packages/source/d/docutils/docutils-0.11.tar.gz"
-    sha256 "9af4166adf364447289c5c697bb83c52f1d6f57e77849abcccd6a4a18a5e7ec9"
-  end
-
   def install
-    ENV.prepend_create_path "PYTHONPATH", buildpath+"lib/python2.7/site-packages"
-    resource("docutils").stage do
-      system "python", "setup.py", "install", "--prefix=#{buildpath}"
-    end
-
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
-                          "--localstatedir=#{var}",
-                          "--with-rst2man=#{buildpath}/bin/rst2man.py",
-                          "--with-rst2html=#{buildpath}/bin/rst2html.py"
+                          "--localstatedir=#{var}"
     system "make", "install"
-    (etc+"varnish").install "etc/example.vcl" => "default.vcl"
-    (var+"varnish").mkpath
+    (etc/"varnish").install "etc/example.vcl" => "default.vcl"
+    (var/"varnish").mkpath
   end
 
-  test do
-    system "#{opt_sbin}/varnishd", "-V"
-  end
+  plist_options :manual => "#{HOMEBREW_PREFIX}/sbin/varnishd -n #{HOMEBREW_PREFIX}/var/varnish -f #{HOMEBREW_PREFIX}/etc/varnish/default.vcl -s malloc,1G -T 127.0.0.1:2000 -a 0.0.0.0:8080 -F"
 
-  plist_options :manual => "#{HOMEBREW_PREFIX}/sbin/varnishd -n #{HOMEBREW_PREFIX}/var/varnish -f #{HOMEBREW_PREFIX}/etc/varnish/default.vcl -s malloc,1G -T 127.0.0.1:2000 -a 0.0.0.0:8080"
-
-  def plist; <<-EOS.undent
+  def plist
+    <<~EOS
       <?xml version="1.0" encoding="UTF-8"?>
       <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
       <plist version="1.0">
@@ -60,6 +46,7 @@ class Varnish < Formula
           <string>127.0.0.1:2000</string>
           <string>-a</string>
           <string>0.0.0.0:8080</string>
+          <string>-F</string>
         </array>
         <key>KeepAlive</key>
         <true/>
@@ -74,5 +61,9 @@ class Varnish < Formula
       </dict>
       </plist>
     EOS
+  end
+
+  test do
+    assert_match version.to_s, shell_output("#{sbin}/varnishd -V 2>&1")
   end
 end

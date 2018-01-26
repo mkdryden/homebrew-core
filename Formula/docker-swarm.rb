@@ -1,31 +1,30 @@
-require "language/go"
-
 class DockerSwarm < Formula
   desc "Turn a pool of Docker hosts into a single, virtual host"
   homepage "https://github.com/docker/swarm"
-  url "https://github.com/docker/swarm/archive/v1.2.0.tar.gz"
-  sha256 "8a30745ef4129a848dd2e88fc511c9eb85af07fbdbb46645f2e860b2aacdf8e6"
+  url "https://github.com/docker/swarm/archive/v1.2.8.tar.gz"
+  sha256 "be8d368000e2afbe4cda87330805978bbb2d9e33cd15bc82a8669a8cd0bcd4c6"
   head "https://github.com/docker/swarm.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "1d728f7955fe753e0934d57c26b25a083d6ea1ab6869bfb0e7930ebfd06df97a" => :el_capitan
-    sha256 "a3cdbbd02e97e8e132bc2ccbb726254d75779160fde64021d15077320aa12441" => :yosemite
-    sha256 "5c52c0fcbc56a0fb498f20a6e9c461e0ae0d8b6fe3b8f1519a3a44890c00abe5" => :mavericks
+    sha256 "f3940875a0cbb1cf562376e61ffb6206aa75e266931e54f52fe08c2ceaaf6329" => :high_sierra
+    sha256 "17efa0a36074c19516377ed860540ed5e8672794607d8a1a78b7f18b12b0f403" => :sierra
+    sha256 "de4c2cb59c9a198bec4bb6442cbb6fd0465964b27842d77d6d277429cfe51b27" => :el_capitan
+    sha256 "01b32b2a21df9ffb5f3e0721cbb33f65aa5ef8e0207ec9648feb769fcb4ae932" => :yosemite
   end
 
   depends_on "go" => :build
 
   def install
-    mkdir_p buildpath/"src/github.com/docker"
-    ln_s buildpath, buildpath/"src/github.com/docker/swarm"
-    ENV["GOPATH"] = "#{buildpath}/Godeps/_workspace:#{buildpath}"
-    system "go", "build", "-o", "docker-swarm"
-    bin.install "docker-swarm"
+    ENV["GOPATH"] = buildpath
+    (buildpath/"src/github.com/docker/swarm").install buildpath.children
+    cd "src/github.com/docker/swarm" do
+      system "go", "build", "-o", bin/"docker-swarm"
+      prefix.install_metafiles
+    end
   end
 
   test do
-    output = shell_output(bin/"docker-swarm --version")
-    assert_match "swarm version #{version} (HEAD)", output
+    assert_match version.to_s, shell_output("#{bin}/docker-swarm --version")
   end
 end

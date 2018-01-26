@@ -1,42 +1,35 @@
 class Cfitsio < Formula
   desc "C access to FITS data files with optional Fortran wrappers"
   homepage "https://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html"
-  url "https://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio3370.tar.gz"
-  mirror "ftp://heasarc.gsfc.nasa.gov/software/fitsio/c/cfitsio3370.tar.gz"
-  version "3.370"
-  sha256 "092897c6dae4dfe42d91d35a738e45e8236aa3d8f9b3ffc7f0e6545b8319c63a"
+  url "https://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio3420.tar.gz"
+  mirror "https://fossies.org/linux/misc/cfitsio3420.tar.gz"
+  version "3.420"
+  sha256 "6c10aa636118fa12d9a5e2e66f22c6436fb358da2af6dbf7e133c142e2ac16b8"
 
   bottle do
     cellar :any
-    revision 1
-    sha256 "b2547586bac20323985eddf44b08f9b3f33272dbb6517d8fd2c467369a67891b" => :el_capitan
-    sha256 "1d8292ec9b2e94aa664e1d50a40d53fd11af1143de9f94a2d483619923c61df4" => :yosemite
-    sha256 "5f10522a362eddf2ca8a0d8492630076143bc0d8501b5140fd6c82ebcda6799d" => :mavericks
+    sha256 "8b21e0a610d1caa8d8900546d2b2d9f83f74a9f1bd0d3e729f1ab1ad28b81813" => :high_sierra
+    sha256 "b2f55b8504d79e27d23b5fa93f77ff9bc2488eef4f5ed94c7a16757505df4462" => :sierra
+    sha256 "7681f60baee8d9a73639be3f54d7f4a1c71c9fc9f4ac7fd0e3ba20cb2a2c3c7b" => :el_capitan
   end
 
-  option "with-examples", "Compile and install example programs"
-
-  resource "examples" do
-    url "https://heasarc.gsfc.nasa.gov/docs/software/fitsio/cexamples/cexamples.zip"
-    version "2014.01.23"
-    sha256 "85b2deecbd40dc2d4311124758784b1ff11db1dd93ac8e7a29f3d6cda5f8aa3d"
-  end
+  option "with-reentrant", "Build with support for concurrency"
 
   def install
-    system "./configure", "--prefix=#{prefix}", "--enable-reentrant"
+    args = ["--prefix=#{prefix}"]
+    args << "--enable-reentrant" if build.with? "reentrant"
+    system "./configure", *args
     system "make", "shared"
     system "make", "install"
+    (pkgshare/"testprog").install Dir["testprog*"]
+  end
 
-    if build.with? "examples"
-      system "make", "fpack", "funpack"
-      bin.install "fpack", "funpack"
-
-      resource("examples").stage do
-        # compressed_fits.c does not work (obsolete function call)
-        (Dir["*.c"] - ["compress_fits.c"]).each do |f|
-          system ENV.cc, f, "-I#{include}", "-L#{lib}", "-lcfitsio", "-lm", "-o", "#{bin}/#{f.sub(".c", "")}"
-        end
-      end
-    end
+  test do
+    cp Dir["#{pkgshare}/testprog/testprog*"], testpath
+    system ENV.cc, "testprog.c", "-o", "testprog", "-I#{include}",
+                   "-L#{lib}", "-lcfitsio"
+    system "./testprog > testprog.lis"
+    cmp "testprog.lis", "testprog.out"
+    cmp "testprog.fit", "testprog.std"
   end
 end

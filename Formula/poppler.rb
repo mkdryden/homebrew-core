@@ -1,22 +1,24 @@
 class Poppler < Formula
   desc "PDF rendering library (based on the xpdf-3.0 code base)"
   homepage "https://poppler.freedesktop.org/"
-  url "https://poppler.freedesktop.org/poppler-0.42.0.tar.xz"
-  sha256 "9fef076ffe2a4f18a4e0da547d814ef5c5e6f8a283afe3387504a0bb1a418010"
+  url "https://poppler.freedesktop.org/poppler-0.62.0.tar.xz"
+  sha256 "5b9a73dfd4d6f61d165ada1e4f0abd2d420494bf9d0b1c15d0db3f7b83a729c6"
 
   bottle do
-    sha256 "c2d7715138d23ac0eac803207bc9c03fcfb96ab5751ccc7ffd83b2a1810db478" => :el_capitan
-    sha256 "1daae4629100e56eea633e327fd37b460f7ff4ab96be15fb7875c28c889e6dfe" => :yosemite
-    sha256 "85132c1566c4dfbd5d8217d9e80b6a49e7e3b57f3f7a032933db3b7b2f416a4b" => :mavericks
+    sha256 "e7ef8133d2a55b7b9d060e1bb39e85daa421805315b78cdaac2eb74e6ee7e50b" => :high_sierra
+    sha256 "67553e08dc541aa5db51e480b768a289095cf236279fe46defb4061783967bf8" => :sierra
+    sha256 "3797b24ecd422d96b7418c942c26937dd14af4e4e0b135c15cb1164a109ab5af" => :el_capitan
   end
 
-  option "with-qt", "Build Qt backend"
-  option "with-qt5", "Build Qt5 backend"
+  option "with-qt", "Build Qt5 backend"
   option "with-little-cms2", "Use color management system"
+  option "with-nss", "Use NSS library for PDF signature validation"
 
   deprecated_option "with-qt4" => "with-qt"
+  deprecated_option "with-qt5" => "with-qt"
   deprecated_option "with-lcms2" => "with-little-cms2"
 
+  depends_on "cmake" => :build
   depends_on "pkg-config" => :build
   depends_on "cairo"
   depends_on "fontconfig"
@@ -29,45 +31,54 @@ class Poppler < Formula
   depends_on "libtiff"
   depends_on "openjpeg"
   depends_on "qt" => :optional
-  depends_on "qt5" => :optional
   depends_on "little-cms2" => :optional
+  depends_on "nss" => :optional
 
-  conflicts_with "pdftohtml", :because => "both install `pdftohtml` binaries"
+  conflicts_with "pdftohtml", "pdf2image", "xpdf",
+    :because => "poppler, pdftohtml, pdf2image, and xpdf install conflicting executables"
 
   resource "font-data" do
-    url "https://poppler.freedesktop.org/poppler-data-0.4.7.tar.gz"
-    sha256 "e752b0d88a7aba54574152143e7bf76436a7ef51977c55d6bd9a48dccde3a7de"
+    url "https://poppler.freedesktop.org/poppler-data-0.4.8.tar.gz"
+    sha256 "1096a18161f263cccdc6d8a2eb5548c41ff8fcf9a3609243f1b6296abdf72872"
   end
 
-  def install
-    ENV.cxx11 if MacOS.version < :mavericks
-    ENV["LIBOPENJPEG_CFLAGS"] = "-I#{Formula["openjpeg"].opt_include}/openjpeg-1.5"
+  needs :cxx11 if build.with?("qt") || MacOS.version < :mavericks
 
-    args = %W[
-      --disable-dependency-tracking
-      --prefix=#{prefix}
-      --enable-xpdf-headers
-      --enable-poppler-glib
-      --disable-gtk-test
-      --enable-introspection=yes
+  def install
+    ENV.cxx11 if build.with?("qt") || MacOS.version < :mavericks
+
+    args = std_cmake_args + %w[
+      -DENABLE_XPDF_HEADERS=ON
+      -DENABLE_GLIB=ON
+      -DBUILD_GTK_TESTS=OFF
+      -DWITH_GObjectIntrospection=ON
+      -DENABLE_QT4=OFF
     ]
 
-    if build.with?("qt") && build.with?("qt5")
-      raise "poppler: --with-qt and --with-qt5 cannot be used at the same time"
-    elsif build.with? "qt"
-      args << "--enable-poppler-qt4"
-    elsif build.with? "qt5"
-      args << "--enable-poppler-qt5"
+    if build.with? "qt"
+      args << "-DENABLE_QT5=ON"
     else
-      args << "--disable-poppler-qt4" << "--disable-poppler-qt5"
+      args << "-DENABLE_QT5=OFF"
     end
 
-    args << "--enable-cms=lcms2" if build.with? "little-cms2"
+    if build.with? "little-cms2"
+      args << "-DENABLE_CMS=lcms2"
+    else
+      args << "-DENABLE_CMS=none"
+    end
 
-    system "./configure", *args
+    system "cmake", ".", *args
     system "make", "install"
     resource("font-data").stage do
       system "make", "install", "prefix=#{prefix}"
+    end
+
+    libpoppler = (lib/"libpoppler.dylib").readlink
+    ["#{lib}/libpoppler-cpp.dylib", "#{lib}/libpoppler-glib.dylib",
+     *Dir["#{bin}/*"]].each do |f|
+      macho = MachO.open(f)
+      macho.change_dylib("@rpath/#{libpoppler}", "#{lib}/#{libpoppler}")
+      macho.write!
     end
   end
 

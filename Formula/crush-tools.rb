@@ -6,6 +6,8 @@ class CrushTools < Formula
 
   bottle do
     cellar :any
+    sha256 "729196f80c05c5e395c145752a7a54cc1488a6cf1767b43ed9f639c2f3f3c463" => :high_sierra
+    sha256 "28286e04a7baf7790f446f2f474a74387e6c0282df70d89ade39c84187394ce4" => :sierra
     sha256 "0c7c58b9f2ec87237934eda55932b200c6d7b7f6dbb07a35e0a49ed389e984d3" => :el_capitan
     sha256 "90c901bd6daf8178407232c6b3be7f3c5056e9cf2ab88750d09b151e0973d4ff" => :yosemite
     sha256 "f1319787a7aafc6610f0217299791c428e5784d11cc93c8cd623e8a5cba5c414" => :mavericks
@@ -19,10 +21,10 @@ class CrushTools < Formula
     depends_on "libtool" => :build
   end
 
+  depends_on "pcre"
+
   conflicts_with "aggregate", :because => "both install an `aggregate` binary"
   conflicts_with "num-utils", :because => "both install an `range` binary"
-
-  depends_on "pcre"
 
   def install
     system "./bootstrap" if build.head?

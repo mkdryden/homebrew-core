@@ -1,41 +1,73 @@
-require "language/go"
-
 class Corectl < Formula
-  desc "CoreOS over OS X made very simple"
+  desc "CoreOS over macOS made very simple"
   homepage "https://github.com/TheNewNormal/corectl"
-  url "https://github.com/TheNewNormal/corectl/archive/v0.5.4.tar.gz"
-  sha256 "1ff7032d51d4a8e4581f0c10c1446acac8bf34768ec31d20eb459b90c160110d"
+  url "https://github.com/TheNewNormal/corectl/archive/v0.7.18.tar.gz"
+  sha256 "9bdf7bc8c6a7bd861e2b723c0566d0a093ed5d5caf370a065a1708132b4ab98a"
+  revision 1
   head "https://github.com/TheNewNormal/corectl.git", :branch => "golang"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "14038a71082300f74007f76de8fee3b455219f6f63002bc2e694720ad8f42590" => :el_capitan
-    sha256 "f4bafb18c96df67e09d893ab39281247fb5fb27154a97aec11d7460492e4e88c" => :yosemite
+    cellar :any
+    sha256 "468a78c0f43c9d150313edadd23e4a373fa689243fcd0f6c48af79feb0b1854d" => :high_sierra
+    sha256 "9b83542911995f649091f49cd839c949e975ae71caa220cdc224dbb86f8fd638" => :sierra
+    sha256 "1d90b568db5c0ec1025b0bacb5b06b794b8e24d198cdcf036d2ff81ebd6168da" => :el_capitan
+    sha256 "ae67e7433832ac259736eaa9879e18d7b724f6ffc823f487b31eb1447780f72a" => :yosemite
   end
 
   depends_on "go" => :build
-  depends_on "godep" => :build
+  depends_on "libev"
+  depends_on "ocaml" => :build
+  depends_on "aspcud" => :build
+  depends_on "opam" => :build
   depends_on :macos => :yosemite
 
   def install
     ENV["GOPATH"] = buildpath
 
-    mkdir_p buildpath/"src/github.com/TheNewNormal/"
-    ln_s buildpath, buildpath/"src/github.com/TheNewNormal/#{name}"
-    Language::Go.stage_deps resources, buildpath/"src"
+    path = buildpath/"src/github.com/TheNewNormal/#{name}"
+    path.install Dir["*"]
+
+    opamroot = path/"opamroot"
+    opamroot.mkpath
+    ENV["OPAMROOT"] = opamroot
+    ENV["OPAMYES"] = "1"
 
     args = []
     args << "VERSION=#{version}" if build.stable?
 
-    system "make", "corectl", *args
-    system "make", "documentation/man"
+    cd path do
+      system "opam", "init", "--no-setup"
 
-    bin.install "corectl"
-    man1.install Dir["documentation/man/*.1"]
-    share.install "cloud-init", "profiles"
+      # Upstream issue "OCaml 4.05.0 support - cannot build in Homebrew"
+      # Reported 23 Jul 2017 https://github.com/TheNewNormal/corectl/issues/119
+      inreplace "opamroot/compilers/4.04.2/4.04.2/4.04.2.comp",
+        '["./configure"', '["./configure" "-no-graph"'
+      system "opam", "switch", "4.04.2"
+
+      system "opam", "config", "exec", "--", "opam", "install", "uri",
+             "ocamlfind", "qcow-format", "conf-libev", "io-page<2",
+             "mirage-block-unix>2.3.0", "lwt<3.1.0"
+      (opamroot/"system/bin").install_symlink opamroot/"4.04.2/bin/qcow-tool"
+      system "opam", "config", "exec", "--", "make", "tarball", *args
+
+      bin.install Dir["bin/*"]
+
+      prefix.install_metafiles
+      man1.install Dir["documentation/man/*.1"]
+      pkgshare.install "examples"
+    end
+  end
+
+  def caveats; <<~EOS
+    Starting with 0.7 "corectl" has a client/server architecture. So before you
+    can use the "corectl" cli, you have to start the server daemon:
+
+    $ corectld start
+
+    EOS
   end
 
   test do
-    assert_match(/#{version}/, shell_output("#{bin}/corectl version"))
+    assert_match version.to_s, shell_output("#{bin}/corectl version")
   end
 end

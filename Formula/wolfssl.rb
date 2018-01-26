@@ -1,15 +1,16 @@
 class Wolfssl < Formula
   desc "Embedded SSL Library written in C"
   homepage "https://www.wolfssl.com/wolfSSL/Home.html"
-  url "https://github.com/wolfSSL/wolfssl/archive/v3.9.0.tar.gz"
-  sha256 "9d461209f663391d4c0349c23466556782c13964b9626fef694f2d420a176658"
+  url "https://github.com/wolfSSL/wolfssl/archive/v3.13.0-stable.tar.gz"
+  version "3.13.0"
+  sha256 "3bafeb0cb7eaff80002ba3f7cbb70023757bcc35fc4d82181945b143f1f927c6"
   head "https://github.com/wolfSSL/wolfssl.git"
 
   bottle do
     cellar :any
-    sha256 "20a0541d43f454a258155cbd495a7ca5df3f8d4a39ddc434079158714a937630" => :el_capitan
-    sha256 "bfe0acbb5356fb570a5bd9b096d4c0b6e8d022809006a32d0a49e25831c1c7f1" => :yosemite
-    sha256 "426e82e80b3c1b4275cb11267ce8d8d8c00efbf32426df0590b50a865d0904ec" => :mavericks
+    sha256 "a69bca9ea961cbc8ab86726dc5fdf5fd1c3d78782dfca1032256d3d25b995f54" => :high_sierra
+    sha256 "3d975638a7ed02e35398d9ab7deb58cb9b3bbf3286f68e1cc0e9b0202b3278c9" => :sierra
+    sha256 "16a11f09ba8a10157561c6254a8ea48ad603bcbde66c69057cd42142f4a64618" => :el_capitan
   end
 
   option "without-test", "Skip compile-time tests"
@@ -21,6 +22,10 @@ class Wolfssl < Formula
   depends_on "libtool" => :build
 
   def install
+    # https://github.com/Homebrew/homebrew-core/pull/1046
+    # https://github.com/Homebrew/brew/pull/251
+    ENV.delete("SDKROOT")
+
     args = %W[
       --disable-silent-rules
       --disable-dependency-tracking
@@ -44,17 +49,18 @@ class Wolfssl < Formula
       --enable-chacha
       --enable-crl
       --enable-crl-monitor
+      --enable-curve25519
       --enable-dtls
       --enable-dh
       --enable-ecc
       --enable-eccencrypt
-      --enable-ecc25519
       --enable-ed25519
       --enable-filesystem
       --enable-hc128
       --enable-hkdf
       --enable-inline
       --enable-ipv6
+      --enable-jni
       --enable-keygen
       --enable-ocsp
       --enable-opensslextra
@@ -68,6 +74,7 @@ class Wolfssl < Formula
       --enable-sha512
       --enable-sni
       --enable-supportedcurves
+      --enable-tls13
     ]
 
     if MacOS.prefer_64_bit?

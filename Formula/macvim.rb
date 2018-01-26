@@ -1,14 +1,18 @@
 # Reference: https://github.com/macvim-dev/macvim/wiki/building
 class Macvim < Formula
-  desc "GUI for vim, made for OS X"
+  desc "GUI for vim, made for macOS"
   homepage "https://github.com/macvim-dev/macvim"
-  url "https://github.com/macvim-dev/macvim/archive/snapshot-101.tar.gz"
-  version "7.4-101"
-  sha256 "fe13bf22036c51fc9e5429aace8702d79068ab8f1ef005a6697c94323ec4f6fc"
-
+  url "https://github.com/macvim-dev/macvim/archive/snapshot-144.tar.gz"
+  version "8.0-144"
+  sha256 "23e1eaa00e9268eaa9a9061ea6018ad20f288bd6c03c1d8553a745d72527d33f"
+  revision 3
   head "https://github.com/macvim-dev/macvim.git"
 
-  bottle :disable, "To use the user's Python."
+  bottle do
+    sha256 "51ede471f2c9a9f0e40cdf5f06f8ea6267ec7322abe2434fb8222870c229bdf7" => :high_sierra
+    sha256 "004932faa6338ef23de2da8efaeb70c60d804005a54260d10d742683a345fcdd" => :sierra
+    sha256 "0d992aaa23051d8fc39bae585d7cf81f238016734bb13a01b7ce62a0f65b0d19" => :el_capitan
+  end
 
   option "with-override-system-vim", "Override system vim"
 
@@ -16,15 +20,19 @@ class Macvim < Formula
 
   depends_on :xcode => :build
   depends_on "cscope" => :recommended
+  depends_on "python" => :recommended
   depends_on "lua" => :optional
   depends_on "luajit" => :optional
-  depends_on :python => :recommended
-  depends_on :python3 => :optional
-
-  # Help us! We'd like to use superenv in these environments, too
-  env :std if MacOS.version <= :snow_leopard
+  depends_on "python3" => :optional
 
   def install
+    ENV.prepend_path "PATH", Formula["python"].opt_libexec/"bin"
+
+    # Avoid issues finding Ruby headers
+    if MacOS.version == :sierra || MacOS.version == :yosemite
+      ENV.delete("SDKROOT")
+    end
+
     # MacVim doesn't have or require any Python package, so unset PYTHONPATH
     ENV.delete("PYTHONPATH")
 
@@ -38,6 +46,7 @@ class Macvim < Formula
       --enable-perlinterp
       --enable-rubyinterp
       --enable-tclinterp
+      --enable-terminal
       --with-tlib=ncurses
       --with-compiledby=Homebrew
       --with-local-dir=#{HOMEBREW_PREFIX}
@@ -47,12 +56,12 @@ class Macvim < Formula
 
     if build.with? "lua"
       args << "--enable-luainterp"
-      args << "--with-lua-prefix=#{HOMEBREW_PREFIX}"
+      args << "--with-lua-prefix=#{Formula["lua"].opt_prefix}"
     end
 
     if build.with? "luajit"
       args << "--enable-luainterp"
-      args << "--with-lua-prefix=#{HOMEBREW_PREFIX}"
+      args << "--with-lua-prefix=#{Formula["luajit"].opt_prefix}"
       args << "--with-luajit"
     end
 
@@ -66,7 +75,7 @@ class Macvim < Formula
       # Needed for <= OS X 10.9.2 with Xcode 5.1
       ENV.prepend "CFLAGS", `python-config --cflags`.chomp.gsub(/-mno-fused-madd /, "")
 
-      framework_script = <<-EOS.undent
+      framework_script = <<~EOS
         import sysconfig
         print sysconfig.get_config_var("PYTHONFRAMEWORKPREFIX")
       EOS
@@ -83,9 +92,7 @@ class Macvim < Formula
     system "make"
 
     prefix.install "src/MacVim/build/Release/MacVim.app"
-    inreplace "src/MacVim/mvim", %r{^# VIM_APP_DIR=\/Applications$},
-                                 "VIM_APP_DIR=#{prefix}"
-    bin.install "src/MacVim/mvim"
+    bin.install_symlink prefix/"MacVim.app/Contents/bin/mvim"
 
     # Create MacVim vimdiff, view, ex equivalents
     executables = %w[mvimdiff mview mvimex gvim gvimdiff gview gvimex]
@@ -95,7 +102,7 @@ class Macvim < Formula
 
   def caveats
     if build.with?("python") && build.with?("python3")
-      <<-EOS.undent
+      <<~EOS
         MacVim can no longer be brewed with dynamic support for both Python versions.
         Only Python 3 support has been provided.
       EOS
@@ -103,18 +110,12 @@ class Macvim < Formula
   end
 
   test do
+    ENV.prepend_path "PATH", Formula["python"].opt_libexec/"bin"
     # Simple test to check if MacVim was linked to Python version in $PATH
     if build.with? "python"
-      vim_path = prefix/"MacVim.app/Contents/MacOS/Vim"
-
-      # Get linked framework using otool
-      otool_output = `otool -L #{vim_path} | grep -m 1 Python`.gsub(/\(.*\)/, "").strip.chomp
-
-      # Expand the link and get the python exec path
-      vim_framework_path = Pathname.new(otool_output).realpath.dirname.to_s.chomp
       system_framework_path = `python-config --exec-prefix`.chomp
-
-      assert_equal system_framework_path, vim_framework_path
+      assert_match system_framework_path, `mvim --version`
     end
+    assert_match "+ruby", shell_output("#{bin}/mvim --version")
   end
 end

@@ -1,17 +1,19 @@
 class Xmp < Formula
   desc "Command-line player for module music formats (MOD, S3M, IT, etc)"
-  homepage "http://xmp.sourceforge.net"
-  url "https://downloads.sourceforge.net/project/xmp/xmp/4.0.11/xmp-4.0.11.tar.gz"
-  sha256 "ba09beefb9bc67cd01bba96e6c79c4896f9d99161ea41ddbfee0e25db09e7991"
+  homepage "https://xmp.sourceforge.io/"
+  url "https://downloads.sourceforge.net/project/xmp/xmp/4.1.0/xmp-4.1.0.tar.gz"
+  sha256 "1dbd61074783545ac7bef5b5daa772fd2110764cb70f937af8c3fad30f73289e"
 
   bottle do
-    sha256 "0bc782b665dae4b64def3b78e59fa4ca4389f3afba0ab115d5ca707853d53b60" => :el_capitan
-    sha256 "c5d55ea6d90ddfafc9b9268a6c1af3e8f14f427ac65fd3109ad2de1611c7afdb" => :yosemite
-    sha256 "ceac113907bd3ab2d2b8507346ead946d44ad3d174355df8815f7c90fd0b04b5" => :mavericks
+    sha256 "f399d4668b512d45d1019264c4968af84060d138380d5743a0eb483dfdd53578" => :high_sierra
+    sha256 "4eb53e6f831785a5bbe084be7be3c83c7942392c06a00608f8d4d29e0d0d735a" => :sierra
+    sha256 "2412ab978ad3562876d8078a6e588f8617b5507df33aecee84ada484f1ec33b8" => :el_capitan
+    sha256 "a0ee59b4a71a7cda6a59e7b06a9c0b54dc04e3bf77b97f0b4e2336c16afc8d57" => :yosemite
+    sha256 "289fbcb9393539a355bf163dce53562afd29981c2fd0de3491133c7105a5bc06" => :mavericks
   end
 
   head do
-    url "git://git.code.sf.net/p/xmp/xmp-cli"
+    url "https://git.code.sf.net/p/xmp/xmp-cli.git"
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build

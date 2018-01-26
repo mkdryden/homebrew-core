@@ -7,7 +7,9 @@ class Mmv < Formula
 
   bottle do
     cellar :any_skip_relocation
-    revision 1
+    rebuild 1
+    sha256 "b9076fa267efcabf04184a8ed20d072c1fd33b753ac2f6883495f2f6b4f8a108" => :high_sierra
+    sha256 "cce62f0616d060bf803a5bc83d15907a02b90f5ec3faea62422d8fa179982ab2" => :sierra
     sha256 "e22f894e1224e3c0f85257c5b4db11ed1095b5a2117f48f38653b22a3d395fe4" => :el_capitan
     sha256 "4e921612e3edb452f6a67f41248247d1c5b60aa22ad17d632cd43e62f5d77084" => :yosemite
     sha256 "ad6205419a88e181be9bc8c107b5cd366bb0a60bf4b4b2ec5b3457c64f8060c0" => :mavericks
@@ -34,7 +36,7 @@ class Mmv < Formula
     touch testpath/"a"
     touch testpath/"b"
     pipe_output(bin/"mmv", "a b\nb c\n")
-    assert !(testpath/"a").exist?
-    assert (testpath/"c").exist?
+    refute_predicate testpath/"a", :exist?
+    assert_predicate testpath/"c", :exist?
   end
 end

@@ -1,14 +1,14 @@
 class Gtkmm3 < Formula
   desc "C++ interfaces for GTK+ and GNOME"
-  homepage "http://www.gtkmm.org/"
-  url "https://download.gnome.org/sources/gtkmm/3.18/gtkmm-3.18.0.tar.xz"
-  sha256 "829fa113daed74398c49c3f2b7672807f58ba85d0fa463f5bc726e1b0138b86b"
+  homepage "https://www.gtkmm.org/"
+  url "https://download.gnome.org/sources/gtkmm/3.22/gtkmm-3.22.2.tar.xz"
+  sha256 "91afd98a31519536f5f397c2d79696e3d53143b80b75778521ca7b48cb280090"
 
   bottle do
     cellar :any
-    sha256 "91c073b5a17bbea4ae29540ebfe99f797ea021f874478d49665815bd4fd9994d" => :el_capitan
-    sha256 "5d790c3d68103e841562ca6121523b64259cefc9c0bc815a932bc026f72da91b" => :yosemite
-    sha256 "5a4111549e565c6ea3aea1161f195cc597e7a6b7a8fda295e77be663968e6c60" => :mavericks
+    sha256 "43cbd07d4b5542b4cf6a7eff1c79d8ea7cfaa6009100ad34ebc56ab09b8e1d43" => :high_sierra
+    sha256 "c5fa401269d11e40c8366e6bff718e0d884d1da5574ec2c7cdfbe341e33239ec" => :sierra
+    sha256 "42f8b253f964dba53b907b83988c2b70eae9c97923b290958f33fc21ffdfa3e9" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
@@ -20,12 +20,13 @@ class Gtkmm3 < Formula
 
   def install
     ENV.cxx11
-    system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
+
+    system "./configure", "--disable-silent-rules", "--disable-dependency-tracking", "--prefix=#{prefix}"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <gtkmm.h>
       class MyLabel : public Gtk::Label {
         MyLabel(Glib::ustring text) : Gtk::Label(text) {}
@@ -51,8 +52,7 @@ class Gtkmm3 < Formula
     pango = Formula["pango"]
     pangomm = Formula["pangomm"]
     pixman = Formula["pixman"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{atk.opt_include}/atk-1.0
       -I#{atkmm.opt_include}/atkmm-1.6
       -I#{cairo.opt_include}/cairo

@@ -1,38 +1,53 @@
 class Libtiff < Formula
   desc "TIFF library and utilities"
-  homepage "http://www.remotesensing.org/libtiff/"
-  url "http://download.osgeo.org/libtiff/tiff-4.0.6.tar.gz"
-  mirror "ftp://ftp.remotesensing.org/pub/libtiff/tiff-4.0.6.tar.gz"
-  sha256 "4d57a50907b510e3049a4bba0d7888930fdfc16ce49f1bf693e5b6247370d68c"
+  homepage "http://libtiff.maptools.org/"
+  url "http://download.osgeo.org/libtiff/tiff-4.0.9.tar.gz"
+  mirror "https://fossies.org/linux/misc/tiff-4.0.9.tar.gz"
+  sha256 "6e7bdeec2c310734e734d19aae3a71ebe37a4d842e0e23dbb1b8921c0026cfcd"
+  revision 1
 
   bottle do
     cellar :any
-    sha256 "672ea454a8c5ec6b5622f8c2d427b5631c195a811f47f05005187ff43e8e946b" => :el_capitan
-    sha256 "c5adb753b7f5c9be0d139612181e7f18eb4b0c3ebfe5b30498eaee67a1f2adb8" => :yosemite
-    sha256 "16a8966728b4b2ec9827917465fe26ba91d02160dfc2d9fc627752c3658a2a22" => :mavericks
-    sha256 "53b181e29cfa565a928cac933dc4119a66acab59a38d5149af687c05ad557508" => :mountain_lion
+    sha256 "8141b15d231787df0eae37c7d05621337f59f90f2703fd5e8adf17c7e16a1f3e" => :high_sierra
+    sha256 "1c378d48411a8ea062a97e3e4876a7d432f03e1b98df225d33568a17bbf719e6" => :sierra
+    sha256 "d7a2088d014c409bd6ac1d80fc04cdd9bee23ec35e83534b427c2260af9bbc5c" => :el_capitan
   end
 
-  option :universal
-  option :cxx11
+  option "with-xz", "Include support for LZMA compression"
 
   depends_on "jpeg"
+  depends_on "xz" => :optional
+
+  # All of these have been reported upstream & should
+  # be fixed in the next release, but please check.
+  patch do
+    url "https://mirrors.ocf.berkeley.edu/debian/pool/main/t/tiff/tiff_4.0.9-3.debian.tar.xz"
+    mirror "https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/t/tiff/tiff_4.0.9-3.debian.tar.xz"
+    sha256 "c413f5b2423b95d8b068adca695f0ddaea5219088a1d38de4800b379bc20ca73"
+    apply "patches/CVE-2017-9935.patch",
+          "patches/CVE-2017-18013.patch"
+  end
 
   def install
-    ENV.universal_binary if build.universal?
-    ENV.cxx11 if build.cxx11?
-    jpeg = Formula["jpeg"].opt_prefix
-    system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}",
-                          "--without-x",
-                          "--disable-lzma",
-                          "--with-jpeg-include-dir=#{jpeg}/include",
-                          "--with-jpeg-lib-dir=#{jpeg}/lib"
+    args = %W[
+      --disable-dependency-tracking
+      --prefix=#{prefix}
+      --without-x
+      --with-jpeg-include-dir=#{Formula["jpeg"].opt_include}
+      --with-jpeg-lib-dir=#{Formula["jpeg"].opt_lib}
+    ]
+    if build.with? "xz"
+      args << "--with-lzma-include-dir=#{Formula["xz"].opt_include}"
+      args << "--with-lzma-lib-dir=#{Formula["xz"].opt_lib}"
+    else
+      args << "--disable-lzma"
+    end
+    system "./configure", *args
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <tiffio.h>
 
       int main(int argc, char* argv[])
@@ -45,6 +60,6 @@ class Libtiff < Formula
     EOS
     system ENV.cc, "test.c", "-L#{lib}", "-ltiff", "-o", "test"
     system "./test", "test.tif"
-    assert_match /ImageWidth.*10/, shell_output("#{bin}/tiffdump test.tif")
+    assert_match(/ImageWidth.*10/, shell_output("#{bin}/tiffdump test.tif"))
   end
 end

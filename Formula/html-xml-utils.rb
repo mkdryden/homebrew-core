@@ -1,22 +1,21 @@
 class HtmlXmlUtils < Formula
   desc "Tools for manipulating HTML and XML files"
   homepage "https://www.w3.org/Tools/HTML-XML-utils/"
-  url "https://www.w3.org/Tools/HTML-XML-utils/html-xml-utils-6.9.tar.gz"
-  mirror "https://mirrors.ocf.berkeley.edu/debian/pool/main/h/html-xml-utils/html-xml-utils_6.9.orig.tar.gz"
-  sha256 "9cf401dc84ca01752adf1f2d9862c4f227bb089504ed9d03d7fd40603e87fab2"
+  url "https://www.w3.org/Tools/HTML-XML-utils/html-xml-utils-7.4.tar.gz"
+  sha256 "2541c3e1f22f0bb2e66e846f8e4fd3afb95b80ce71d37853fb962ba7a1caef12"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "8367bc9df98ea4d766c07d003117a086e37a1f73eab4cc5b9d28704f2371b582" => :el_capitan
-    sha256 "78dc134d1e22619091b8de99760a575c93f3bbfe1a243955c674072351297a11" => :yosemite
-    sha256 "5a5de2f177a22f1d2272223f5b707a1ae6b2246cdc37094444a1bb996fe60728" => :mavericks
+    sha256 "ed260f2672ab4836e648328a17a9474e65bfd36f40c72bddbe0c0b139a863da1" => :high_sierra
+    sha256 "a29711836fd51afdc5358ed8989841222d63c217f48225f711484a89138cbcd0" => :sierra
+    sha256 "c92c51c63af6f05cb945792634eb14ec26cbff8c162bd9a70a0f1b8c69c7eecf" => :el_capitan
   end
 
   def install
     ENV.append "CFLAGS", "-std=gnu89"
     system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
     system "make"
-    ENV.j1 # install is not thread-safe
+    ENV.deparallelize # install is not thread-safe
     system "make", "install"
   end
 

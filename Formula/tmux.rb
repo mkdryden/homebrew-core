@@ -1,32 +1,13 @@
 class Tmux < Formula
   desc "Terminal multiplexer"
   homepage "https://tmux.github.io/"
-
-  stable do
-    url "https://github.com/tmux/tmux/releases/download/2.1/tmux-2.1.tar.gz"
-    sha256 "31564e7bf4bcef2defb3cb34b9e596bd43a3937cad9e5438701a81a5a9af6176"
-
-    patch do
-      # This fixes the Tmux 2.1 update that broke the ability to use select-pane [-LDUR]
-      # to switch panes when in a maximized pane https://github.com/tmux/tmux/issues/150#issuecomment-149466158
-      url "https://github.com/tmux/tmux/commit/a05c27a7e1c4d43709817d6746a510f16c960b4b.diff"
-      sha256 "2a60a63f0477f2e3056d9f76207d4ed905de8a9ce0645de6c29cf3f445bace12"
-    end
-
-    patch do
-      # This fixes the Tmux 2.1 update that breaks "tmux killw\; detach"
-      # https://github.com/tmux/tmux/issues/153#issuecomment-150184957
-      url "https://github.com/tmux/tmux/commit/3ebcf25149d75977ea97e9d4f786e0508d1a0d5e.diff"
-      sha256 "65a8bc0b2f6a8b41ad27605fd99419fff36314499969adc9d17dd3940a173508"
-    end
-  end
+  url "https://github.com/tmux/tmux/releases/download/2.6/tmux-2.6.tar.gz"
+  sha256 "b17cd170a94d7b58c0698752e1f4f263ab6dc47425230df7e53a6435cc7cd7e8"
 
   bottle do
-    cellar :any
-    revision 2
-    sha256 "815920cd38a8102360f7d667271d9c724f41087dd79be433db29259390ef8011" => :el_capitan
-    sha256 "93e2156c3c7e1c9f3f4b86dd84617e7519e9bee630f1e8769e00a91aa341d274" => :yosemite
-    sha256 "03c4ca001f72a1623393c0ec9406dfd82b7e449d745762a6e761da6a95d0fbd9" => :mavericks
+    sha256 "0ca2e76822980dcc009fde38379f7546b6568975d9dc4f2a6a312e32fce186f8" => :high_sierra
+    sha256 "d2b71640c44c4fc1e953a6eb1ca14b8c91ee4a19a91f2f699546c5cd6ed5b302" => :sierra
+    sha256 "cda9003fa113251c024210750d529be80379288436cf66a67a3896d2d14b6766" => :el_capitan
   end
 
   head do
@@ -39,26 +20,34 @@ class Tmux < Formula
 
   depends_on "pkg-config" => :build
   depends_on "libevent"
+  depends_on "utf8proc" => :optional
+
+  resource "completion" do
+    url "https://raw.githubusercontent.com/imomaliev/tmux-bash-completion/homebrew_1.0.0/completions/tmux"
+    sha256 "05e79fc1ecb27637dc9d6a52c315b8f207cf010cdcee9928805525076c9020ae"
+  end
 
   def install
     system "sh", "autogen.sh" if build.head?
 
+    args = %W[
+      --disable-Dependency-tracking
+      --prefix=#{prefix}
+      --sysconfdir=#{etc}
+    ]
+
+    args << "--enable-utf8proc" if build.with?("utf8proc")
+
     ENV.append "LDFLAGS", "-lresolv"
-    system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}",
-                          "--sysconfdir=#{etc}"
+    system "./configure", *args
 
     system "make", "install"
 
-    if build.head?
-      pkgshare.install "example_tmux.conf"
-    else
-      bash_completion.install "examples/bash_completion_tmux.sh" => "tmux"
-      pkgshare.install "examples"
-    end
+    pkgshare.install "example_tmux.conf"
+    bash_completion.install resource("completion")
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     Example configuration has been installed to:
       #{opt_pkgshare}
     EOS

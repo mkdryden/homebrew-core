@@ -1,15 +1,14 @@
 class Paperkey < Formula
   desc "Extract just secret information out of OpenPGP secret keys"
   homepage "http://www.jabberwocky.com/software/paperkey/"
-  url "http://www.jabberwocky.com/software/paperkey/paperkey-1.3.tar.gz"
-  sha256 "5b57d7522336fb65c4c398eec27bf44ec0aaa35926157b79a76423231792cbfb"
+  url "http://www.jabberwocky.com/software/paperkey/paperkey-1.5.tar.gz"
+  sha256 "c4737943083ce92e41faf13c27a9d608105b6285c0840dfb684a7ee294142ddf"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "fdf61b322087d1346696f261e475492dcf22665e1cf0e4b2fdc7aecec9417d4c" => :el_capitan
-    sha256 "7ed27ec6a3f638446958eab7e408a0a3080c814affb36fb9f13cde515bb2c27f" => :yosemite
-    sha256 "3e8b11e1c638df114045da58e0fdda7fbe5083a88f575c659cc11ac602d8fc11" => :mavericks
-    sha256 "c1fb5b29d648f9fc0769a94cedc5e80af7c8edbd3c3702464fe02653cbb6da7a" => :mountain_lion
+    sha256 "a541e2c254870a1e53049a478dd7067537a7d3e9ededad8123fd7d9f7c48f576" => :high_sierra
+    sha256 "9c96b3110a0af3abb54d19f6fb73b60bbcf1868e5343ba69fde37d7abbd5714c" => :sierra
+    sha256 "e98cb1a1b43ec005129d6346a7d6df00bcc50ce12366bb741581f448f9321d59" => :el_capitan
   end
 
   resource "secret.gpg" do
@@ -27,7 +26,7 @@ class Paperkey < Formula
   test do
     resource("secret.gpg").stage do
       system "#{bin}/paperkey", "--secret-key", "secret.gpg", "--output", "test"
-      assert File.exist? "test"
+      assert_predicate Pathname.pwd/"test", :exist?
     end
   end
 end

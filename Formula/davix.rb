@@ -2,23 +2,22 @@ class Davix < Formula
   desc "Library and tools for advanced file I/O with HTTP-based protocols"
   homepage "https://dmc.web.cern.ch/projects/davix/home"
   url "https://github.com/cern-it-sdc-id/davix.git",
-    :revision => "c53eb1472537da1694a5adc4c8fef5611eae7ab8",
-    :tag => "R_0_5_0"
-  version "0.5.0"
-
+      :tag => "R_0_6_7",
+      :revision => "4425c4498655f11401c7909dfe241b406487f043"
+  version "0.6.7"
   head "https://github.com/cern-it-sdc-id/davix.git"
 
   bottle do
     cellar :any
-    revision 1
-    sha256 "a30f6273f008e116f1d5a28300f87c09876f2e6a6d99ec066e0562adfd4605c6" => :el_capitan
-    sha256 "ee3fb1d6b783a2ac5569b35bced1b6ff815d1357632268ebc4ae8b7f9261bc1f" => :yosemite
-    sha256 "c8fc7c40b2dbbe177bb7ed819e2eaf5d165a1723d5dfcb4dcd351bce67e83b5f" => :mavericks
+    sha256 "3fa224f7f2099030860ea04b5a06ef0cab8eb1e1e3ad53f765274c31eec8626c" => :high_sierra
+    sha256 "8ed83d7e8367d1156fff19940f2ce360b9d069cf99f4b367f979b5f756d60963" => :sierra
+    sha256 "66bbeb6fa8cd77823581a15337da9e9446d5cd1126e8d6986d77735c112f1185" => :el_capitan
   end
 
   depends_on "cmake" => :build
   depends_on "doxygen" => :build
   depends_on "openssl"
+  depends_on "ossp-uuid"
 
   def install
     ENV.libcxx

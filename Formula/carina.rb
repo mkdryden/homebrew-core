@@ -1,30 +1,33 @@
 class Carina < Formula
-  desc "Work with Swarm clusters on Carina"
+  desc "Command-line client for Carina"
   homepage "https://github.com/getcarina/carina"
   url "https://github.com/getcarina/carina.git",
-        :tag => "v1.3.0",
-        :revision => "b611b9dad3f33e1ee9c810ece98a03643b3a4902"
+        :tag => "v2.1.3",
+        :revision => "2b3ec267e298e095d7c2f81a2d82dc50a720e81c"
   head "https://github.com/getcarina/carina.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "1dddc87516c06d1cd5e88a915f23b91308cc6b9301c18fce823758686fa7a5d3" => :el_capitan
-    sha256 "3462ea1b0cb963882d479a771da6fd71b5e8cbc517ea953aa7d9d4360ece4e10" => :yosemite
-    sha256 "260429922cb3fd08a333a6948cc619e66881df0778ea7f1a6aa70655093f622a" => :mavericks
+    sha256 "33040c78e42a9611b87dda596e8a346c028b2ad84d8a4ba5cf2a12800e693ab8" => :high_sierra
+    sha256 "ee6c8cdf2eddda983618f7de29bf3bcc7e81d8d9a7085a037d67cd7cdb25377a" => :sierra
+    sha256 "34086f8b3418d96c3ee5c2f50ad5ffc7ee839fd26b36d0e8911c364a8c82586e" => :el_capitan
+    sha256 "0706998cd1dc286030e20382ac69a96c744ec558784685f769aa4276966dcd12" => :yosemite
   end
 
   depends_on "go" => :build
 
   def install
     ENV["GOPATH"] = buildpath
+    ENV.prepend_create_path "PATH", buildpath/"bin"
 
     carinapath = buildpath/"src/github.com/getcarina/carina"
     carinapath.install Dir["{*,.git}"]
 
     cd carinapath do
       system "make", "get-deps"
-      system "make", "carina", "VERSION=#{version}"
+      system "make", "local", "VERSION=#{version}"
       bin.install "carina"
+      prefix.install_metafiles
     end
   end
 

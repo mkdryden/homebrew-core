@@ -1,38 +1,44 @@
 class ClangFormat < Formula
   desc "Formatting tools for C, C++, Obj-C, Java, JavaScript, TypeScript"
-  homepage "http://clang.llvm.org/docs/ClangFormat.html"
-  version "2016-03-29"
+  homepage "https://clang.llvm.org/docs/ClangFormat.html"
+  version "2017-11-14"
 
   stable do
-    url "http://llvm.org/svn/llvm-project/llvm/tags/google/testing/2016-03-29/", :using => :svn
-
-    resource "clang" do
-      url "http://llvm.org/svn/llvm-project/cfe/tags/google/testing/2016-03-29/", :using => :svn
+    if MacOS.version >= :sierra
+      url "https://llvm.org/svn/llvm-project/llvm/tags/google/stable/2017-11-14/", :using => :svn
+    else
+      url "http://llvm.org/svn/llvm-project/llvm/tags/google/stable/2017-11-14/", :using => :svn
     end
 
-    resource "libcxx" do
-      url "http://llvm.org/releases/3.8.0/libcxx-3.8.0.src.tar.xz"
-      sha256 "36804511b940bc8a7cefc7cb391a6b28f5e3f53f6372965642020db91174237b"
+    resource "clang" do
+      if MacOS.version >= :sierra
+        url "https://llvm.org/svn/llvm-project/cfe/tags/google/stable/2017-11-14/", :using => :svn
+      else
+        url "http://llvm.org/svn/llvm-project/cfe/tags/google/stable/2017-11-14/", :using => :svn
+      end
     end
   end
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "cd16f7709d86c5f24dfd275b7e1e3dd2c61c6ec4fc4a8d772e0f6ea1b623c77b" => :el_capitan
-    sha256 "d54a9f81ab19d6ca65fc71f0217c2e2effbbf23e9e736857fa4abc770be26073" => :yosemite
-    sha256 "20c6d7675e2f5bb15d39bcbccd61fced755992fa3a54e893adc417f1bc99f557" => :mavericks
+    sha256 "0612cd7fa1318527ee5701f44f57cc9d1de732bc22c494746918545ed6dc2566" => :high_sierra
+    sha256 "00e9f4400c72e3e2367133e5a9e7361bafd8e4374cfbe10ca72652e33e3325a9" => :sierra
+    sha256 "5312b09ff9c6e055b3f605cbbbde964ad701cf4613b5706b21bd225c582e12fc" => :el_capitan
   end
 
   head do
-    url "http://llvm.org/svn/llvm-project/llvm/trunk/", :using => :svn
-
-    resource "clang" do
-      url "http://llvm.org/svn/llvm-project/cfe/trunk/", :using => :svn
+    if MacOS.version >= :sierra
+      url "https://llvm.org/svn/llvm-project/llvm/trunk/", :using => :svn
+    else
+      url "http://llvm.org/svn/llvm-project/llvm/trunk/", :using => :svn
     end
 
-    resource "libcxx" do
-      url "http://llvm.org/releases/3.8.0/libcxx-3.8.0.src.tar.xz"
-      sha256 "36804511b940bc8a7cefc7cb391a6b28f5e3f53f6372965642020db91174237b"
+    resource "clang" do
+      if MacOS.version >= :sierra
+        url "https://llvm.org/svn/llvm-project/cfe/trunk/", :using => :svn
+      else
+        url "http://llvm.org/svn/llvm-project/cfe/trunk/", :using => :svn
+      end
     end
   end
 
@@ -40,12 +46,18 @@ class ClangFormat < Formula
   depends_on "ninja" => :build
   depends_on "subversion" => :build
 
+  resource "libcxx" do
+    url "https://releases.llvm.org/5.0.0/libcxx-5.0.0.src.tar.xz"
+    sha256 "eae5981e9a21ef0decfcac80a1af584ddb064a32805f95a57c7c83a5eb28c9b1"
+  end
+
   def install
     (buildpath/"projects/libcxx").install resource("libcxx")
     (buildpath/"tools/clang").install resource("clang")
 
     mkdir "build" do
       args = std_cmake_args
+      args << "-DCMAKE_OSX_SYSROOT=/" unless MacOS::Xcode.installed?
       args << "-DLLVM_ENABLE_LIBCXX=ON"
       args << ".."
       system "cmake", "-G", "Ninja", *args

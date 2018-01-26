@@ -1,17 +1,21 @@
 class Mercury < Formula
   desc "Logic/functional programming language"
   homepage "https://mercurylang.org/"
-  url "http://dl.mercurylang.org/release/mercury-srcdist-14.01.1.tar.gz"
+  url "https://dl.mercurylang.org/release/mercury-srcdist-14.01.1.tar.gz"
   sha256 "98f7cbde7a7425365400feef3e69f1d6a848b25dc56ba959050523d546c4e88b"
+  revision 1
 
   bottle do
-    sha256 "cd513a5ca92a2dc2162db2f87208129cb5b3ab0ce6d85e0da0c4b54498278144" => :yosemite
-    sha256 "bcf3147bb1480f1f99f4af7b43a0b4a217b7f2192ec621c8b2c6777a4df8dba3" => :mavericks
-    sha256 "ebef2e58fbf08029606fba423f6e689231af0fe2d96f3baff270f1a47ed2003c" => :mountain_lion
+    cellar :any
+    sha256 "2b68773f1e4dd35bb70ed17a94f82ef7bb4e11f5169869d8904d7f6ce667003a" => :high_sierra
+    sha256 "200fbd8b1e59fa3b4b7ef80d09955c697a31e83f15eb4c661bef1dc2458236d0" => :sierra
+    sha256 "daf916b14c3358f4d7ed6cdba153f96d6f4acec2d29b9fb43b027a6610bd783d" => :el_capitan
+    sha256 "afcff5ed87fdd477ce8037cca2f3fcab828b71cf78e1fbde951c4e17ae3e0b17" => :yosemite
+    sha256 "0e736ef6f5cc48bc9d6f7d50cb9df6fb52dba2b0b3bf2d83b378f83fcff4ecb9" => :mavericks
   end
 
   depends_on "erlang" => :optional
-  depends_on "homebrew/science/hwloc" => :optional
+  depends_on "hwloc" => :optional
   depends_on "mono" => :optional
 
   def install
@@ -50,7 +54,7 @@ class Mercury < Formula
           io.write_string("#{test_string}", IOState_in, IOState_out).
     EOS
     system "#{bin}/mmc", "--make", "hello"
-    assert File.exist?(testpath/"hello")
+    assert_predicate testpath/"hello", :exist?
 
     assert_equal test_string, shell_output("#{testpath}/hello")
   end

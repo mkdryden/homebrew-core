@@ -1,12 +1,9 @@
 class Golo < Formula
   desc "Lightweight dynamic language for the JVM"
   homepage "http://golo-lang.org"
-  url "https://bintray.com/artifact/download/golo-lang/downloads/golo-3.1.0.zip"
-  sha256 "a684a089a808b29d42a4aa972db74c000c7686d32031764da8ab0c11a2b97820"
-
-  head do
-    url "https://github.com/eclipse/golo-lang.git"
-  end
+  url "https://bintray.com/artifact/download/golo-lang/downloads/golo-3.2.0.zip"
+  sha256 "bf61b5a2565c31ed39829453d2c129c4604efaac6f6a7e546d199ec82e9ec654"
+  head "https://github.com/eclipse/golo-lang.git"
 
   bottle :unneeded
 
@@ -30,7 +27,7 @@ class Golo < Formula
 
   def caveats
     if ENV["SHELL"].include? "zsh"
-      <<-EOS.undent
+      <<~EOS
         For ZSH users, please add "golo" in yours plugins in ".zshrc"
       EOS
     end

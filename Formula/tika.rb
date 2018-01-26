@@ -1,16 +1,16 @@
 class Tika < Formula
   desc "Content analysis toolkit"
   homepage "https://tika.apache.org/"
-  url "https://www.apache.org/dyn/closer.cgi?path=tika/tika-app-1.11.jar"
-  sha256 "76f23849c0fe116efda3d89f9021d74415727f6f98b2860c24247c299cae719c"
+  url "https://www.apache.org/dyn/closer.cgi?path=tika/tika-app-1.16.jar"
+  sha256 "4f377b42e122f92c3f1f3b4702029cf0642c7d6f3ce872a0dfb1472eac65be44"
 
   bottle :unneeded
 
   depends_on :java => "1.7+"
 
   resource "server" do
-    url "https://repo1.maven.org/maven2/org/apache/tika/tika-server/1.11/tika-server-1.11.jar"
-    sha256 "6eb6b932943d33860e533c3c8a4195f3b6376d3da07ff40e1aa299af5c705368"
+    url "https://search.maven.org/remotecontent?filepath=org/apache/tika/tika-server/1.16/tika-server-1.16.jar"
+    sha256 "d25c1851b3d448cc025666a6193cc1636ab412ecc5bea40e31431a16fe472fed"
   end
 
   def install
@@ -21,7 +21,7 @@ class Tika < Formula
     bin.write_jar_script libexec/"tika-server-#{version}.jar", "tika-rest-server"
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     To run Tika:
       tika
 
@@ -31,5 +31,10 @@ class Tika < Formula
     See the Tika homepage for more documentation:
       brew home tika
     EOS
+  end
+
+  test do
+    pdf = test_fixtures("test.pdf")
+    assert_equal "application/pdf\n", shell_output("#{bin}/tika --detect #{pdf}")
   end
 end

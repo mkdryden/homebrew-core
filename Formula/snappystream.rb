@@ -1,17 +1,15 @@
 class Snappystream < Formula
   desc "C++ snappy stream realization (compatible with snappy)"
   homepage "https://github.com/hoxnox/snappystream"
-  url "https://github.com/hoxnox/snappystream/archive/0.2.1.tar.gz"
-  sha256 "7c7ecd23d4b0be5255d4ddbcba14b03ec6adf9d38e0e393d6190787621e66952"
-
+  url "https://github.com/hoxnox/snappystream/archive/0.2.8.tar.gz"
+  sha256 "53f15760eda2d19138a2e115850377ff4520e7009ff5501e2f175be45eb63614"
   head "https://github.com/hoxnox/snappystream.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "9ee874e70e79230157988cb9653821eadf81be8ff8e08817548450118e9c2ed9" => :el_capitan
-    sha256 "3bca80e05819e5f779ca39880fdadb0f3373ae03532e3a116d22bd49b7266227" => :yosemite
-    sha256 "ff2b8f6fe94c84bdc490a8c5f8d63fbfd64fd79783109be96e0e58adc8805bdb" => :mavericks
-    sha256 "257bfba15d83cb174afafd30d221aaa5134d7c5640b1dbc44d811587997c9073" => :mountain_lion
+    sha256 "93bfef130708be8e52485c4beea0524bbc89cbc2a076d2d456b10dd3d401136f" => :high_sierra
+    sha256 "43253ef9ad617662532e7da29acf8721552a69733367043fa79c534db3ec5417" => :sierra
+    sha256 "a43cdc3438c25363ee6d98c85bce3a777c07860265a5a120789eff46da1c71ec" => :el_capitan
   end
 
   depends_on "cmake" => :build
@@ -26,7 +24,7 @@ class Snappystream < Formula
   end
 
   test do
-    (testpath/"testsnappystream.cxx").write <<-EOS.undent
+    (testpath/"testsnappystream.cxx").write <<~EOS
       #include <iostream>
       #include <fstream>
       #include <iterator>
@@ -47,7 +45,7 @@ class Snappystream < Formula
         }
       }
     EOS
-    system ENV.cxx, "testsnappystream.cxx", "-lsnappy", "-lsnappystream", "-o", "testsnappystream"
+    system ENV.cxx, "testsnappystream.cxx", "-lsnappy", "-L#{lib}", "-lsnappystream", "-o", "testsnappystream"
     system "./testsnappystream < #{__FILE__} > out.dat && diff #{__FILE__} out.dat"
   end
 end

@@ -1,34 +1,29 @@
 class Tcpreplay < Formula
   desc "Replay saved tcpdump files at arbitrary speeds"
   homepage "http://tcpreplay.appneta.com"
-  url "https://github.com/appneta/tcpreplay/releases/download/v4.1.0/tcpreplay-4.1.0.tar.gz"
-  sha256 "ad285b08d7a61ed88799713c4c5d657a7a503eee832304d3a767f67efe5d1a20"
+  url "https://github.com/appneta/tcpreplay/releases/download/v4.2.6/tcpreplay-4.2.6.tar.gz"
+  sha256 "043756c532dab93e2be33a517ef46b1341f7239278a1045ae670041dd8a4531d"
 
   bottle do
     cellar :any
-    revision 1
-    sha256 "03bfe9130780358c6a9d37e8b663f84c0e939b03c5efa87c90985584d95d2cbc" => :el_capitan
-    sha256 "26ae99b72e3dc9feb27db71dd1f49de8734aff9debc1ed279c5a359fa5d4fece" => :yosemite
-    sha256 "ab0379428462fbdc2653feae2bcc404cf6b6d2129ddf0461019c53794ce87e4f" => :mavericks
+    sha256 "9be61ec3aeeac7be8cd51225d5914a7ba7ee8f0c9fbd4393e452f6b9447a53c7" => :high_sierra
+    sha256 "569bdb4ac12e4ff62c723b1fdabad4b037c54423a70742306ba852f9bc43e25d" => :sierra
+    sha256 "b5ba1668dddf52946866c866bc1ba2ab2983b67d99c69b6c41fabe91e816139a" => :el_capitan
+    sha256 "3eaba6e1af68c8af3f7d1d0a15c2563b178368a74a760e3fafa5b3c4774f9129" => :yosemite
   end
 
-  depends_on "libdnet" => :recommended
+  depends_on "libdnet"
 
   def install
-    # Recognise .tbd files inside Xcode 7 as valid.
-    # https://github.com/appneta/tcpreplay/pull/202
-    # Merged but into configure.ac, so inreplace here to avoid needing autotools.
-    inreplace "configure", "for ext in .dylib .so", "for ext in .dylib .so .tbd"
-
-    system "./configure", "--disable-dependency-tracking",
-                          "--disable-debug",
+    system "./configure", "--disable-debug",
+                          "--disable-dependency-tracking",
+                          "--disable-silent-rules",
                           "--prefix=#{prefix}",
-                          "--enable-dynamic-link",
-                          "--with-libpcap=#{MacOS.sdk_path}/usr"
+                          "--enable-dynamic-link"
     system "make", "install"
   end
 
   test do
-    system "#{bin}/tcpreplay", "--version"
+    system bin/"tcpreplay", "--version"
   end
 end

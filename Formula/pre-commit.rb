@@ -1,94 +1,61 @@
 class PreCommit < Formula
+  include Language::Python::Virtualenv
+
   desc "Framework for managing multi-language pre-commit hooks"
-  homepage "http://pre-commit.com/"
-  url "https://github.com/pre-commit/pre-commit/archive/v0.7.6.tar.gz"
-  sha256 "817e794d62189e649f219491ca529f2208b3e331d06eddb1b4c4118e580c1235"
+  homepage "https://pre-commit.com/"
+  url "https://github.com/pre-commit/pre-commit/archive/v1.5.1.tar.gz"
+  sha256 "b49a5b751743e655efc389cf39a5839ba590bd1ac86f340ad88272ee25c7434a"
 
   bottle do
     cellar :any_skip_relocation
-    revision 1
-    sha256 "457c9c8a36143f18bbcab85701b9ab5d9f5fb6b2af084660bc923c1f4d4a2fcf" => :el_capitan
-    sha256 "c8eec7377959485f86f50be423f8e4a0393eaeaf35b82200d08663e7dc3698d9" => :yosemite
-    sha256 "ae5c3b8c9b3637c87f6d199a2c53d70e8efa5c3905e2c93de4788eef567181ad" => :mavericks
+    sha256 "98b560a15452f7e5156e2d0da508f9c46c8ccc011f647b53452dc0f4b5758f2b" => :high_sierra
+    sha256 "f46e86fbc9aa962887e4541b854fe24000f2bde1a4fd07bfeb3c429484a89a69" => :sierra
+    sha256 "e043eab1c0a9f8af947cc072fe031f1dd87972a49cf947daa983da042f609c65" => :el_capitan
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
-
-  resource "argparse" do
-    url "https://pypi.python.org/packages/source/a/argparse/argparse-1.4.0.tar.gz"
-    sha256 "62b089a55be1d8949cd2bc7e0df0bddb9e028faefc8c32038cc84862aefdd6e4"
-  end
-
-  resource "aspy.yaml" do
-    url "https://pypi.python.org/packages/source/a/aspy.yaml/aspy.yaml-0.2.1.tar.gz"
-    sha256 "a91370183aea63c87d8487e7b399ed2d99a7c2f14b108d27c0bc8ad9ef595d9a"
-  end
-
-  resource "cached-property" do
-    url "https://pypi.python.org/packages/source/c/cached-property/cached-property-1.2.0.tar.gz"
-    sha256 "e3081a8182d3d4b7283eeade76c382bcfd4dfd644ca800598229c2ef798abb53"
-  end
-
-  resource "jsonschema" do
-    url "https://pypi.python.org/packages/source/j/jsonschema/jsonschema-2.5.1.tar.gz"
-    sha256 "36673ac378feed3daa5956276a829699056523d7961027911f064b52255ead41"
-  end
-
-  resource "nodeenv" do
-    url "https://pypi.python.org/packages/source/n/nodeenv/nodeenv-0.13.6.tar.gz"
-    sha256 "feaafb0486d776360ef939bd85ba34cff9b623013b13280d1e3770d381ee2b7f"
-  end
-
-  resource "ordereddict" do
-    url "https://pypi.python.org/packages/source/o/ordereddict/ordereddict-1.1.tar.gz"
-    sha256 "1c35b4ac206cef2d24816c89f89cf289dd3d38cf7c449bb3fab7bf6d43f01b1f"
-  end
-
-  resource "pyyaml" do
-    url "https://pypi.python.org/packages/source/P/PyYAML/PyYAML-3.11.tar.gz"
-    sha256 "c36c938a872e5ff494938b33b14aaa156cb439ec67548fcab3535bb78b0846e8"
-  end
-
-  resource "virtualenv" do
-    url "https://pypi.python.org/packages/source/v/virtualenv/virtualenv-14.0.6.tar.gz"
-    sha256 "1ffb6a02d8999e9c97ad8f04b1d2ba44421dfb8f8a98b54aea5c6fdfb53bc526"
-  end
-
-  resource "functools32" do
-    url "https://pypi.python.org/packages/source/f/functools32/functools32-3.2.3-2.tar.gz"
-    sha256 "f6253dfbe0538ad2e387bd8fdfd9293c925d63553f5813c4e587745416501e6d"
-  end
+  depends_on "python3"
 
   def install
-    ENV["PYTHONPATH"] = libexec/"vendor/lib/python2.7/site-packages"
-    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python2.7/site-packages"
+    venv = virtualenv_create(libexec, "python3")
+    system libexec/"bin/pip", "install", "-v", "--no-binary", ":all:",
+                              "--ignore-installed", buildpath
+    system libexec/"bin/pip", "uninstall", "-y", "pre-commit"
+    venv.pip_install_and_link buildpath
+  end
 
-    resources.each do |r|
-      r.stage do
-        system "python", *Language::Python.setup_install_args(libexec/"vendor")
-      end
+  # Avoid relative paths
+  def post_install
+    lib_python_path = Pathname.glob(libexec/"lib/python*").first
+    lib_python_path.each_child do |f|
+      next unless f.symlink?
+      realpath = f.realpath
+      rm f
+      ln_s realpath, f
     end
-
-    # fix aspy.yaml (because namespace .pth isn't processed)
-    touch libexec/"vendor/lib/python2.7/site-packages/aspy/__init__.py"
-
-    system "python", *Language::Python.setup_install_args(libexec)
-
-    bin.install Dir["#{libexec}/bin/*"]
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
+    inreplace lib_python_path/"orig-prefix.txt",
+              Formula["python3"].opt_prefix, Formula["python3"].prefix.realpath
   end
 
   test do
     testpath.cd do
       system "git", "init"
-      (testpath/".pre-commit-config.yaml").write <<-EOF.undent
-      -   repo: https://github.com/pre-commit/pre-commit-hooks
-          sha: 5541a6a046b7a0feab73a21612ab5d94a6d3f6f0
-          hooks:
-          -   id: trailing-whitespace
-      EOF
+      (testpath/".pre-commit-config.yaml").write <<~EOS
+        -   repo: https://github.com/pre-commit/pre-commit-hooks
+            sha: v0.9.1
+            hooks:
+            -   id: trailing-whitespace
+      EOS
       system bin/"pre-commit", "install"
-      system bin/"pre-commit", "run", "--all-files"
+      (testpath/"f").write "hi\n"
+      system "git", "add", "f"
+
+      ENV["GIT_AUTHOR_NAME"] = "test user"
+      ENV["GIT_AUTHOR_EMAIL"] = "test@example.com"
+      ENV["GIT_COMMITTER_NAME"] = "test user"
+      ENV["GIT_COMMITTER_EMAIL"] = "test@example.com"
+      git_exe = which("git")
+      ENV["PATH"] = "/usr/bin:/bin"
+      system git_exe, "commit", "-m", "test"
     end
   end
 end

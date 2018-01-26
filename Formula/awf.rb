@@ -1,16 +1,16 @@
 class Awf < Formula
   desc "'A Widget Factory' is a theme preview application for gtk2 and gtk3"
   homepage "https://github.com/valr/awf"
-  url "https://github.com/valr/awf/archive/v1.3.0.tar.gz"
-  sha256 "911ded8a307beecbb8ee1dab489fa7b1aa9d7965cb34bd938482220505814fa4"
+  url "https://github.com/valr/awf/archive/v1.4.0.tar.gz"
+  sha256 "bb14517ea3eed050b3fec37783b79c515a0f03268a55dfd0b96a594b5b655c78"
   head "https://github.com/valr/awf.git"
 
   bottle do
     cellar :any
-    sha256 "f5e776bc03dd49f0b090f2e5a7c0a58ba366043497d61f6a9167f2c805b52937" => :el_capitan
-    sha256 "ff5d8ccd439f2274927c4c42e3a813fdbd9318a0b98c40a76b00c1a2a9bc18ef" => :yosemite
-    sha256 "01f0e493f6b090949b5ac48f71205d0350e2e98e1a9756927ff60650d0d07db9" => :mavericks
-    sha256 "882d85a7b0f2411ab6ce2d43f1bcd0e3f878ca67e269a6f00520ba7f93bf8bdb" => :mountain_lion
+    sha256 "05447f2e8fd02a3c1bc9e2a7c96a0c5c9c294d2e67746f4102f0c781cf46e857" => :high_sierra
+    sha256 "bbe56879c4de58ef832bb6ba45d07555eaf481ccb2fdafdb627ed0598ef0c3dd" => :sierra
+    sha256 "191615297091a381c7d5ac0b3702d936ef41c50fbdfec153df00369acac53106" => :el_capitan
+    sha256 "6b9e3490b4f19691535979787ff5d586c6781061bfbb26dbcbc731d64eb5f13b" => :yosemite
   end
 
   depends_on "autoconf" => :build
@@ -32,7 +32,7 @@ class Awf < Formula
   end
 
   test do
-    assert (bin/"awf-gtk2").exist?
-    assert (bin/"awf-gtk3").exist?
+    assert_predicate bin/"awf-gtk2", :exist?
+    assert_predicate bin/"awf-gtk3", :exist?
   end
 end

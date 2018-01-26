@@ -1,16 +1,15 @@
 class ArgyllCms < Formula
   desc "ICC compatible color management system"
-  homepage "http://www.argyllcms.com/"
-  url "http://www.argyllcms.com/Argyll_V1.8.3_src.zip"
-  version "1.8.3"
-  sha256 "60494176785f6c2e4e4daefb9452d83859880449040b2a843ed81de3bd0c558e"
+  homepage "https://www.argyllcms.com/"
+  url "https://www.argyllcms.com/Argyll_V2.0.0_src.zip"
+  version "2.0.0"
+  sha256 "5492896c040b406892864c467466ad6b50eb62954b5874ef0eb9174d1764ff41"
 
   bottle do
     cellar :any
-    revision 1
-    sha256 "4598c3c991524acfb49162ec6d7e28bba2e10e07c7a1515ea43da30d66eb3cc7" => :el_capitan
-    sha256 "149da3dc3ff1634c599cafbc5e3bdc0610dbe01ccda97b191c6eca4bf9059987" => :yosemite
-    sha256 "bfacf495413da04c187e2c40049b9a0d77f09df34dee8820a67624d449276b52" => :mavericks
+    sha256 "78bff4029872e5e426021471b40d2f843368517811f261d706a90410743ff4a3" => :high_sierra
+    sha256 "b1e55b622b10dff09e0923ad2d3e6bec53b8ba6147446d95a78a830621d9d597" => :sierra
+    sha256 "2f05c8e7477d3ff505799ca6bbc9374ec2e3acb4a5ca6203bb20203686aec2c3" => :el_capitan
   end
 
   depends_on "jam" => :build
@@ -19,11 +18,13 @@ class ArgyllCms < Formula
 
   conflicts_with "num-utils", :because => "both install `average` binaries"
 
-  # Fix build on case-sensitive filesystems.
-  # Submitted to graeme@argyllcms.com on 23rd Feb 2016.
-  patch :DATA
-
   def install
+    # dyld: lazy symbol binding failed: Symbol not found: _clock_gettime
+    # Reported 20 Aug 2017 to graeme AT argyllcms DOT com
+    if MacOS.version == :el_capitan && MacOS::Xcode.installed? && MacOS::Xcode.version >= "8.0"
+      inreplace "numlib/numsup.c", "CLOCK_MONOTONIC", "UNDEFINED_GIBBERISH"
+    end
+
     system "sh", "makeall.sh"
     system "./makeinstall.sh"
     rm "bin/License.txt"
@@ -33,21 +34,9 @@ class ArgyllCms < Formula
   test do
     system bin/"targen", "-d", "0", "test.ti1"
     system bin/"printtarg", testpath/"test.ti1"
-    %w[test.ti1.ps test.ti1.ti1 test.ti1.ti2].each { |f| File.exist? f }
+    %w[test.ti1.ps test.ti1.ti1 test.ti1.ti2].each do |f|
+      assert_predicate testpath/f, :exist?
+    end
+    assert_match "Calibrate a Display", shell_output("#{bin}/dispcal 2>&1", 1)
   end
 end
-
-__END__
-diff --git a/spectro/dispwin.c b/spectro/dispwin.c
-index fffbaee..18343db 100755
---- a/spectro/dispwin.c
-+++ b/spectro/dispwin.c
-@@ -113,7 +113,7 @@ typedef float CGFloat;
- #endif
- #endif	/* !NSINTEGER_DEFINED */
-
--#include <IOKit/Graphics/IOGraphicsLib.h>
-+#include <IOKit/graphics/IOGraphicsLib.h>
-
- #if __MAC_OS_X_VERSION_MAX_ALLOWED <= 1060
- /* This wasn't declared in 10.6, although it is needed */

@@ -1,20 +1,24 @@
 class Twoping < Formula
   desc "Ping utility to determine directional packet loss"
-  homepage "http://www.finnie.org/software/2ping/"
-  url "http://www.finnie.org/software/2ping/2ping-3.2.0.tar.gz"
-  sha256 "6297f7775be50d208f3b7d4925ecddb3ed1c593198fd875448ae8f88f1a6b196"
+  homepage "https://www.finnie.org/software/2ping/"
+  url "https://www.finnie.org/software/2ping/2ping-4.1.tar.gz"
+  sha256 "85331ae57f445bc8895ba4e61da4c7300b67fde55642f5e42ea02f2daf07b1ed"
+  revision 1
   head "https://github.com/rfinnie/2ping.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "a2cec00cf5e8b1f5747c49072071688454d4d778ec251bd85e494c3f151c29ba" => :el_capitan
-    sha256 "f78932d5c732c63038eabfd5c0839f1912b45ffd184d8505bd1d9f869663e714" => :yosemite
-    sha256 "385c93c0cc7daf1e80c6afdc96da670cd389900b480795eb8fd0bd4905f40041" => :mavericks
+    sha256 "64c857b87b42065d49000873ad3f4df386001779a52966910f19463bc7a12fc9" => :high_sierra
+    sha256 "64c857b87b42065d49000873ad3f4df386001779a52966910f19463bc7a12fc9" => :sierra
+    sha256 "64c857b87b42065d49000873ad3f4df386001779a52966910f19463bc7a12fc9" => :el_capitan
   end
 
+  depends_on "python3"
+
   def install
-    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python2.7/site-packages"
-    system "python", *Language::Python.setup_install_args(libexec)
+    pyver = Language::Python.major_minor_version "python3"
+    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python#{pyver}/site-packages"
+    system "python3", *Language::Python.setup_install_args(libexec)
     man1.install "doc/2ping.1"
     man1.install_symlink "2ping.1" => "2ping6.1"
     bin.install Dir["#{libexec}/bin/*"]
@@ -23,7 +27,7 @@ class Twoping < Formula
 
   plist_options :manual => "2ping --listen", :startup => true
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">

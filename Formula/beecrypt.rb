@@ -1,19 +1,19 @@
 class Beecrypt < Formula
   desc "C/C++ cryptography library"
-  homepage "http://beecrypt.sourceforge.net"
+  homepage "https://beecrypt.sourceforge.io"
   url "https://downloads.sourceforge.net/project/beecrypt/beecrypt/4.2.1/beecrypt-4.2.1.tar.gz"
   sha256 "286f1f56080d1a6b1d024003a5fa2158f4ff82cae0c6829d3c476a4b5898c55d"
-  revision 5
+  revision 7
 
   bottle do
     cellar :any
-    sha256 "0aec66d08c6d812b651e83edcfcee0e717cacbf494fa81ec36ca29292a96f8b2" => :el_capitan
-    sha256 "34c67eeea184c7a4ff6ae543d2e7135e7cd6102b84f477af9419dab5ad95fcb4" => :yosemite
-    sha256 "ddfdc9b0bd5dac2254ac6bfe6327b81a668faba45aa5798d9b85d5ec28bc7f27" => :mavericks
+    sha256 "75381fee700b8a6659dad5de0ea92df8d2e0bed0e1cd34755c8b3bfc39f99b89" => :high_sierra
+    sha256 "9bb192a3b891680eedbacb38cd9a2daa694cbef4d1db7b844d1809fb5504d660" => :sierra
+    sha256 "aafed63c6eb816d71151cf20830d76375ef872d2502babfe20f94683b3fcbf33" => :el_capitan
+    sha256 "c321c1ab92e2f644460e3f2cba59495962735a3b046744692a171deebffba29b" => :yosemite
   end
 
   depends_on "libtool" => :build
-  depends_on "icu4c"
 
   # fix build with newer clang, gcc 4.7 (https://bugs.gentoo.org/show_bug.cgi?id=413951)
   patch :p0, :DATA
@@ -32,7 +32,7 @@ class Beecrypt < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include "beecrypt/base64.h"
       #include "beecrypt/sha256.h"
       #include <stdio.h>
@@ -56,7 +56,7 @@ class Beecrypt < Formula
         return 0;
       }
     EOS
-    system ENV.cc, "test.c", "-lbeecrypt", "-o", "test"
+    system ENV.cc, "test.c", "-L#{lib}", "-lbeecrypt", "-o", "test"
     assert_match /ZF8D/, shell_output("./test")
   end
 end

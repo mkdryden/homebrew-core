@@ -1,8 +1,8 @@
 class Galen < Formula
   desc "Automated testing of look and feel for responsive websites"
   homepage "http://galenframework.com/"
-  url "https://github.com/galenframework/galen/releases/download/galen-2.2.4/galen-bin-2.2.4.zip"
-  sha256 "2df04f7e84b8aca79a8da2293291a577a0e41fbb7e7173e005087165d4bfa663"
+  url "https://github.com/galenframework/galen/releases/download/galen-2.3.6/galen-bin-2.3.6.zip"
+  sha256 "050a477067cc822e5ff765040dc9d7961d848b8ddd99d1e06ef548aac78acd4e"
 
   bottle :unneeded
 
@@ -10,7 +10,7 @@ class Galen < Formula
 
   def install
     libexec.install "galen.jar"
-    (bin/"galen").write <<-EOS.undent
+    (bin/"galen").write <<~EOS
       #!/bin/sh
       set -e
       java -cp "#{libexec}/galen.jar:lib/*:libs/*" com.galenframework.GalenMain "$@"

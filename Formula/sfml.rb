@@ -1,26 +1,25 @@
 class Sfml < Formula
   # Don't update SFML until there's a corresponding CSFML release
   desc "Multi-media library with bindings for multiple languages"
-  homepage "http://www.sfml-dev.org/"
-  url "http://www.sfml-dev.org/files/SFML-2.3-sources.zip"
-  sha256 "a1dc8b00958000628c5394bc8438ba1aa5971fbeeef91a2cf3fa3fff443de7c1"
+  homepage "https://www.sfml-dev.org/"
+  url "https://www.sfml-dev.org/files/SFML-2.4.2-sources.zip"
+  sha256 "8ba04f6fde6a7b42527d69742c49da2ac529354f71f553409f9f821d618de4b6"
   revision 1
-
   head "https://github.com/SFML/SFML.git"
 
   bottle do
     cellar :any
-    sha256 "81cc6bd984a20caa5d84f99b3e0ca39446e1604adce36faa4690fcc0e4725217" => :el_capitan
-    sha256 "0a0cc94cda22f17201e54762c0bd8980b8814871c8d11b80d8bfd364d35d8651" => :yosemite
-    sha256 "16cdf91ca02e792578476b9d8023ea0c88b8918787eda5efff339b2344e05143" => :mavericks
-    sha256 "915c46a78ca356b9637b8e46821a6a58a0eebf9c960f143d40a92974757a5697" => :mountain_lion
+    rebuild 1
+    sha256 "ed02627dfaff55b60f9271379256d99adfb010df3f4842b0e33fd366eb62df6e" => :high_sierra
+    sha256 "76c3949dad4b907b87d219f10eb2dae44d43cb76963a083f70935f138832d13c" => :sierra
+    sha256 "976560145b126bd482696148767f333ceda470d847064a5682abcd5c329937bd" => :el_capitan
+    sha256 "43dbf56a522f7bce55db7e5354ee0810b7abad63b97178a1ed7a73356c52577c" => :yosemite
   end
 
   depends_on "cmake" => :build
   depends_on "doxygen" => :optional
   depends_on "flac"
   depends_on "freetype"
-  depends_on "glew"
   depends_on "jpeg"
   depends_on "libogg"
   depends_on "libvorbis"
@@ -30,7 +29,15 @@ class Sfml < Formula
   depends_on :macos => :lion
 
   def install
-    args = std_cmake_args
+    # Install pkg-config files, adding the CMake flag below isn't enough, as
+    # the CMakeLists.txt file currently doesn't consider MacOS X.
+    # This was fixed upstream for the future 2.5.0 release on 2016-12-19 in:
+    # https://github.com/SFML/SFML/commit/5fe5e5d6d7792e37685a437551ffa8ed5161fcc1
+    inreplace "CMakeLists.txt",
+              "if(SFML_OS_LINUX OR SFML_OS_FREEBSD)",
+              "if(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_MACOSX)"
+
+    args = std_cmake_args << "-DSFML_INSTALL_PKGCONFIG_FILES=TRUE"
     args << "-DSFML_BUILD_DOC=TRUE" if build.with? "doxygen"
 
     # Always remove the "extlibs" to avoid install_name_tool failure
@@ -43,7 +50,7 @@ class Sfml < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include "Time.hpp"
       int main() {
         sf::Time t1 = sf::milliseconds(10);

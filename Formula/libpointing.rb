@@ -1,23 +1,27 @@
 class Libpointing < Formula
-  desc "Open-source library to get HID events and master transfer functions"
+  desc "Provides direct access to HID pointing devices"
   homepage "http://libpointing.org"
-  url "https://github.com/INRIA/libpointing/releases/download/v0.9.3/libpointing-0.9.3.tar.gz"
-  sha256 "ddb362e89c39d6fb263e26bfeaf82545858f9ba9f8de510f267fc232cc21e4e6"
+  url "https://github.com/INRIA/libpointing/releases/download/v1.0.7/libpointing-mac-1.0.7.tar.gz"
+  sha256 "29f12da75727d1b03ff952a2754ce79b88aec39b5e03a52d3b0ff7440f08f147"
 
   bottle do
     cellar :any
-    sha256 "e8825422895ad66442483611a595956629b96c44330c58d0c1258deedd780038" => :el_capitan
-    sha256 "1f38e15c67520d25cfd4de393ba0a5d33e5eb1e4ece9c58238fd21599504d826" => :yosemite
-    sha256 "c5ab41fb5a72d7d4321b7179c9455ff784e86e1855ff521c0d35d2259fd3bda5" => :mavericks
+    sha256 "078c97a802303ac5db84dfe72ae189f1bd261c193612fbe36d9e92451da725c2" => :high_sierra
+    sha256 "6ba8dbbb5a606a1e4b78512868986b80c4c3c971be04c90fbea59250dc6103ee" => :sierra
+    sha256 "6ba8dbbb5a606a1e4b78512868986b80c4c3c971be04c90fbea59250dc6103ee" => :el_capitan
+    sha256 "7120c106e54576154687dd63cdedb72633644e27213c7dbc1aa515a1227a8f3c" => :yosemite
   end
 
+  needs :cxx11
+
   def install
+    ENV.cxx11
     system "make"
     system "make", "install", "PREFIX=#{prefix}"
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <pointing/pointing.h>
       #include <iostream>
       int main() {
@@ -30,7 +34,7 @@ class Libpointing < Formula
         return 0;
       }
     EOS
-    system ENV.cxx, "test.cpp", "-lpointing", "-o", "test"
+    system ENV.cxx, "-std=c++11", "test.cpp", "-L#{lib}", "-lpointing", "-o", "test"
     system "./test"
   end
 end

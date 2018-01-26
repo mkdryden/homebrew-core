@@ -3,19 +3,22 @@ class Ledit < Formula
   homepage "http://pauillac.inria.fr/~ddr/ledit/"
   url "http://pauillac.inria.fr/~ddr/ledit/distrib/src/ledit-2.03.tgz"
   sha256 "ce08a8568c964009ccb0cbba45ae78b9a96c823f42a4fd61431a5b0c2c7a19ce"
+  revision 2
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "5046bdcbf4e86ff4d8f5788366b88b50bf4d327a1dfd96b51da14bb48eaba9ef" => :el_capitan
-    sha256 "7ea1c26486320fc35269fa7bf2a1dd577f504a04ac3dca3278c568224661e99e" => :yosemite
-    sha256 "a5d80c1e40de9d3d8ab06ca88e412fc3d5e105d99f2439ef62b063eed3efb4e5" => :mavericks
-    sha256 "338e160cde4ece1c167ec07e8b202f599ba0267ac5c3b6ca896b569067cb2e20" => :mountain_lion
+    sha256 "63545ec7be9fe95ab6b8aa4924149430015c8887b30a6399cdeadfa2787acb0e" => :high_sierra
+    sha256 "4a26786028c08c41b493f9e05dcd8e1cad1be78607a1dc243f23162632bbaa2a" => :sierra
+    sha256 "4a3c0a8da1f765c3490c2fceac34ca093927c94d5ae03e5701654b83fa16d4fc" => :el_capitan
+    sha256 "9d16c9b4d75e5d0d1caa9823f282899a0034bada1a46d7809a9dd37d5759563a" => :yosemite
   end
 
   depends_on "ocaml"
   depends_on "camlp5"
 
   def install
+    ENV["OCAMLPARAM"] = "safe-string=0,_" # OCaml 4.06.0 compat
+
     # like camlp5, this build fails if the jobs are parallelized
     ENV.deparallelize
     args = %W[BINDIR=#{bin} LIBDIR=#{lib} MANDIR=#{man}]

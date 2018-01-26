@@ -1,47 +1,40 @@
 class Suricata < Formula
   desc "Network IDS, IPS, and security monitoring engine"
-  homepage "http://suricata-ids.org"
-  url "https://www.openinfosecfoundation.org/download/suricata-2.0.8.tar.gz"
-  sha256 "7af6394cb81e464f5c1ac88a1444030e30940caab6e53688a6d9eb652226d1be"
-
-  devel do
-    url "http://www.openinfosecfoundation.org/download/suricata-2.1beta4.tar.gz"
-    sha256 "12b3c98a7464ef6fb631884aa648b53a9cbb04279f754009fdc9ae2a6b605b95"
-    version "2.1beta4"
-  end
+  homepage "https://suricata-ids.org/"
+  url "https://www.openinfosecfoundation.org/download/suricata-4.0.3.tar.gz"
+  sha256 "81a0bcb10b5c0b00efeafb4aac3ef70bf0e36b060ac6300d867f15f3dbe0e437"
 
   bottle do
-    revision 1
-    sha256 "c60577cacc930289e30fc51adf5bc3a9f2e2a96dc405221e8e7dd9a3792244f0" => :yosemite
-    sha256 "525504681cc58b1c0efa3ab6d77c36f18aff3d11ade6632a59e5a586beed620c" => :mavericks
-    sha256 "6c166db0c146fbe09ee5783cf37d6b261b7c214af8b7877e5c34d7616a32547e" => :mountain_lion
+    sha256 "e67b8fd00494f998f601dd70ede7c7960fe70fe911d6c36d5fe4be6e6b15d172" => :high_sierra
+    sha256 "65c73958af2ebac131b84d7ef587cf42c69076f70e2a2f8cec77b48a6810afab" => :sierra
+    sha256 "f8bf4b286e829739b2c26147ceca9a1b21422a1125008a9b6274adb23f615698" => :el_capitan
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python" if MacOS.version <= :snow_leopard
   depends_on "pkg-config" => :build
   depends_on "libmagic"
   depends_on "libnet"
   depends_on "libyaml"
   depends_on "pcre"
+  depends_on "nss"
+  depends_on "nspr"
   depends_on "geoip" => :optional
   depends_on "lua" => :optional
   depends_on "luajit" => :optional
   depends_on "jansson" => :optional
+  depends_on "hiredis" => :optional
 
   resource "argparse" do
-    url "https://pypi.python.org/packages/source/a/argparse/argparse-1.3.0.tar.gz"
-    sha256 "b3a79a23d37b5a02faa550b92cbbbebeb4aa1d77e649c3eb39c19abf5262da04"
+    url "https://files.pythonhosted.org/packages/source/a/argparse/argparse-1.4.0.tar.gz"
+    sha256 "62b089a55be1d8949cd2bc7e0df0bddb9e028faefc8c32038cc84862aefdd6e4"
   end
 
   resource "simplejson" do
-    url "https://pypi.python.org/packages/source/s/simplejson/simplejson-3.6.5.tar.gz"
-    sha256 "2a3189f79d1c7b8a2149a0e783c0b4217fad9b30a6e7d60450f2553dc2c0e57e"
+    url "https://files.pythonhosted.org/packages/source/s/simplejson/simplejson-3.13.2.tar.gz"
+    sha256 "4c4ecf20e054716cc1e5a81cadc44d3f4027108d8dd0861d8b1e3bd7a32d4f0a"
   end
 
   def install
-    # bug raised https://redmine.openinfosecfoundation.org/issues/1470
-    ENV.deparallelize
-
     libnet = Formula["libnet"]
     libmagic = Formula["libmagic"]
 
@@ -80,6 +73,12 @@ class Suricata < Formula
       args << "--with-libjansson-libraries=#{jansson.opt_lib}"
     end
 
+    if build.with? "hiredis"
+      hiredis = Formula["hiredis"]
+      args << "--enable-hiredis"
+      args << "--with-libhiredis-includes=#{hiredis.opt_include}"
+      args << "--with-libhiredis-libraries=#{hiredis.opt_lib}"
+    end
     system "./configure", *args
     system "make", "install-full"
 

@@ -1,21 +1,22 @@
 class Syntaxerl < Formula
-  homepage "https://github.com/ten0s/syntaxerl"
   desc "Syntax checker for Erlang code and config files"
-  url "https://github.com/ten0s/syntaxerl/archive/0.10.0.tar.gz"
-  sha256 "ee2748ecfbcdc62a6cc4181032be9c6de232f5603ac019f9d14d6861a3c5df8a"
+  homepage "https://github.com/ten0s/syntaxerl"
+  url "https://github.com/ten0s/syntaxerl/archive/0.14.0.tar.gz"
+  sha256 "a7c46789aadf467191f43b82ac6a428faf4d38af2965fdcd946789a7f40439fc"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "76dbad50161a18864c891857eed2800ba11057b7e8d25866cd2273d656057887" => :el_capitan
-    sha256 "3354fa14b4179431e38ce4f5f65153a30a262822d08c30b387cadd0f94708c36" => :yosemite
-    sha256 "85a9db8ff434298e3fa40a4429e298b9aa2205bdefbebe1ac2b83b8b949d7c67" => :mavericks
+    sha256 "2b4c6e6d7e7413fe81e5107e80841f5a8c4bbddec9e12f3f53c92bedd5fced3b" => :high_sierra
+    sha256 "0e0ac8402dd61720eeca50047b173f7500dc38bd7cceb37915c4425b7492044e" => :sierra
+    sha256 "648f30c4fb2db062f4c9f27d3c73cf679181e7183a5b7b83b5670624d88b27d5" => :el_capitan
+    sha256 "80ea1737253a2115722350d6a6456ba48ae853674bb91f7a8b685e7b8311eb74" => :yosemite
   end
 
   depends_on "erlang"
 
   def install
     system "make"
-    bin.install "syntaxerl"
+    bin.install "_build/default/bin/syntaxerl"
   end
 
   test do
@@ -23,6 +24,6 @@ class Syntaxerl < Formula
     assert_equal "", shell_output("#{bin}/syntaxerl #{testpath}/app.config")
 
     (testpath/"invalid.config").write "]["
-    assert_match /invalid.config:1: syntax error before: '\]'/, shell_output("#{bin}/syntaxerl #{testpath}/invalid.config")
+    assert_match "invalid.config:1: syntax error before: ']'", shell_output("#{bin}/syntaxerl #{testpath}/invalid.config", 1)
   end
 end

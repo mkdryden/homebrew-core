@@ -1,19 +1,19 @@
 class Mapnik < Formula
   desc "Toolkit for developing mapping applications"
   homepage "http://www.mapnik.org/"
-  url "https://github.com/mapnik/mapnik/archive/v3.0.9.tar.gz"
-  sha256 "f0242606096e2c4ca2cd0caac1ff0fd5f8054a38b5f288ba38b0e397b5b311b2"
-
+  url "https://github.com/mapnik/mapnik/releases/download/v3.0.17/mapnik-v3.0.17.tar.bz2"
+  sha256 "5ccd2ba7b82ca00028c6ce3ae5856b41d6f658217b680288f14b9c416d17ccb2"
   head "https://github.com/mapnik/mapnik.git"
 
   bottle do
     cellar :any
-    sha256 "82e145962067bfe676c2ea8ce9caf82fa3de26496079dda9ac05cb16130ddbf1" => :el_capitan
-    sha256 "78fad8f64e9fe57730809dce924f43917bbf2eaf4a0a046e0beffe3b472a4161" => :yosemite
-    sha256 "960999bc14e4e551ef8ffcb3fab0c8aa34f22a4b4cec4a02f39c11696f2583e6" => :mavericks
+    sha256 "77885b794ff989aad47e813566259ff5623f07284473a07235d23fee9dcd680c" => :high_sierra
+    sha256 "5962dbe481cf7c561252d7586bdc945bc26d22734111a766f5836c3d0535cf10" => :sierra
+    sha256 "738e7bfd0224044bdf9d194d7cff90754aa7cf0534f3d7cdff7e312264f64291" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
+  depends_on "boost"
   depends_on "freetype"
   depends_on "harfbuzz"
   depends_on "libpng"
@@ -26,16 +26,15 @@ class Mapnik < Formula
   depends_on "postgresql" => :optional
   depends_on "cairo" => :optional
 
-  if MacOS.version < :mavericks
-    depends_on "boost" => "c++11"
-  else
-    depends_on "boost"
-  end
-
   needs :cxx11
 
   def install
     ENV.cxx11
+
+    # Work around "error: no member named 'signbit' in the global namespace"
+    # encountered when trying to detect boost regex in configure
+    ENV.delete("SDKROOT") if DevelopmentTools.clang_build_version >= 900
+
     icu = Formula["icu4c"].opt_prefix
     boost = Formula["boost"].opt_prefix
     proj = Formula["proj"].opt_prefix
@@ -69,8 +68,7 @@ class Mapnik < Formula
             "FREETYPE_CONFIG=#{freetype}/bin/freetype-config",
             "NIK2IMG=False",
             "CPP_TESTS=False", # too long to compile to be worth it
-            "INPUT_PLUGINS=all",
-           ]
+            "INPUT_PLUGINS=all"]
 
     if build.with? "cairo"
       args << "CAIRO=True" # cairo paths will come from pkg-config
@@ -83,5 +81,9 @@ class Mapnik < Formula
     system "./configure", *args
     system "make"
     system "make", "install"
+  end
+
+  test do
+    assert_equal prefix.to_s, shell_output("#{bin}/mapnik-config --prefix").chomp
   end
 end

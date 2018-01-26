@@ -1,14 +1,14 @@
 class Zebra < Formula
   desc "Information management system"
-  homepage "http://www.indexdata.com/zebra"
-  url "http://ftp.indexdata.dk/pub/zebra/idzebra-2.0.61.tar.gz"
-  sha256 "e3e5d3c50500847c4d065c93108ab9fd0222a8dbddc12565090cfdd8a885cf6f"
+  homepage "https://www.indexdata.com/zebra"
+  url "http://ftp.indexdata.dk/pub/zebra/idzebra-2.1.3.tar.gz"
+  sha256 "5975c054a4cf50fb97d261b239f6f04f65dec7a2f72022b5abadea4e64405ee3"
   revision 1
 
   bottle do
-    sha256 "bcfbe5b360d8cc65c0851123bd8be65563128dfc3ca840f5c0a9b9b18e8f1a4d" => :el_capitan
-    sha256 "4723c0bc882ea66416ba7f3af54d227c055c9c940419da44a9c95b1567be4292" => :yosemite
-    sha256 "c83e5ca5feeb378ae0220842428fd99731d1b8005f78497b09b5d0342da7bb72" => :mavericks
+    sha256 "6f7665efc555ed08e5d7b9dd0de741f4e014d26462b163adb29e606456803517" => :high_sierra
+    sha256 "45bda05a03c8c1219550081e21b8e9d3ff833bf0b47b1e1e12cf561c401636d7" => :sierra
+    sha256 "43750c886af867ffffefcaa2e21ac3ac2c1d20cb447fce35329320ff8a965b03" => :el_capitan
   end
 
   depends_on "icu4c" => :recommended
@@ -29,8 +29,8 @@ class Zebra < Formula
 
   test do
     cd share/"idzebra-2.0-examples/oai-pmh/" do
-      system "zebraidx-2.0", "-c", "conf/zebra.cfg", "init"
-      system "zebraidx-2.0", "-c", "conf/zebra.cfg", "commit"
+      system bin/"zebraidx-2.0", "-c", "conf/zebra.cfg", "init"
+      system bin/"zebraidx-2.0", "-c", "conf/zebra.cfg", "commit"
     end
   end
 end

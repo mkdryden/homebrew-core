@@ -1,37 +1,36 @@
 class Owfs < Formula
   desc "Monitor and control physical environment using Dallas/Maxim 1-wire system"
   homepage "http://owfs.org/"
-  url "https://downloads.sourceforge.net/project/owfs/owfs/3.1p1/owfs-3.1p1.tar.gz"
-  mirror "https://mirrors.ocf.berkeley.edu/debian/pool/main/o/owfs/owfs_3.1p1.orig.tar.gz"
-  version "3.1p1"
-  sha256 "e69421ae534565c1f8530a2447f583401f4d0d4b1cf3cb8cf399a57133ed7f81"
+  url "https://downloads.sourceforge.net/project/owfs/owfs/3.2p2/owfs-3.2p2.tar.gz"
+  version "3.2p2"
+  sha256 "39535521a65a74bd36dc31726bcf04201f60f230a7944e9a63c393c318f5113c"
 
   bottle do
     cellar :any
-    sha256 "f3c9411be6ada67d8812d1989a588be032ff776db726c71a638662868de0d6f7" => :el_capitan
-    sha256 "ef581bfe553455f79a5fcf93ca247f1d7ad0915e3854ad2a9885b8bac3515bcb" => :yosemite
-    sha256 "6462c010b2307c488678673bec8772466baf7aafcb8917732f0606889ccadd90" => :mavericks
+    sha256 "51bd18872d4b55af34626459c3f6e039139647124abff190b280e4ddf2c4012f" => :high_sierra
+    sha256 "5dd1116b1058b7eb849905b6af987e7ea71fd3486ccc8f1670cf841b6583802f" => :sierra
+    sha256 "06a2b3710c371730028a58bab488064f967ef6e820f0877e723f38a4e5eaf5e7" => :el_capitan
   end
 
-  depends_on "libusb-compat"
+  depends_on "pkg-config" => :build
+  depends_on "libftdi"
+  depends_on "libusb"
 
   def install
-    # Fix include of getline and strsep to avoid crash
-    inreplace "configure", "-D_POSIX_C_SOURCE=200112L", ""
-
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
+    system "./configure", "--disable-dependency-tracking",
                           "--disable-swig",
-                          "--disable-owfs",
                           "--disable-owtcl",
                           "--disable-zero",
                           "--disable-owpython",
                           "--disable-owperl",
+                          "--disable-swig",
+                          "--enable-ftdi",
+                          "--enable-usb",
                           "--prefix=#{prefix}"
     system "make", "install"
   end
 
   test do
-    system "#{bin}/owserver", "--version"
+    system bin/"owserver", "--version"
   end
 end

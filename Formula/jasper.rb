@@ -1,68 +1,33 @@
 class Jasper < Formula
   desc "Library for manipulating JPEG-2000 images"
   homepage "https://www.ece.uvic.ca/~frodo/jasper/"
-  url "http://download.osgeo.org/gdal/jasper-1.900.1.uuid.tar.gz"
-  sha256 "0021684d909de1eb2f7f5a4d608af69000ce37773d51d1fb898e03b8d488087d"
-  version "1.900.1"
+  url "https://github.com/mdadams/jasper/archive/version-2.0.14.tar.gz"
+  sha256 "85266eea728f8b14365db9eaf1edc7be4c348704e562bb05095b9a077cf1a97b"
 
   bottle do
-    cellar :any
-    revision 1
-    sha256 "c70ac7c5c48f01d60d8ef07f8d951cc6ffc4da507bc2218950fed542a2fd5902" => :el_capitan
-    sha256 "7a996d9e2a97fd46aceda93413c3e55a4e46be3afae16f4631743cb6ce2602d6" => :yosemite
-    sha256 "f3deabb9253d2a32eeb5f4848613e7f18bd3af5e5e44b0c467059f5477b60e31" => :mavericks
-    sha256 "b6c2560da91773d9b39a9b77064edeb0a19bf32ada3ae057b38c28025a900975" => :mountain_lion
+    sha256 "086de22e8e8a01299962f3bea5374c90490b66e84b7e10a4078f172e64b0079f" => :high_sierra
+    sha256 "86058296fb5efea3ca509bd335bf7da48a83078fc237c1ccb1bb2d428ef2343b" => :sierra
+    sha256 "c481b8887b8d29e3c63735dd2151c9246e08f21bf50334033de4a054f700a6db" => :el_capitan
   end
 
-  option :universal
-
+  depends_on "cmake" => :build
   depends_on "jpeg"
 
-  fails_with :llvm do
-    build 2326
-    cause "Undefined symbols when linking"
+  def install
+    mkdir "build" do
+      # Make sure macOS's GLUT.framework is used, not XQuartz or freeglut
+      # Reported to CMake upstream 4 Apr 2016 https://gitlab.kitware.com/cmake/cmake/issues/16045
+      glut_lib = "#{MacOS.sdk_path}/System/Library/Frameworks/GLUT.framework"
+      system "cmake", "..", "-DGLUT_glut_LIBRARY=#{glut_lib}", *std_cmake_args
+      system "make"
+      system "make", "test"
+      system "make", "install"
+    end
   end
 
-  # The following patch fixes a bug (still in upstream as of jasper 1.900.1)
-  # where an assertion fails when Jasper is fed certain JPEG-2000 files with
-  # an alpha channel. See:
-  # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=469786
-  patch :DATA
-
-  def install
-    ENV.universal_binary if build.universal?
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
-                          "--enable-shared",
-                          "--prefix=#{prefix}",
-                          "--mandir=#{man}"
-    system "make", "install"
+  test do
+    system bin/"jasper", "--input", test_fixtures("test.jpg"),
+                         "--output", "test.bmp"
+    assert_predicate testpath/"test.bmp", :exist?
   end
 end
-
-__END__
-diff --git a/src/libjasper/jpc/jpc_dec.c b/src/libjasper/jpc/jpc_dec.c
-index fa72a0e..1f4845f 100644
---- a/src/libjasper/jpc/jpc_dec.c
-+++ b/src/libjasper/jpc/jpc_dec.c
-@@ -1069,12 +1069,18 @@ static int jpc_dec_tiledecode(jpc_dec_t *dec, jpc_dec_tile_t *tile)
-	/* Apply an inverse intercomponent transform if necessary. */
-	switch (tile->cp->mctid) {
-	case JPC_MCT_RCT:
--		assert(dec->numcomps == 3);
-+		if (dec->numcomps != 3 && dec->numcomps != 4) {
-+			jas_eprintf("bad number of components (%d)\n", dec->numcomps);
-+			return -1;
-+		}
-		jpc_irct(tile->tcomps[0].data, tile->tcomps[1].data,
-		  tile->tcomps[2].data);
-		break;
-	case JPC_MCT_ICT:
--		assert(dec->numcomps == 3);
-+		if (dec->numcomps != 3 && dec->numcomps != 4) {
-+			jas_eprintf("bad number of components (%d)\n", dec->numcomps);
-+			return -1;
-+		}
-		jpc_iict(tile->tcomps[0].data, tile->tcomps[1].data,
-		  tile->tcomps[2].data);
-		break;

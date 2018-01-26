@@ -1,26 +1,30 @@
 class RancherCompose < Formula
   desc "Docker Compose compatible client to deploy to Rancher"
   homepage "https://github.com/rancher/rancher-compose"
-  url "https://github.com/rancher/rancher-compose/archive/v0.7.3.tar.gz"
-  sha256 "be1439f3df1a21b52130186c73c42d01bae986454b7f5b1903004a922ff5cdec"
+  url "https://github.com/rancher/rancher-compose/archive/v0.12.5.tar.gz"
+  sha256 "cdff53b2c3401b990ad33e229c7ef429504419e49e18a814101e2fa3c84859ea"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "5f56b8daedd05565f18e0c3fc66ffa84ad225db4ca395ee98bff7b111852068f" => :el_capitan
-    sha256 "07e184c92d60e0cb081a81b478d080717f73bf456bbd01a037fed5b701a71d2c" => :yosemite
-    sha256 "7d48e31e6d881d4fc6663e0ad229efcd876b1a9f6d28939827b2feab5dc5bbe9" => :mavericks
+    sha256 "63f6da5eb59cb86c8f84975b3d3ee41f0bfc1456b239d1a6cc06a648d57e1967" => :high_sierra
+    sha256 "08f3fad4e6c1df545dd908b61afe47ed489e682ad2cadab384066237498a2a04" => :sierra
+    sha256 "8503ea7d7ca208ca7fe8d0c0b81f9ab9b69d926c58f856ac9de4f9f3600cde17" => :el_capitan
+    sha256 "23291133a0a775210ae1244ae594931ce04fab8e7c0a37ba90431d61d869317b" => :yosemite
   end
 
   depends_on "go" => :build
 
   def install
-    ENV["GOPATH"] = "#{buildpath}:#{buildpath}/Godeps/_workspace"
-    mkdir_p "#{buildpath}/src/github.com/rancher"
-    ln_s buildpath, "#{buildpath}/src/github.com/rancher/rancher-compose"
-    system "go", "build", "-ldflags", "-w -X github.com/rancher/rancher-compose/version.VERSION #{version}", "-o", "#{bin}/rancher-compose"
+    ENV["GOPATH"] = buildpath
+    (buildpath/"src/github.com/rancher/rancher-compose").install Dir["*"]
+    system "go", "build", "-ldflags",
+           "-w -X github.com/rancher/rancher-compose/version.VERSION=#{version}",
+           "-o", "#{bin}/rancher-compose",
+           "-v", "github.com/rancher/rancher-compose"
+    prefix.install_metafiles "src/github.com/rancher/rancher-compose"
   end
 
   test do
-    system "#{bin}/rancher-compose", "help"
+    system bin/"rancher-compose", "help"
   end
 end

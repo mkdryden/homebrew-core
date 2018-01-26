@@ -1,14 +1,15 @@
 class Ganglia < Formula
   desc "Scalable distributed monitoring system"
-  homepage "http://ganglia.sourceforge.net/"
-  url "https://downloads.sourceforge.net/project/ganglia/ganglia%20monitoring%20core/3.7.1/ganglia-3.7.1.tar.gz"
-  sha256 "e735a6218986a0ff77c737e5888426b103196c12dc2d679494ca9a4269ca69a3"
-  revision 1
+  homepage "https://ganglia.sourceforge.io/"
+  url "https://downloads.sourceforge.net/project/ganglia/ganglia%20monitoring%20core/3.7.2/ganglia-3.7.2.tar.gz"
+  sha256 "042dbcaf580a661b55ae4d9f9b3566230b2232169a0898e91a797a4c61888409"
+  revision 2
 
   bottle do
-    sha256 "7b2b10090f35f813fdf1a5b715b4e2bba48bdf71a20fd0cd138be62a8f5aede2" => :el_capitan
-    sha256 "05b2e1cef93776ddbf00c297efa272cd0fb99dcd8fe3e43a6732aa76d163d37f" => :yosemite
-    sha256 "37813f22386432e9ed358cbf58b990570c31f7a989802da10da7524171654428" => :mavericks
+    sha256 "b0f3d07ba10af68520ccf09bc79d812d0ea138303311872803a6d02f2a3c84ab" => :high_sierra
+    sha256 "8dc0a8e78b4cb5c9ca44aea68f17dac3404c2c3895cf6388455b982f48d73179" => :sierra
+    sha256 "2f6bee65172ee23fb74c58b1a8f31071db89ec81458fd34332012546e08d4696" => :el_capitan
+    sha256 "66bfda4ca0ce32bb91c18fa06f664fc15960580325f61cb47385c563da1d3995" => :yosemite
   end
 
   head do
@@ -19,13 +20,13 @@ class Ganglia < Formula
     depends_on "libtool" => :build
   end
 
-  conflicts_with "coreutils", :because => "both install `gstat` binaries"
-
   depends_on "pkg-config" => :build
-  depends_on :apr => :build
+  depends_on "apr"
   depends_on "confuse"
   depends_on "pcre"
   depends_on "rrdtool"
+
+  conflicts_with "coreutils", :because => "both install `gstat` binaries"
 
   def install
     if build.head?
@@ -34,7 +35,7 @@ class Ganglia < Formula
       system "./bootstrap"
     end
 
-    inreplace "configure", %(varstatedir="/var/lib"), %(varstatedir="#{var}/lib")
+    inreplace "configure", 'varstatedir="/var/lib"', %Q(varstatedir="#{var}/lib")
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
@@ -42,6 +43,7 @@ class Ganglia < Formula
                           "--sysconfdir=#{etc}",
                           "--mandir=#{man}",
                           "--with-gmetad",
+                          "--with-libapr=#{Formula["apr"].opt_bin}/apr-1-config",
                           "--with-libpcre=#{Formula["pcre"].opt_prefix}"
     system "make", "install"
 
@@ -53,7 +55,7 @@ class Ganglia < Formula
     (var/"lib/ganglia/rrds").mkpath
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     If you didn't have a default config file, one was created here:
       #{etc}/gmond.conf
     EOS
@@ -65,7 +67,7 @@ class Ganglia < Formula
         exec bin/"gmetad", "--pid-file=#{testpath}/pid"
       end
       sleep 2
-      File.exist? testpath/"pid"
+      assert_predicate testpath/"pid", :exist?
     ensure
       Process.kill "TERM", pid
       Process.wait pid

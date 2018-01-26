@@ -1,24 +1,29 @@
 class Zabbix < Formula
   desc "Availability and monitoring solution"
   homepage "https://www.zabbix.com/"
-  url "https://downloads.sourceforge.net/project/zabbix/ZABBIX%20Latest%20Stable/3.0.1/zabbix-3.0.1.tar.gz"
-  sha256 "e91a8497bf635b96340988e2d9ca1bb3fac06e657b6596fa903c417a6c6b110b"
+  url "https://downloads.sourceforge.net/project/zabbix/ZABBIX%20Latest%20Stable/3.4.6/zabbix-3.4.6.tar.gz"
+  sha256 "2c261f967fece8f0f930bc07876e37debdf7a903f65a3a222aed5ba5fc724d6a"
 
   bottle do
-    sha256 "280644147140b9bab7a62980f504ead6c92dff07be53307241dd9714b4450ab4" => :el_capitan
-    sha256 "bc73d952251046996572adb17f8a7e86a0fe6ef2889dfbd0416159479bf28127" => :yosemite
-    sha256 "6456b27c7e81a5714baa818ba7c280bfc3972f6065ab1fa3b079bb9aa8dd83c2" => :mavericks
+    sha256 "23c2dbb1780ae0f2ac1ba16a56608cb581b10c9c484810fb80e7e46c83db899d" => :high_sierra
+    sha256 "e0a2256246104f2864378c01e92156ba595ce4aa6a57e3545f82ba16a938cbdf" => :sierra
+    sha256 "12618619f2b2edee21c6efb3dbf2cb14f98c2ddd2da706748c456526854500aa" => :el_capitan
   end
 
   option "with-mysql", "Use Zabbix Server with MySQL library instead PostgreSQL."
+  option "with-sqlite", "Use Zabbix Server with SQLite library instead PostgreSQL."
   option "without-server-proxy", "Install only the Zabbix Agent without Server and Proxy."
 
   deprecated_option "agent-only" => "without-server-proxy"
 
+  depends_on "openssl"
+  depends_on "pcre"
+
   if build.with? "server-proxy"
-    depends_on :mysql => :optional
-    depends_on :postgresql if build.without? "mysql"
+    depends_on "mysql" => :optional
+    depends_on "postgresql" if build.without? "mysql"
     depends_on "fping"
+    depends_on "libevent"
     depends_on "libssh2"
   end
 
@@ -28,15 +33,20 @@ class Zabbix < Formula
   end
 
   def install
+    sdk = MacOS::CLT.installed? ? "" : MacOS.sdk_path
+
     args = %W[
       --disable-dependency-tracking
       --prefix=#{prefix}
+      --sysconfdir=#{etc}/zabbix
       --enable-agent
-      --with-iconv=#{MacOS.sdk_path}/usr
+      --with-iconv=#{sdk}/usr
+      --with-libpcre=#{Formula["pcre"].opt_prefix}
+      --with-openssl=#{Formula["openssl"].opt_prefix}
     ]
 
     if build.with? "server-proxy"
-      args += %W[
+      args += %w[
         --enable-server
         --enable-proxy
         --enable-ipv6
@@ -47,9 +57,16 @@ class Zabbix < Formula
 
       if build.with? "mysql"
         args << "--with-mysql=#{brewed_or_shipped("mysql_config")}"
+      elsif build.with? "sqlite"
+        args << "--with-sqlite3"
       else
         args << "--with-postgresql=#{brewed_or_shipped("pg_config")}"
       end
+    end
+
+    if MacOS.version == :el_capitan && MacOS::Xcode.installed? && MacOS::Xcode.version >= "8.0"
+      inreplace "configure", "clock_gettime(CLOCK_REALTIME, &tp);",
+                             "undefinedgibberish(CLOCK_REALTIME, &tp);"
     end
 
     system "./configure", *args
@@ -62,6 +79,6 @@ class Zabbix < Formula
   end
 
   test do
-    system "#{sbin}/zabbix_agentd", "--print"
+    system sbin/"zabbix_agentd", "--print"
   end
 end

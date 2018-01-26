@@ -1,13 +1,13 @@
 class Siege < Formula
   desc "HTTP regression testing and benchmarking utility"
   homepage "https://www.joedog.org/siege-home/"
-  url "http://download.joedog.org/siege/siege-3.1.3.tar.gz"
-  sha256 "4d3932ea23cbf6d1d22df7c7ee6e7a6bc9f591b604ab582393eeb62f393f5a33"
+  url "http://download.joedog.org/siege/siege-4.0.4.tar.gz"
+  sha256 "8f7dcf18bd722bb9cc92bc3ea4b59836b4a2f8d8f01d4a94c8d181f56d91ea6f"
 
   bottle do
-    sha256 "b6fd654eff78d2b326e8308f3c779300d2dbf034853d13dddeee26e36388497a" => :el_capitan
-    sha256 "1d794a569a64cc6158fabe7bf8940db6aa0f6153d50b2e71457bfc13e4918a24" => :yosemite
-    sha256 "a78857a335916fafa6bf143d428291dcff7057e061a99bc154aee35fd17b13e9" => :mavericks
+    sha256 "a5e4990ab448ec37e9e5e7b392a7bf6aee03313bad6d89c6fda45decd4ddecf4" => :high_sierra
+    sha256 "84ad0232db938f558c2ad57b5c61382b136483c3d4f106f6fcea7e647d2b9982" => :sierra
+    sha256 "4ffac4100438cc7d6784a64774770ffe219bf330e96890c77eb012bab0f02ba5" => :el_capitan
   end
 
   depends_on "openssl"
@@ -23,8 +23,8 @@ class Siege < Formula
     system "make", "install"
   end
 
-  def caveats; <<-EOS.undent
-    Mac OS X has only 16K ports available that won't be released until socket
+  def caveats; <<~EOS
+    macOS has only 16K ports available that won't be released until socket
     TIME_WAIT is passed. The default timeout for TIME_WAIT is 15 seconds.
     Consider reducing in case of available port bottleneck.
 

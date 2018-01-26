@@ -1,20 +1,23 @@
+require "language/haskell"
+
 class PandocCrossref < Formula
   include Language::Haskell::Cabal
 
-  desc "Pandoc filter for numbering and cross-referencing."
+  desc "Pandoc filter for numbering and cross-referencing"
   homepage "https://github.com/lierdakil/pandoc-crossref"
-  url "https://hackage.haskell.org/package/pandoc-crossref-0.2.0.1/pandoc-crossref-0.2.0.1.tar.gz"
-  sha256 "44bdbc38d8d7a743951a2333fb70b33a6497b2d50ccdb5696736fdc5133aef21"
+  url "https://hackage.haskell.org/package/pandoc-crossref-0.3.0.1/pandoc-crossref-0.3.0.1.tar.gz"
+  sha256 "d62bc57ecbf869cd5777dfc69f3d45722d3be3e691ed4e47841aa656df5c1252"
 
   bottle do
-    sha256 "2edd7fe6757e7a3b4599b459940ae77dcb4bfa265d6ef2555b8139d56a2b6750" => :el_capitan
-    sha256 "66d0ccc3d84db7029b841db98c575d457881935377922668e1e1cf631c3a3242" => :yosemite
-    sha256 "35ce5fe43ada3cdadfd1552c0cffbe0032c499f868c951de40789877755f4dcb" => :mavericks
+    cellar :any_skip_relocation
+    sha256 "c2c0dbee94fc1e080e36fad1281672f91f0ff25b5c2269806479c5d2a93d13b6" => :high_sierra
+    sha256 "5a3b1158fe0621d5f5e03ee731c36239b85be63f9aae09af1c8cde204a72d33d" => :sierra
+    sha256 "a61456335f640fb85c260c02b651acca78775c12be196a379a696fb5732db41b" => :el_capitan
   end
 
-  depends_on "ghc" => :build
   depends_on "cabal-install" => :build
-  depends_on "pandoc"
+  depends_on "ghc" => :build
+  depends_on "pandoc" => :run
 
   def install
     args = []
@@ -23,16 +26,14 @@ class PandocCrossref < Formula
   end
 
   test do
-    md = testpath/"test.md"
-    md.write <<-EOS.undent
+    (testpath/"hello.md").write <<~EOS
       Demo for pandoc-crossref.
       See equation @eq:eqn1 for cross-referencing.
       Display equations are labelled and numbered
 
-      $$ P_i(x) = \sum_i a_i x^i $$ {#eq:eqn1}
-
-
+      $$ P_i(x) = \\sum_i a_i x^i $$ {#eq:eqn1}
     EOS
-    system "pandoc", "-F", "pandoc-crossref", md
+    system Formula["pandoc"].bin/"pandoc", "-F", bin/"pandoc-crossref", "-o", "out.html", "hello.md"
+    assert_match "∑", (testpath/"out.html").read
   end
 end

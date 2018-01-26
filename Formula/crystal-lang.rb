@@ -1,54 +1,69 @@
 class CrystalLang < Formula
   desc "Fast and statically typed, compiled language with Ruby-like syntax"
-  homepage "http://crystal-lang.org/"
-  url "https://github.com/crystal-lang/crystal/archive/0.15.0.tar.gz"
-  sha256 "d79445ec92faa2a045af150fca4886d90ecd9fba27451003b68118c8714b26bd"
-  head "https://github.com/manastech/crystal.git"
+  homepage "https://crystal-lang.org/"
+  revision 1
+
+  stable do
+    url "https://github.com/crystal-lang/crystal/archive/0.24.1.tar.gz"
+    sha256 "4999a4d2a9ffc7bfbea8351b97057c3a135c2091cbd518e5c22ea7f5392b67d8"
+
+    resource "shards" do
+      url "https://github.com/crystal-lang/shards/archive/v0.7.2.tar.gz"
+      sha256 "97a3681e74d2fdcba0575f6906f4ba0aefc709a2eb672c7289c63176ff4f3be2"
+    end
+  end
 
   bottle do
-    sha256 "ad7c29c8fb31a01bf7c84d53188897afeaefdd6dc8d6d14490d15f6f9ea37af4" => :el_capitan
-    sha256 "4009fdf987166c815428738a1fd2e6d784846899a9d36685f3380f19f00b6b8f" => :yosemite
-    sha256 "51f05828adedb594550f42ee1f4c3e3352aa9c110249786ed0c69acce247e2ad" => :mavericks
+    sha256 "fd9e9c2cd01b52a27b85421bd00c2d11fb27bb24b16498d409b1abd666d17ef6" => :high_sierra
+    sha256 "6b76c04f8f6f036b3f3bf4909f73590d6e13251fca1e6a0f3941abc2fbe07686" => :sierra
+    sha256 "c01126afd64bcd1c59e9a6595f2aa4befdcd235a320f87a0dacc3db3813dbfe6" => :el_capitan
+  end
+
+  head do
+    url "https://github.com/crystal-lang/crystal.git"
+
+    resource "shards" do
+      url "https://github.com/crystal-lang/shards.git"
+    end
   end
 
   option "without-release", "Do not build the compiler in release mode"
   option "without-shards", "Do not include `shards` dependency manager"
 
+  depends_on "pkg-config" => :build
+  depends_on "libatomic_ops" => :build # for building bdw-gc
   depends_on "libevent"
   depends_on "bdw-gc"
-  depends_on "llvm" => :build
-  depends_on "libyaml" if build.with?("shards")
+  depends_on "llvm"
+  depends_on "pcre"
+  depends_on "gmp" # std uses it but it's not linked
+  depends_on "libyaml" if build.with? "shards"
 
   resource "boot" do
-    url "https://github.com/crystal-lang/crystal/releases/download/0.14.2/crystal-0.14.2-1-darwin-x86_64.tar.gz"
-    version "0.14.2"
-    sha256 "f75036b1950035b49a73faa125acd9ff031cecab7020f15cd4db4c4ee6417bfa"
-  end
-
-  resource "shards" do
-    url "https://github.com/ysbaddaden/shards/archive/v0.6.2.tar.gz"
-    sha256 "11d22086d736598efa87eea558e7b304d538372f017fce9bb21476e40c586110"
+    url "https://github.com/crystal-lang/crystal/releases/download/0.23.1/crystal-0.23.1-3-darwin-x86_64.tar.gz"
+    version "0.23.1"
+    sha256 "d3f964ebfc5cd48fad73ab2484ea2a00268812276293dd0f7e9c7d184c8aad8a"
   end
 
   def install
     (buildpath/"boot").install resource("boot")
 
     if build.head?
-      ENV["CRYSTAL_CONFIG_VERSION"] = `git rev-parse --short HEAD`.strip
+      ENV["CRYSTAL_CONFIG_VERSION"] = Utils.popen_read("git rev-parse --short HEAD").strip
     else
       ENV["CRYSTAL_CONFIG_VERSION"] = version
     end
 
-    ENV["CRYSTAL_CONFIG_PATH"] = prefix/"src:libs"
+    ENV["CRYSTAL_CONFIG_PATH"] = prefix/"src:lib"
     ENV.append_path "PATH", "boot/bin"
 
-    if build.with? "release"
-      system "make", "crystal", "release=true"
-    else
-      system "make", "deps"
-      (buildpath/".build").mkpath
-      system "bin/crystal", "build", "-o", "-D", "without_openssl", "-D", "without_zlib", ".build/crystal", "src/compiler/crystal.cr"
-    end
+    system "make", "deps"
+    (buildpath/".build").mkpath
+
+    command = ["bin/crystal", "build", "-D", "without_openssl", "-D", "without_zlib", "-o", ".build/crystal", "src/compiler/crystal.cr"]
+    command.concat ["--release", "--no-debug"] if build.with? "release"
+
+    system *command
 
     if build.with? "shards"
       resource("shards").stage do
@@ -60,10 +75,10 @@ class CrystalLang < Formula
     bin.install ".build/crystal"
     prefix.install "src"
     bash_completion.install "etc/completion.bash" => "crystal"
-    zsh_completion.install "etc/completion.zsh" => "crystal"
+    zsh_completion.install "etc/completion.zsh" => "_crystal"
   end
 
   test do
-    system "#{bin}/crystal", "eval", "puts 1"
+    assert_match "1", shell_output("#{bin}/crystal eval puts 1")
   end
 end

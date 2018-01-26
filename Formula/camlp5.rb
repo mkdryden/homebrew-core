@@ -1,28 +1,22 @@
 class Camlp5 < Formula
   desc "Preprocessor and pretty-printer for OCaml"
-  homepage "http://camlp5.gforge.inria.fr/"
-  url "http://camlp5.gforge.inria.fr/distrib/src/camlp5-6.15.tgz"
-  mirror "https://ftp.ucsb.edu/pub/mirrors/linux/gentoo/distfiles/camlp5-6.15.tgz"
-  mirror "https://mirror.csclub.uwaterloo.ca/gentoo-distfiles/distfiles/camlp5-6.15.tgz"
-  mirror "https://mirror.netcologne.de/gentoo/distfiles/camlp5-6.15.tgz"
-  sha256 "2e0e1e31e0537f2179766820dd9bd0a4d424bc5ab9c610e6dbf9145f27747f2b"
+  homepage "https://camlp5.github.io/"
+  url "https://github.com/camlp5/camlp5/archive/rel703.tar.gz"
+  version "7.03"
+  sha256 "c13d0a957a8e70627e1900ca25243b5e8da042bbda9eaa9e7d06955c0e3df21a"
+  revision 1
   head "https://gforge.inria.fr/anonscm/git/camlp5/camlp5.git"
 
   bottle do
-    sha256 "90a523e4dc28c340ccec3e2aa7b2ef37a9534c6cb47f92396c7a7e12b0ba1b85" => :el_capitan
-    sha256 "d512ce25f65960cfe8edc96eb13a9577bea6b4156d2b60a7e95ba6da322c4a88" => :yosemite
-    sha256 "48b7eee6bd396c3cbfb1ad54213ddafd273754192257253f30426a95f6a8e7ce" => :mavericks
+    sha256 "c2159630c54f7bad58b9417eb0c92514cac1d950afc0e3143c5ee3212cff3baf" => :high_sierra
+    sha256 "fbea5b4bc60b78bad1ecab18750fc45e7105f09274c7493c393ac38005ecc4fb" => :sierra
+    sha256 "16cced0fbb0ccbd4eabecaca68f9dd9a121cea46b917c9eca061d782823471c6" => :el_capitan
   end
 
   deprecated_option "strict" => "with-strict"
   option "with-strict", "Compile in strict mode (not recommended)"
-  option "with-tex", "Install the pdf, ps, and tex documentation"
-  option "with-doc", "Install the html and info documentation"
 
   depends_on "ocaml"
-  depends_on :tex => [:build, :optional]
-  depends_on "ghostscript" => :build if build.with?("tex")
-  depends_on "gnu-sed" => :build if build.with?("doc") || build.with?("tex")
 
   def install
     args = ["--prefix", prefix, "--mandir", man]
@@ -31,22 +25,6 @@ class Camlp5 < Formula
     system "./configure", *args
     system "make", "world.opt"
     system "make", "install"
-
-    if build.with?("doc") || build.with?("tex")
-      ENV.deparallelize
-      ENV.prepend_path "PATH", Formula["gnu-sed"].opt_libexec/"gnubin"
-      cd "doc/htmlp"
-      if build.with? "doc"
-        system "make" # outputs the html version of the docs in ../html
-        system "make", "info"
-        doc.install "../html", Dir["camlp5.info*"]
-      end
-      if build.with? "tex"
-        inreplace "Makefile", "ps2pdf", Formula["ghostscript"].opt_bin/"ps2pdf"
-        system "make", "tex", "ps", "pdf"
-        doc.install "camlp5.tex", "camlp5.ps", "camlp5.pdf"
-      end
-    end
   end
 
   test do

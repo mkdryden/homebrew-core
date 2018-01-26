@@ -1,13 +1,13 @@
 class Vte3 < Formula
   desc "Terminal emulator widget used by GNOME terminal"
   homepage "https://developer.gnome.org/vte/"
-  url "https://download.gnome.org/sources/vte/0.44/vte-0.44.1.tar.xz"
-  sha256 "712dd548339f600fd7e221d12b2670a13a4361b2cd23ba0e057e76cc19fe5d4e"
+  url "https://download.gnome.org/sources/vte/0.50/vte-0.50.2.tar.xz"
+  sha256 "79dd316bfaff48f2fb74d066baae0d830e1f44436796fe410a57297e5c5f09cf"
 
   bottle do
-    sha256 "c15db1454901bd251426b7f5e1113b0432f312ea284ab62525dc471b8729707d" => :el_capitan
-    sha256 "0c053871faf02e60591144ff33f95b6945098421c70047ae090d8ec7eef6aa7d" => :yosemite
-    sha256 "0496bfa16102bea5a709fa10d0e04caaef7a8d475464a435973d86d1fd0fe80a" => :mavericks
+    sha256 "8f67ad9f65eefe752d64d5af7ed4986d7f31303b73d2cccea7743aa5b07a7c4a" => :high_sierra
+    sha256 "a1e8ce10cbc89bf46d5af3fe7cfb93b52166155ff9afef29548f92feedb8831d" => :sierra
+    sha256 "d47a0e0879f1cfb58e5126275bb3c4ca4fdf0a935db842cd174dbdfd64973ad5" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
@@ -17,6 +17,7 @@ class Vte3 < Formula
   depends_on "gnutls"
   depends_on "vala"
   depends_on "gobject-introspection"
+  depends_on "pcre2"
 
   def install
     args = [
@@ -32,7 +33,7 @@ class Vte3 < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <vte/vte.h>
 
       int main(int argc, char *argv[]) {
@@ -55,8 +56,7 @@ class Vte3 < Formula
     nettle = Formula["nettle"]
     pango = Formula["pango"]
     pixman = Formula["pixman"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{atk.opt_include}/atk-1.0
       -I#{cairo.opt_include}/cairo
       -I#{fontconfig.opt_include}

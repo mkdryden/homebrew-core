@@ -1,15 +1,16 @@
 class Gxml < Formula
   desc "GObject-based XML DOM API"
   homepage "https://wiki.gnome.org/GXml"
-  url "https://download.gnome.org/sources/gxml/0.8/gxml-0.8.0.tar.xz"
-  sha256 "fb255f09eefce063a94c3e9b46dbd9d87aca48ee443adf749ea0ced0ddaaf833"
+  url "https://download.gnome.org/sources/gxml/0.16/gxml-0.16.0.tar.xz"
+  sha256 "2c08019d5b7aec3efd6a5223517ed8e29840b14aed009cdaf0ef96e4ef6e99af"
 
   bottle do
-    sha256 "4114add97335434a435451824cd470ee2d958b991ad76be4b100afb5173a0b84" => :el_capitan
-    sha256 "d6fabfe3e414d468938b5a2fbb93dabd7693be318daf98cfd7ff1baf69175836" => :yosemite
-    sha256 "e2e1625a88c4d8c1a275f9b1f1735ee407da98c84ce85234c07843de07f317e6" => :mavericks
+    sha256 "5b4890263a3636be938bc956d9478ee3807155372bb2741af3005f09d580c7ed" => :high_sierra
+    sha256 "2ff16e5287f53a41945a694caf71687cde140489b0ee9b3263c850ebe970a635" => :sierra
+    sha256 "8d1c7be3713f7cdaaa7d75b189eac0d9b18e4fa8fad0dfc5b96cb3414ba675a0" => :el_capitan
   end
 
+  depends_on "gtk-doc" => :build
   depends_on "pkg-config" => :build
   depends_on "intltool" => :build
   depends_on "vala" => :build
@@ -40,7 +41,7 @@ class Gxml < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gxml/gxml.h>
 
       int main(int argc, char *argv[]) {
@@ -48,27 +49,28 @@ class Gxml < Formula
         return 0;
       }
     EOS
-    ENV.libxml2
+    libxml2 = Formula["libxml2"]
     gettext = Formula["gettext"]
     glib = Formula["glib"]
     libgee = Formula["libgee"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{gettext.opt_include}
+      -I#{libxml2.opt_include}/libxml2
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include
-      -I#{include}/gxml-0.6
+      -I#{include}/gxml-0.16
       -I#{libgee.opt_include}/gee-0.8
       -D_REENTRANT
       -L#{gettext.opt_lib}
       -L#{glib.opt_lib}
       -L#{libgee.opt_lib}
+      -L#{libxml2.opt_lib}
       -L#{lib}
       -lgee-0.8
       -lgio-2.0
       -lglib-2.0
       -lgobject-2.0
-      -lgxml-0.6
+      -lgxml-0.16
       -lintl
       -lxml2
     ]

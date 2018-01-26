@@ -1,36 +1,24 @@
 class Xonsh < Formula
+  include Language::Python::Virtualenv
+
   desc "Python-ish, BASHwards-compatible shell language and command prompt"
-  homepage "http://xonsh.org"
-  url "https://github.com/scopatz/xonsh/archive/0.2.2.tar.gz"
-  sha256 "cd37fafb53ca18474132929117df02cfbf53526345183027f773db5b45bb7759"
+  homepage "http://xon.sh"
+  url "https://github.com/xonsh/xonsh/archive/0.6.0.tar.gz"
+  sha256 "7d63d040a6df8749480becab4b3bcb1c6589458bad272d5de06c6a063c06c5f1"
+  revision 1
   head "https://github.com/scopatz/xonsh.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "08e216889fb6eede6e0db765d8f541fd53532a23d926d0a58bd59871cc1b43d1" => :el_capitan
-    sha256 "7c689d405aee2fb02aa94605ee0857e271e5ef083b5728a1ffa0b722d6ef9be0" => :yosemite
-    sha256 "142e2c7688f3e1f776900193d2f3bcb4157212435cf29a46cd05144b8b00b9ed" => :mavericks
+    sha256 "d4a161f4a5d52c1889472d1c899dc468f38b5e547631acbc478b0c70042476c5" => :high_sierra
+    sha256 "cb6f319be7bbaa573329734093470ab676222e9ac76e548e121775fbb2da26c7" => :sierra
+    sha256 "9583716f1864b9c4b5f3cb4bb3130ba06412840eb634f51a3c5be41ef0f2d0a4" => :el_capitan
   end
 
-  depends_on :python3
-
-  resource "ply" do
-    url "https://pypi.python.org/packages/source/p/ply/ply-3.8.tar.gz"
-    sha256 "e7d1bdff026beb159c9942f7a17e102c375638d9478a7ecd4cc0c76afd8de0b8"
-  end
+  depends_on "python3"
 
   def install
-    version = Language::Python.major_minor_version "python3"
-    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python#{version}/site-packages"
-    ENV.prepend_create_path "PYTHONPATH", libexec/"vendor/lib/python#{version}/site-packages"
-
-    resource("ply").stage do
-      system "python3", *Language::Python.setup_install_args(libexec/"vendor")
-    end
-
-    system "python3", *Language::Python.setup_install_args(libexec)
-    bin.install Dir[libexec/"bin/*"]
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
+    virtualenv_install_with_resources
   end
 
   test do

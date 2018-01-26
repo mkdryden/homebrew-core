@@ -1,13 +1,14 @@
 class IscDhcp < Formula
   desc "Production-grade DHCP solution"
   homepage "https://www.isc.org/software/dhcp"
-  url "https://ftp.isc.org/isc/dhcp/4.3.3/dhcp-4.3.3.tar.gz"
-  sha256 "553c4945b09b1c1b904c4780f34f72aaefa2fc8c6556715de0bc9d4e3d255ede"
+  url "https://ftp.isc.org/isc/dhcp/4.3.6/dhcp-4.3.6.tar.gz"
+  sha256 "a41eaf6364f1377fe065d35671d9cf82bbbc8f21207819b2b9f33f652aec6f1b"
 
   bottle do
-    sha256 "a822cb1bafbf175f2c85e7089c1c5e52d2239f3d8467fc913733d193999dce28" => :el_capitan
-    sha256 "3d4c4e8254772daf4d797967690f5fd062273b581dfd05b5b062b7741dbecf17" => :yosemite
-    sha256 "6a7ef92897aa1a6f2d5ad736ee03d710c9efb3111eb6fde7705507cc29c18933" => :mavericks
+    sha256 "fbec5ac1f973a13a7ccc488737e257c5d3107791ffda3b45d0e231c0986e3cac" => :high_sierra
+    sha256 "2ad8df9f26b3c7728a791fe5f83de04cb525d6ba9634a2b894da865a22ba109e" => :sierra
+    sha256 "0084e6e135ad2bdd55d6c6c9b937895ca622598632118bb5e22a1aac09e6d9e6" => :el_capitan
+    sha256 "942afade1da7421427d3c5306a2ace342017967607447eb5ffa920436b46c42b" => :yosemite
   end
 
   def install
@@ -37,9 +38,7 @@ class IscDhcp < Formula
     end
 
     # See discussion at: https://gist.github.com/1157223
-    if MacOS.version >= :lion
-      ENV.append "CFLAGS", "-D__APPLE_USE_RFC_3542"
-    end
+    ENV.append "CFLAGS", "-D__APPLE_USE_RFC_3542" if MacOS.version >= :lion
 
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
@@ -48,7 +47,7 @@ class IscDhcp < Formula
     ENV.deparallelize { system "make", "-C", "bind" }
 
     # build everything else
-    inreplace "Makefile", "SUBDIRS = bind", "SUBDIRS = "
+    inreplace "Makefile", "SUBDIRS = ${top_srcdir}/bind", "SUBDIRS = "
     system "make"
     system "make", "install"
 
@@ -73,7 +72,7 @@ class IscDhcp < Formula
     (prefix+"homebrew.mxcl.dhcpd6.plist").chmod 0644
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     This install of dhcpd expects config files to be in #{etc}.
     All state files (leases and pids) are stored in #{var}/dhcpd.
 
@@ -94,49 +93,49 @@ class IscDhcp < Formula
   plist_options :startup => true
 
   def plist
-    <<-EOS.undent
-    <?xml version='1.0' encoding='UTF-8'?>
-    <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
-                    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version='1.0'>
-    <dict>
-    <key>Label</key><string>#{plist_name}</string>
-    <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_sbin}/dhcpd</string>
-        <string>-f</string>
-      </array>
-    <key>Disabled</key><false/>
-    <key>KeepAlive</key><true/>
-    <key>RunAtLoad</key><true/>
-    <key>LowPriorityIO</key><true/>
-    </dict>
-    </plist>
+    <<~EOS
+      <?xml version='1.0' encoding='UTF-8'?>
+      <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
+                      "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version='1.0'>
+      <dict>
+      <key>Label</key><string>#{plist_name}</string>
+      <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_sbin}/dhcpd</string>
+          <string>-f</string>
+        </array>
+      <key>Disabled</key><false/>
+      <key>KeepAlive</key><true/>
+      <key>RunAtLoad</key><true/>
+      <key>LowPriorityIO</key><true/>
+      </dict>
+      </plist>
     EOS
   end
 
   def plist_dhcpd6
-    <<-EOS.undent
-    <?xml version='1.0' encoding='UTF-8'?>
-    <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
-                    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version='1.0'>
-    <dict>
-    <key>Label</key><string>#{plist_name}</string>
-    <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_sbin}/dhcpd</string>
-        <string>-f</string>
-        <string>-6</string>
-        <string>-cf</string>
-        <string>#{etc}/dhcpd6.conf</string>
-      </array>
-    <key>Disabled</key><false/>
-    <key>KeepAlive</key><true/>
-    <key>RunAtLoad</key><true/>
-    <key>LowPriorityIO</key><true/>
-    </dict>
-    </plist>
+    <<~EOS
+      <?xml version='1.0' encoding='UTF-8'?>
+      <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
+                      "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version='1.0'>
+      <dict>
+      <key>Label</key><string>#{plist_name}</string>
+      <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_sbin}/dhcpd</string>
+          <string>-f</string>
+          <string>-6</string>
+          <string>-cf</string>
+          <string>#{etc}/dhcpd6.conf</string>
+        </array>
+      <key>Disabled</key><false/>
+      <key>KeepAlive</key><true/>
+      <key>RunAtLoad</key><true/>
+      <key>LowPriorityIO</key><true/>
+      </dict>
+      </plist>
     EOS
   end
 end

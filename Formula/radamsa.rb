@@ -1,8 +1,15 @@
 class Radamsa < Formula
   desc "Test case generator for robustness testing (a.k.a. a \"fuzzer\")"
-  homepage "https://code.google.com/p/ouspg/wiki/Radamsa"
-  url "https://ouspg.googlecode.com/files/radamsa-0.3.tar.gz"
-  sha256 "17131a19fb28e5c97c28bf0b407a82744c251aa8aedfa507967a92438cd803be"
+  homepage "https://github.com/aoh/radamsa"
+  url "https://github.com/aoh/radamsa/releases/download/v0.5/radamsa-0.5.tar.gz"
+  sha256 "e21a86aa6dca7e4619085fc60fb664d0a1bd067ca6ebfbcb16ab2d57c8854cb4"
+
+  bottle do
+    cellar :any_skip_relocation
+    sha256 "a971e3bf09f3854d724549a31b98854458b8c49cdfd88593fb14c380066d7bc1" => :high_sierra
+    sha256 "d13369632654e12471ff029aa6c08f57e9572df60b9d5b18040ce341ca8b4b09" => :sierra
+    sha256 "3b09d787e73444964136ab042bc458610eb4cf08f4ba015cbe7e1d13ab8509f5" => :el_capitan
+  end
 
   def install
     system "make"
@@ -10,7 +17,7 @@ class Radamsa < Formula
     prefix.install Dir["*"]
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     The Radamsa binary has been installed.
     The Lisp source code has been copied to:
       #{prefix}/rad

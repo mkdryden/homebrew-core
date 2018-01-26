@@ -1,8 +1,8 @@
 class Nvm < Formula
   desc "Manage multiple Node.js versions"
   homepage "https://github.com/creationix/nvm"
-  url "https://github.com/creationix/nvm/archive/v0.31.0.tar.gz"
-  sha256 "5f9bc1c89c70e852f6bc2688389e6b9822ad851250d25d0910d05fa88b842540"
+  url "https://github.com/creationix/nvm/archive/v0.33.8.tar.gz"
+  sha256 "59429f4bf3da7c2b7bcac06c488054dd774ae6962bdcefe249015d3590704b0b"
   head "https://github.com/creationix/nvm.git"
 
   bottle :unneeded
@@ -12,7 +12,7 @@ class Nvm < Formula
     bash_completion.install "bash_completion" => "nvm"
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     Please note that upstream has asked us to make explicit managing
     nvm via Homebrew is unsupported by them and you should check any
     problems against the standard nvm install method prior to reporting.
@@ -25,7 +25,7 @@ class Nvm < Formula
     configuration file:
 
       export NVM_DIR="$HOME/.nvm"
-      . "$(brew --prefix nvm)/nvm.sh"
+      . "#{opt_prefix}/nvm.sh"
 
     You can set $NVM_DIR to any location, but leaving it unchanged from
     #{prefix} will destroy any nvm-installed Node installations
@@ -39,6 +39,6 @@ class Nvm < Formula
     output = pipe_output("NODE_VERSION=homebrewtest #{prefix}/nvm-exec 2>&1")
     assert_no_match /No such file or directory/, output
     assert_no_match /nvm: command not found/, output
-    assert_match /N\/A: version \"homebrewtest\" is not yet installed/, output
+    assert_match "N/A: version \"homebrewtest -> N/A\" is not yet installed", output
   end
 end

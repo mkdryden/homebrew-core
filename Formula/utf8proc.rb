@@ -1,14 +1,15 @@
 class Utf8proc < Formula
   desc "Clean C library for processing UTF-8 Unicode data"
-  homepage "http://julialang.org/utf8proc/"
-  url "https://github.com/JuliaLang/utf8proc/archive/v1.3.1.tar.gz"
-  sha256 "83b60fe21fd8a017b8ad469515873893c8e911a5bef336a427594d398b5688cc"
+  homepage "https://julialang.org/utf8proc/"
+  url "https://github.com/JuliaLang/utf8proc/archive/v2.1.tar.gz"
+  sha256 "241c409d8f6c0e4f332e41f3f1bd39552e36dcc00084fbacd03682b2969a301e"
 
   bottle do
     cellar :any
-    sha256 "ebecca82cd8d532a928cf5137e8589fdf968cff9ad723fae6d6fbfdd76148709" => :el_capitan
-    sha256 "8d117faedfa60b37e7b25598aed8b3d9d4dd048ecbb474e42c1014b20ec141c2" => :yosemite
-    sha256 "45176943620b894aa86b50a2774e1241d0a7ebd85d0edeb1e56665c8240d9c31" => :mavericks
+    sha256 "de1d4236a1db130052daf84f153ce0406919e9e123fad1b82d96c58e0720763a" => :high_sierra
+    sha256 "db3e01e947e412f480fd418562e78f07e9d92faa14b2bca453d445fc60156132" => :sierra
+    sha256 "f43d571eae1da6c1b2945cb6059234f4ed3879c911aa810543aae767f1e897ca" => :el_capitan
+    sha256 "9229016dc8952dd531ca8053fe5e5295c241cbb1cb93b02c7a2e0e550857c454" => :yosemite
   end
 
   def install
@@ -16,7 +17,7 @@ class Utf8proc < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <string.h>
       #include <utf8proc.h>
 

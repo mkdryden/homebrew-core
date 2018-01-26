@@ -4,18 +4,20 @@ class Pxz < Formula
   url "https://jnovy.fedorapeople.org/pxz/pxz-4.999.9beta.20091201git.tar.xz"
   version "4.999.9"
   sha256 "df69f91103db6c20f0b523bb7f026d86ee662c49fe714647ed63f918cd39767a"
+  revision 2
 
   bottle do
     cellar :any
-    sha256 "8f24054e8bb4c57d7ce43b9a87236b3e26884ea882a94e374c9830e639face96" => :el_capitan
-    sha256 "76f6429cffa1c25c333abe06c77b8d15c695df9c3ff7182ff074f83ba97d6df6" => :yosemite
-    sha256 "aa8d6ad7fb7e1ee38e26e97cd9fcbc23dcf40cc44dea5cece306bf0556322c1a" => :mavericks
+    sha256 "47fc00a39b4de290942f911373599793ea3be314b5e46a201edf44ce2e7de254" => :high_sierra
+    sha256 "f48d8b406aa774291008f8257841707c204ef6b30e11345e0cf534c6d8e48f29" => :sierra
+    sha256 "ff0ce76c096fd81e249fd322672575b108c84e72e9a82600fd8260b0e03a167c" => :el_capitan
+    sha256 "ff8e88582e0facfb65f71faac849ae883bc5e853ddab1093a565f536e9bdb442" => :yosemite
   end
 
   head do
     url "https://github.com/jnovy/pxz.git"
 
-    # Rebased version of an upstream PR to fix the build on OS X
+    # Rebased version of an upstream PR to fix the build on macOS
     # https://github.com/jnovy/pxz/pull/5
     patch :DATA
   end
@@ -37,7 +39,7 @@ class Pxz < Formula
   test do
     (testpath/"test").write "foo bar"
     system "#{bin}/pxz", "test"
-    assert File.exist? "test.xz"
+    assert_predicate testpath/"test.xz", :exist?
   end
 end
 

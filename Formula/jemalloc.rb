@@ -1,19 +1,61 @@
 class Jemalloc < Formula
   desc "malloc implementation emphasizing fragmentation avoidance"
-  homepage "http://www.canonware.com/jemalloc/download.html"
-  url "https://github.com/jemalloc/jemalloc/releases/download/4.0.0/jemalloc-4.0.0.tar.bz2"
-  sha256 "214dbc74c3669b34219b0c5a55cb96f07cb12f44c834ed9ee64d1185ee6c3ef2"
-  head "https://github.com/jemalloc/jemalloc.git"
+  homepage "http://jemalloc.net/"
+  url "https://github.com/jemalloc/jemalloc/releases/download/5.0.1/jemalloc-5.0.1.tar.bz2"
+  sha256 "4814781d395b0ef093b21a08e8e6e0bd3dab8762f9935bbfb71679b0dea7c3e9"
 
   bottle do
     cellar :any
-    sha256 "2d9d3b8a36e1ffda6d5f4c5e1fabd95f496e4562a75cafba6ae975faa49e9bcd" => :el_capitan
-    sha256 "2167fc05024156684666e97527784c9a260db0c9308e604fb27fd314e4be70e7" => :yosemite
-    sha256 "5f3dbdc9c6a55e0cd7b8f53a4f001f36937d7c2f6afe92fe8cd0ce3ea39b922f" => :mavericks
+    sha256 "4046a803c804dac204126e10acd158e5a996c5bc8117917979ff495a5e07fcb3" => :high_sierra
+    sha256 "0ae7f33eda0547fd2eacad3f84c3c7cc6ebfb76ea02e8a4bac542ba60ba6ef07" => :sierra
+    sha256 "1e49d486784c64dccee6e43d61ecb201adf6ac8b5cc02465ac9ea5b492a56d01" => :el_capitan
+    sha256 "49a8f071338b3ec42cd89280681c338ad2e1d242a389e65f63f64e60257c5733" => :yosemite
+  end
+
+  head do
+    url "https://github.com/jemalloc/jemalloc.git"
+
+    depends_on "autoconf" => :build
+    depends_on "docbook-xsl" => :build
   end
 
   def install
-    system "./configure", "--disable-debug", "--prefix=#{prefix}", "--with-jemalloc-prefix="
+    args = %W[
+      --disable-debug
+      --prefix=#{prefix}
+      --with-jemalloc-prefix=
+    ]
+
+    if build.head?
+      args << "--with-xslroot=#{Formula["docbook-xsl"].opt_prefix}/docbook-xsl"
+      system "./autogen.sh", *args
+      system "make", "dist"
+    else
+      system "./configure", *args
+    end
+
+    system "make"
+    system "make", "check"
     system "make", "install"
+  end
+
+  test do
+    (testpath/"test.c").write <<~EOS
+      #include <stdlib.h>
+      #include <jemalloc/jemalloc.h>
+
+      int main(void) {
+
+        for (size_t i = 0; i < 1000; i++) {
+            // Leak some memory
+            malloc(i * 100);
+        }
+
+        // Dump allocator statistics to stderr
+        malloc_stats_print(NULL, NULL, NULL);
+      }
+    EOS
+    system ENV.cc, "test.c", "-L#{lib}", "-ljemalloc", "-o", "test"
+    system "./test"
   end
 end

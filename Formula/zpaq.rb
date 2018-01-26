@@ -1,34 +1,32 @@
 class Zpaq < Formula
   desc "Incremental, journaling command-line archiver"
   homepage "http://mattmahoney.net/dc/zpaq.html"
-  url "http://mattmahoney.net/dc/zpaq705.zip"
-  sha256 "d8abe3e3620d4c6f3ddc1da149acffa4c24296fd9c74c9d7b62319e308b63334"
-  version "7.05"
-
+  url "http://mattmahoney.net/dc/zpaq715.zip"
+  version "7.15"
+  sha256 "e85ec2529eb0ba22ceaeabd461e55357ef099b80f61c14f377b429ea3d49d418"
   head "https://github.com/zpaq/zpaq.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "f0998826effe4dae407d041c4143a39b3645dc46a82456b4e86ac88f106babd3" => :el_capitan
-    sha256 "bdd4716595b8eed1c52d2a2ef43abb095a996d05a0489f81f0b22ae43a26d51d" => :yosemite
-    sha256 "a71ad4808da8c69844f72322ff7633b895d034028129b30c3d25409d91bd4213" => :mavericks
-    sha256 "a2d2215b51cc18370f5ebe700160d1d7143ce5d680b2365a5adb4bb1622d06fc" => :mountain_lion
+    sha256 "d6f9b354e10afef1ac343485074ec8c3a1379163aa1c57ed91813832b23572ef" => :high_sierra
+    sha256 "63f132c8cbff5b22daddc07289837ad710c4af7785fa36351a498cc99e77c6ec" => :sierra
+    sha256 "beafa9e6d0ba28368a77d9ddcbaf3b04a3f02716f08eb4b2a345745c45fcf9d2" => :el_capitan
+    sha256 "de09d5f93f86f77372ea01b40f23481bc3e6cd33b9b2ac67736c85167a760dbb" => :yosemite
+  end
+
+  resource "test" do
+    url "http://mattmahoney.net/dc/calgarytest2.zpaq"
+    sha256 "b110688939477bbe62263faff1ce488872c68c0352aa8e55779346f1bd1ed07e"
   end
 
   def install
     system "make"
-    include.install "libzpaq.h"
-    bin.install "zpaq"
-
-    system "pod2man", "zpaq.pod", "zpaq.1"
-    man1.install "zpaq.1"
+    system "make", "check"
+    system "make", "install", "PREFIX=#{prefix}"
   end
 
   test do
-    archive = testpath/"test.zpaq"
-    zpaq = bin/"zpaq"
-    system zpaq, "a", archive, "#{include}/libzpaq.h"
-    system zpaq, "l", archive
-    assert_equal "7kSt", archive.read(4)
+    testpath.install resource("test")
+    assert_match "all OK", shell_output("#{bin}/zpaq x calgarytest2.zpaq 2>&1")
   end
 end

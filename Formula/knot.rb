@@ -1,63 +1,71 @@
 class Knot < Formula
   desc "High-performance authoritative-only DNS server"
   homepage "https://www.knot-dns.cz/"
-  url "https://secure.nic.cz/files/knot-dns/knot-2.1.1.tar.xz"
-  sha256 "e110d11d4a4c4b5abb091b32fcb073934fb840046e975234323e0fc15f2f8f5b"
-
-  head "https://gitlab.labs.nic.cz/labs/knot.git"
+  url "https://secure.nic.cz/files/knot-dns/knot-2.6.4.tar.xz"
+  sha256 "1d0d37b5047ecd554d927519d5565c29c1ba9b501c100eb5f3a5af184d75386a"
 
   bottle do
-    cellar :any
-    sha256 "89f74b85b5a6f42a5051d279d087bf446b42c99ddd89bfd14154d431b3cc94bb" => :el_capitan
-    sha256 "f8377f2c37094fc446f167f954bfc0c3202e4d845317b0e7a140f455b9959f7a" => :yosemite
-    sha256 "8295bd95060e9f067613d3c9742d231b841694afdff96eae13f448e00f1a3d13" => :mavericks
+    sha256 "c942bce22055602654e3ac80fcb3434222d7124ab852f80af8043480fc27150d" => :high_sierra
+    sha256 "c62d93f2f1c7e409f6d71c39fc389ccab3282e97b92f1542e32c4e5e181f3073" => :sierra
+    sha256 "8d50025b9f2a3b2d889660370213f1c2a72068acc6d07708efc16c5afd4cd692" => :el_capitan
   end
 
-  depends_on "automake" => :build
-  depends_on "autoconf" => :build
-  depends_on "libtool" => :build
+  head do
+    url "https://gitlab.labs.nic.cz/knot/knot-dns.git"
+
+    depends_on "automake" => :build
+    depends_on "autoconf" => :build
+    depends_on "libtool" => :build
+  end
+
+  # due to AT_REMOVEDIR
+  depends_on :macos => :yosemite
+
   depends_on "pkg-config" => :build
+  depends_on "sphinx-doc" => :build
   depends_on "gnutls"
   depends_on "jansson"
   depends_on "libidn"
   depends_on "nettle"
   depends_on "openssl"
   depends_on "userspace-rcu"
+  depends_on "protobuf-c"
+  depends_on "fstrm"
 
   def install
-    system "autoreconf", "-i", "-f" if build.head?
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
+    system "autoreconf", "-fvi" if build.head?
+    system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--with-configdir=#{etc}",
                           "--with-storage=#{var}/knot",
-                          "--with-rundir=#{var}/knot",
-                          "--prefix=#{prefix}"
+                          "--with-rundir=#{var}/run/knot",
+                          "--prefix=#{prefix}",
+                          "--with-bash-completions=#{bash_completion}",
+                          "--enable-dnstap"
 
     inreplace "samples/Makefile", "install-data-local:", "disable-install-data-local:"
 
     system "make"
+    system "make", "check"
     system "make", "install"
+    system "make", "install-singlehtml"
 
     (buildpath/"knot.conf").write(knot_conf)
     etc.install "knot.conf"
+  end
 
+  def post_install
     (var/"knot").mkpath
   end
 
-  def knot_conf; <<-EOS.undent
+  def knot_conf; <<~EOS
     server:
       rundir: "#{var}/knot"
       listen: [ "0.0.0.0@53", "::@53" ]
 
     log:
       - target: "stderr"
-        any: "error"
-
-      - target: "syslog"
-        server: "info"
-        zone: "warning"
-        any: "error"
+        any: "info"
 
     control:
       listen: "knot.sock"
@@ -70,7 +78,7 @@ class Knot < Formula
 
   plist_options :startup => true
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -87,16 +95,20 @@ class Knot < Formula
         <string>-c</string>
         <string>#{etc}/knot.conf</string>
       </array>
-      <key>ServiceIPC</key>
-      <false/>
+      <key>StandardInPath</key>
+      <string>/dev/null</string>
+      <key>StandardOutPath</key>
+      <string>/dev/null</string>
+      <key>StandardErrorPath</key>
+      <string>#{var}/log/knot.log</string>
     </dict>
     </plist>
     EOS
   end
 
   test do
-    system "#{bin}/kdig", "www.knot-dns.cz"
-    system "#{bin}/khost", "brew.sh"
-    system "#{sbin}/knotc", "-c", "#{etc}/knot.conf", "checkconf"
+    system bin/"kdig", "www.knot-dns.cz"
+    system bin/"khost", "brew.sh"
+    system sbin/"knotc", "-c", etc/"knot.conf", "conf-check"
   end
 end

@@ -1,26 +1,50 @@
 class Ntl < Formula
   desc "C++ number theory library"
   homepage "http://www.shoup.net/ntl"
-  url "http://www.shoup.net/ntl/ntl-9.6.4.tar.gz"
-  sha256 "c4a1f015a879b4a20f6b76a98eb6033a7936b0ff3b3f3ca6159d7e7b2afd89eb"
+  url "http://www.shoup.net/ntl/ntl-10.5.0.tar.gz"
+  sha256 "b90b36c9dd8954c9bc54410b1d57c00be956ae1db5a062945822bbd7a86ab4d2"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "6c80f485b943143a51bcc9a4e0a07c856f9e144a7eb9e0283f77234302a9d95f" => :el_capitan
-    sha256 "5d79a7cbe3f93fb8d0eb1cf64c13d26db61c99cbff98034b0828eca51dfcb49a" => :yosemite
-    sha256 "68c86d6e81d649ee2a91ff0c17e431f9c1a5aefca2e51288c6847581e24cadb4" => :mavericks
+    cellar :any
+    sha256 "d3b7cb343a1b590d0e21cbac76ffa40d59dfd59986aa5cd6c8234c7a9797e4be" => :high_sierra
+    sha256 "34e952fe458afc912c0822a3db858b843270dc4b6bea3b73eac52b3b29761d77" => :sierra
+    sha256 "d34ad4f67e21327db85b1007626f77f6e5c87857707b53a3419dce6886418331" => :el_capitan
   end
 
   depends_on "gmp"
 
   def install
-    args = ["PREFIX=#{prefix}"]
+    args = ["PREFIX=#{prefix}", "SHARED=on"]
 
     cd "src" do
       system "./configure", *args
       system "make"
-      system "make", "check"
       system "make", "install"
     end
+  end
+
+  test do
+    (testpath/"square.cc").write <<~EOS
+      #include <iostream>
+      #include <NTL/ZZ.h>
+
+      int main()
+      {
+          NTL::ZZ a;
+          std::cin >> a;
+          std::cout << NTL::power(a, 2);
+          return 0;
+      }
+    EOS
+    gmp = Formula["gmp"]
+    flags = %W[
+      -I#{include}
+      -L#{gmp.opt_lib}
+      -L#{lib}
+      -lntl
+      -lgmp
+    ]
+    system ENV.cxx, "square.cc", "-o", "square", *flags
+    assert_equal "4611686018427387904", pipe_output("./square", "2147483648")
   end
 end

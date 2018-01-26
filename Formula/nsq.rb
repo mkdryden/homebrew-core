@@ -1,88 +1,62 @@
-require "language/go"
-
 class Nsq < Formula
   desc "Realtime distributed messaging platform"
   homepage "http://nsq.io"
-  url "https://github.com/nsqio/nsq/archive/v0.3.7.tar.gz"
-  sha256 "fb71e28c757dd485b43b9bc75d90eb44ff9166ccb3d8a928c5e655b483da316e"
-
+  url "https://github.com/nsqio/nsq/archive/v1.0.0-compat.tar.gz"
+  version "1.0.0"
+  sha256 "c279d339eceb84cad09e2c2bc21e069e37988d0f6b7343d77238374081c9fd29"
+  revision 1
   head "https://github.com/nsqio/nsq.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "91a000705ffecf918ce61962a624e7420fcd241a528d8682acdf44e47791c4fa" => :el_capitan
-    sha256 "eaebbc4585c48399e709c81a83c29f974dcc237efa80e3b2ee42708da3494149" => :yosemite
-    sha256 "cc993cfc69b4104b71536b1d069cf102e7f11b50410395048ca9f1b88ff48c8b" => :mavericks
+    sha256 "bf7029656b4cf5fbefaa252ed1cac50dc49a31139eda7b583165bfcacaec1e42" => :high_sierra
+    sha256 "5bb322677d0bbb1f4f5fa7be1584cafbfcec01e67c0063f6ee14a13933389c6e" => :sierra
+    sha256 "2f04a20ef5c05ddd00893198ca5134a455869d1a231893d7931603c60a4dd497" => :el_capitan
   end
 
   depends_on "go" => :build
-
-  go_resource "github.com/BurntSushi/toml" do
-    url "https://github.com/BurntSushi/toml.git",
-      :revision => "2dff11163ee667d51dcc066660925a92ce138deb"
-  end
-
-  go_resource "github.com/bitly/go-hostpool" do
-    url "https://github.com/bitly/go-hostpool.git",
-      :revision => "58b95b10d6ca26723a7f46017b348653b825a8d6"
-  end
-
-  go_resource "github.com/nsqio/go-nsq" do
-    url "https://github.com/nsqio/go-nsq.git",
-      :revision => "cef6982c1150617a77539847950ca63774f0e48c"
-  end
-
-  go_resource "github.com/bitly/go-simplejson" do
-    url "https://github.com/bitly/go-simplejson.git",
-      :revision => "18db6e68d8fd9cbf2e8ebe4c81a78b96fd9bf05a"
-  end
-
-  go_resource "github.com/bmizerany/perks" do
-    url "https://github.com/bmizerany/perks.git",
-      :revision => "6cb9d9d729303ee2628580d9aec5db968da3a607"
-  end
-
-  go_resource "github.com/mreiferson/go-options" do
-    url "https://github.com/mreiferson/go-options.git",
-      :revision => "2cf7eb1fdd83e2bb3375fef6fdadb04c3ad564da"
-  end
-
-  go_resource "github.com/mreiferson/go-snappystream" do
-    url "https://github.com/mreiferson/go-snappystream.git",
-      :revision => "028eae7ab5c4c9e2d1cb4c4ca1e53259bbe7e504"
-  end
-
-  go_resource "github.com/bitly/timer_metrics" do
-    url "https://github.com/bitly/timer_metrics.git",
-      :revision => "afad1794bb13e2a094720aeb27c088aa64564895"
-  end
-
-  go_resource "github.com/blang/semver" do
-    url "https://github.com/blang/semver.git",
-      :revision => "9bf7bff48b0388cb75991e58c6df7d13e982f1f2"
-  end
-
-  go_resource "github.com/julienschmidt/httprouter" do
-    url "https://github.com/julienschmidt/httprouter.git",
-      :revision => "6aacfd5ab513e34f7e64ea9627ab9670371b34e7"
-  end
-
-  go_resource "github.com/judwhite/go-svc" do
-    url "https://github.com/judwhite/go-svc.git",
-      :revision => "53bd3020e68399b23994ce23d1130801aa674226"
-  end
+  depends_on "gpm" => :build
 
   def install
-    # build a proper GOPATH tree for local dependencies
-    (buildpath + "src/github.com/nsqio/nsq").install "Makefile", "apps", "internal", "nsqlookupd", "nsqd", "nsqadmin"
-
     ENV["GOPATH"] = buildpath
-    Language::Go.stage_deps resources, buildpath/"src"
+    mkdir_p "src/github.com/nsqio"
+    ln_s buildpath, "src/github.com/nsqio/nsq"
+    system "gpm", "install"
+    system "make", "DESTDIR=#{prefix}", "PREFIX=", "install"
+  end
 
-    cd buildpath/"src/github.com/nsqio/nsq" do
-      system "make"
-      system "make", "DESTDIR=#{prefix}", "PREFIX=", "install"
-    end
+  def post_install
+    (var/"log").mkpath
+    (var/"nsq").mkpath
+  end
+
+  plist_options :manual => "nsqd -data-path=#{HOMEBREW_PREFIX}/var/nsq"
+
+  def plist; <<~EOS
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+      <key>KeepAlive</key>
+      <true/>
+      <key>Label</key>
+      <string>#{plist_name}</string>
+      <key>ProgramArguments</key>
+      <array>
+        <string>#{bin}/nsqd</string>
+        <string>-data-path=#{var}/nsq</string>
+      </array>
+      <key>RunAtLoad</key>
+      <true/>
+      <key>WorkingDirectory</key>
+      <string>#{var}/nsq</string>
+      <key>StandardErrorPath</key>
+      <string>#{var}/log/nsqd.error.log</string>
+      <key>StandardOutPath</key>
+      <string>#{var}/log/nsqd.log</string>
+    </dict>
+    </plist>
+  EOS
   end
 
   test do
@@ -100,12 +74,13 @@ class Nsq < Formula
       end
       sleep 2
       to_file = fork do
-        exec bin/"nsq_to_file", "--topic=test", "--output-dir=#{testpath}",
-               "--lookupd-http-address=127.0.0.1:4161"
+        exec bin/"nsq_to_file", "--lookupd-http-address=127.0.0.1:4161",
+                                "--output-dir=#{testpath}",
+                                "--topic=test"
       end
       sleep 2
-      system "curl", "-d", "hello", "http://127.0.0.1:4151/put?topic=test"
-
+      system "curl", "-d", "hello", "http://127.0.0.1:4151/pub?topic=test"
+      sleep 2
       dat = File.read(Dir["*.dat"].first)
       assert_match "test", dat
       assert_match version.to_s, dat

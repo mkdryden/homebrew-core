@@ -1,17 +1,17 @@
 class Pgbadger < Formula
   desc "Log analyzer for PostgreSQL"
   homepage "https://dalibo.github.io/pgbadger/"
-  url "https://github.com/dalibo/pgbadger/archive/v7.1.tar.gz"
-  sha256 "de7f36cb55d2c177fdf47115f3fb5c2e842b443432631212e408726baacbad7e"
+  url "https://github.com/dalibo/pgbadger/archive/v9.2.tar.gz"
+  sha256 "2107466309a409fb9e40f11bb77cac1f9ba7910d5328e7b2e08eb7a1c6d760ec"
 
   head "https://github.com/dalibo/pgbadger.git"
 
   bottle do
     cellar :any_skip_relocation
-    revision 1
-    sha256 "98e5d1fef55e72aa177dd544fa2473c8ffb215cb00ccd303dbbff6e59a14c2c3" => :el_capitan
-    sha256 "ffc6d23b147f99fec542849b5a96b9e948671fd42019fc57dbba64f1142bbfdf" => :yosemite
-    sha256 "777551f41099eea6873574a8ffb54e9919ee7b5e4ab15aacd0c053fda621223d" => :mavericks
+    sha256 "a481b5c37d9517b2329493447798188e722f354a4d0309dbecc505f1b0e9bbdf" => :high_sierra
+    sha256 "d67b1d85810ffbcd8b638b44cbcce14744e6aff9f72f2e3085047897f3cad0d3" => :sierra
+    sha256 "d67b1d85810ffbcd8b638b44cbcce14744e6aff9f72f2e3085047897f3cad0d3" => :el_capitan
+    sha256 "d67b1d85810ffbcd8b638b44cbcce14744e6aff9f72f2e3085047897f3cad0d3" => :yosemite
   end
 
   def install
@@ -21,11 +21,9 @@ class Pgbadger < Formula
 
     bin.install "usr/local/bin/pgbadger"
     man1.install "usr/local/share/man/man1/pgbadger.1p"
-    chmod 0755, bin+"pgbadger" # has 555 by default
-    chmod 0644, man1+"pgbadger.1p" # has 444 by default
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     You must configure your PostgreSQL server before using pgBadger.
     Edit postgresql.conf (in #{var}/postgres if you use Homebrew's
     PostgreSQL), set the following parameters, and restart PostgreSQL:
@@ -45,11 +43,11 @@ class Pgbadger < Formula
   end
 
   test do
-    (testpath/"server.log").write <<-EOS.undent
+    (testpath/"server.log").write <<~EOS
       LOG:  autovacuum launcher started
       LOG:  database system is ready to accept connections
     EOS
     system bin/"pgbadger", "-f", "syslog", "server.log"
-    assert File.exist? "out.html"
+    assert_predicate testpath/"out.html", :exist?
   end
 end

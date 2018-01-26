@@ -1,46 +1,43 @@
 class Gmp < Formula
   desc "GNU multiple precision arithmetic library"
   homepage "https://gmplib.org/"
-  url "https://gmplib.org/download/gmp/gmp-6.1.0.tar.xz"
-  sha256 "68dadacce515b0f8a54f510edf07c1b636492bcdb8e8d54c56eb216225d16989"
+  url "https://gmplib.org/download/gmp/gmp-6.1.2.tar.xz"
+  mirror "https://ftp.gnu.org/gnu/gmp/gmp-6.1.2.tar.xz"
+  sha256 "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"
+  revision 1
 
   bottle do
     cellar :any
-    sha256 "1d236d4debd6880259e58a51a28f0c2d67fc57c4882f9a690ebc222c8264605b" => :el_capitan
-    sha256 "f86f185327ee1f6dc44c816229f332eb262616a648afd5d1caf55c407e72035d" => :yosemite
-    sha256 "2ad0982b8c33432ad9c71b0e5517171aee5bc73d2207d7bda3c306e0cf42dcc1" => :mavericks
+    sha256 "eadb377c507f5d04e8d47861fa76471be6c09dc54991540e125ee1cbc04fecd6" => :high_sierra
+    sha256 "90715336080bd2deb92bd74361f50d91fe288d18e4c18a70a8253add6aa13200" => :sierra
+    sha256 "0e0c340b4c09a4f00daf45890e8f36afa03d251a8ed3bba6ae4876149914b420" => :el_capitan
   end
 
-  option "32-bit"
-  option :cxx11
-
   def install
-    ENV.cxx11 if build.cxx11?
-    args = ["--prefix=#{prefix}", "--enable-cxx"]
-
-    if build.build_32_bit?
-      ENV.m32
-      args << "ABI=32"
-    end
-
-    # https://github.com/Homebrew/homebrew/issues/20693
-    args << "--disable-assembly" if build.build_32_bit? || build.bottle?
-
-    system "./configure", *args
+    args = %W[--prefix=#{prefix} --enable-cxx]
+    args << "--build=core2-apple-darwin#{`uname -r`.to_i}" if build.bottle?
+    system "./configure", "--disable-static", *args
     system "make"
     system "make", "check"
     system "make", "install"
+    system "make", "clean"
+    system "./configure", "--disable-shared", "--disable-assembly", *args
+    system "make"
+    lib.install Dir[".libs/*.a"]
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gmp.h>
+      #include <stdlib.h>
 
-      int main()
-      {
-        mpz_t integ;
-        mpz_init (integ);
-        mpz_clear (integ);
+      int main() {
+        mpz_t i, j, k;
+        mpz_init_set_str (i, "1a", 16);
+        mpz_init (j);
+        mpz_init (k);
+        mpz_sqrtrem (j, k, i);
+        if (mpz_get_si (j) != 5 || mpz_get_si (k) != 1) abort();
         return 0;
       }
     EOS

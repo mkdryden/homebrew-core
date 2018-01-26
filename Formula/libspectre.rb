@@ -1,21 +1,21 @@
 class Libspectre < Formula
   desc "Small library for rendering Postscript documents"
   homepage "https://wiki.freedesktop.org/www/Software/libspectre/"
-  url "https://libspectre.freedesktop.org/releases/libspectre-0.2.7.tar.gz"
-  sha256 "e81b822a106beed14cf0fec70f1b890c690c2ffa150fa2eee41dc26518a6c3ec"
-  revision 1
+  url "https://libspectre.freedesktop.org/releases/libspectre-0.2.8.tar.gz"
+  sha256 "65256af389823bbc4ee4d25bfd1cc19023ffc29ae9f9677f2d200fa6e98bc7a8"
+  revision 3
 
   bottle do
     cellar :any
-    sha256 "1b5b24594a653e6446f7011634690dc89c863896ee9624566b53e154a8ac6c95" => :el_capitan
-    sha256 "1631717eab696f98d23822ddc7053b4e0584ed48ddaae64bd8701e59d6460e3e" => :yosemite
-    sha256 "301b2330d47b35c62ca00c8cac43957367d7fc8101ba68a10e91f03271ebdc0a" => :mavericks
+    sha256 "6d90834ff843d4a0b840c4f82ef3c0736386558692789200c13aaadbdd846bf3" => :high_sierra
+    sha256 "1ead4df8edaa47068abb6b1df50bfd85a8129bfe141018253fe1ba79296cbc59" => :sierra
+    sha256 "4c7da5b7cd4ca0b4cfa86c822629dc8bfaba34815c0ed940b655e19328d0dedd" => :el_capitan
   end
 
   depends_on "ghostscript"
 
   patch do
-    url "https://github.com/Homebrew/patches/raw/master/libspectre/libspectre-0.2.7-gs918.patch"
+    url "https://github.com/Homebrew/formula-patches/raw/master/libspectre/libspectre-0.2.7-gs918.patch"
     sha256 "e4c186ddc6cebc92ee0aee24bc79c7f5fff147a0c0d9cadf7ebdc3906d44711c"
   end
 
@@ -29,7 +29,7 @@ class Libspectre < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <libspectre/spectre.h>
 
       int main(int argc, char *argv[]) {
@@ -37,8 +37,7 @@ class Libspectre < Formula
         return 0;
       }
     EOS
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{include}
       -L#{lib}
       -lspectre

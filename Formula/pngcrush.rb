@@ -1,21 +1,18 @@
 class Pngcrush < Formula
   desc "Optimizer for PNG files"
-  homepage "http://pmt.sourceforge.net/pngcrush/"
-  url "https://downloads.sourceforge.net/project/pmt/pngcrush/1.8.0/pngcrush-1.8.0.tar.gz"
-  sha256 "6e7e95933f69615e563f14f62572820e229a6d586826418ef7016842d96b0d92"
+  homepage "https://pmt.sourceforge.io/pngcrush"
+  url "https://downloads.sourceforge.net/project/pmt/pngcrush/1.8.13/pngcrush-1.8.13.tar.xz"
+  sha256 "8fc18bcbcc65146769241e20f9e21e443b0f4538d581250dce89b1e969a30705"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "32f5cb6c44a139caac47b9f062b7431072b6a2e9d8247af76ce0f1165d6bde01" => :el_capitan
-    sha256 "efa6ae085555837e4d7ed633e25210f94031ac959057ccd74f5763a1ca411abb" => :yosemite
-    sha256 "e2277139c5e4e13bff2c5356469e400509e70d359cbf80d48e53c6fc0abb3731" => :mavericks
+    sha256 "db13f642eae1815e00e1a80d363228e0311d85ca510e9c9de94dba8483fa2d87" => :high_sierra
+    sha256 "f648ad0c664699f67bba8ba791358e8b294d0c1d975f026aa67fc1635badbc73" => :sierra
+    sha256 "2633aff1e7cec8bb6c55da5c4daf9f555c74e516ebcc5f3027589588f76d3e17" => :el_capitan
+    sha256 "5505ea179a71996eb4fab04feebd09ebbef7e8ea4c1efba1e0184333c1883d1b" => :yosemite
   end
 
   def install
-    # Required to enable "-cc" (color counting) option (disabled by default
-    # since 1.5.1)
-    ENV.append_to_cflags "-DPNGCRUSH_COUNT_COLORS"
-
     system "make", "CC=#{ENV.cc}",
                    "LD=#{ENV.cc}",
                    "CFLAGS=#{ENV.cflags}",

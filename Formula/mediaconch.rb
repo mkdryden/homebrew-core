@@ -1,37 +1,43 @@
 class Mediaconch < Formula
   desc "Conformance checker and technical metadata reporter"
   homepage "https://mediaarea.net/MediaConch"
-  url "https://mediaarea.net/download/binary/mediaconch/16.03/MediaConch_CLI_16.03_GNU_FromSource.tar.bz2"
-  version "16.03"
-  sha256 "05c8ec1f883bb30b84102b13e3ecb8303c2250824a471fa3c12abf10b2546892"
+  url "https://mediaarea.net/download/binary/mediaconch/17.12/MediaConch_CLI_17.12_GNU_FromSource.tar.bz2"
+  version "17.12"
+  sha256 "4d27a6f7e62853cf25a761bc0796285ec6bb465c90059b43f741f7498417cbac"
 
   bottle do
     cellar :any
-    sha256 "d8dd10b5d7f927c48a0b88a426b5be49408bae68c739e4e40e3043636310ab41" => :el_capitan
-    sha256 "e93d19673b2b79ee7ea0e17df2b6aaa557d3123f27a98deb25fdd00bcbfdbf2b" => :yosemite
-    sha256 "5e17bb21ae3f41b8cbf148457f31ec9229909f439c2969864d3b3ece47d809bc" => :mavericks
+    sha256 "ff2b2732e109129ff232a08e47c766bce2fd7838515f9d1722a458301df37d50" => :high_sierra
+    sha256 "42bd7119437f6c336b61d53ac30b46cdfd01e70274dc0541bcff8c41e4768fd1" => :sierra
+    sha256 "96d7cb85c0a869775f89f26281fbd9824457be097431d8f62d91888e87473f69" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
   depends_on "jansson"
   depends_on "libevent"
   depends_on "sqlite"
-  # fails to build against Leopard's older libcurl
-  depends_on "curl" if MacOS.version < :snow_leopard
 
   def install
     cd "ZenLib/Project/GNU/Library" do
-      system "./configure", "--disable-debug", "--disable-dependency-tracking",
-                            "--prefix=#{prefix}"
-      system "make"
+      args = ["--disable-debug",
+              "--disable-dependency-tracking",
+              "--enable-shared",
+              "--enable-static",
+              "--prefix=#{prefix}",
+              # mediaconch installs libs/headers at the same paths as mediainfo
+              "--libdir=#{lib}/mediaconch",
+              "--includedir=#{include}/mediaconch"]
+      system "./configure", *args
+      system "make", "install"
     end
 
     cd "MediaInfoLib/Project/GNU/Library" do
       args = ["--disable-debug",
               "--disable-dependency-tracking",
+              "--enable-static",
+              "--enable-shared",
               "--with-libcurl",
               "--prefix=#{prefix}",
-              # mediaconch installs libs/headers at the same paths as mediainfo
               "--libdir=#{lib}/mediaconch",
               "--includedir=#{include}/mediaconch"]
       system "./configure", *args

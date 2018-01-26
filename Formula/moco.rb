@@ -1,21 +1,20 @@
 class Moco < Formula
   desc "Stub server with Maven, Gradle, Scala, and shell integration"
   homepage "https://github.com/dreamhead/moco"
-  url "https://search.maven.org/remotecontent?filepath=com/github/dreamhead/moco-runner/0.10.2/moco-runner-0.10.2-standalone.jar"
-  version "0.10.2"
-  sha256 "ef946d090d3108843708c194809c57f192e3623dbbbcf86bdee54ce93c299a41"
+  url "https://search.maven.org/remotecontent?filepath=com/github/dreamhead/moco-runner/0.12.0/moco-runner-0.12.0-standalone.jar"
+  sha256 "436ccc154d0386bbb8924383cae2cf541b3eebdf23ad1709eae887632f39b8f5"
 
   bottle :unneeded
 
   def install
-    libexec.install "moco-runner-0.10.2-standalone.jar"
-    bin.write_jar_script libexec/"moco-runner-0.10.2-standalone.jar", "moco"
+    libexec.install "moco-runner-#{version}-standalone.jar"
+    bin.write_jar_script libexec/"moco-runner-#{version}-standalone.jar", "moco"
   end
 
   test do
     require "net/http"
 
-    (testpath/"config.json").write <<-EOS.undent
+    (testpath/"config.json").write <<~EOS
       [
         {
           "response" :
@@ -23,12 +22,12 @@ class Moco < Formula
               "text" : "Hello, Moco"
           }
         }
-    ]
+      ]
     EOS
 
     port = 12306
     thread = Thread.new do
-      system bin/"moco", "start", "-p", port, "-c", testpath/"config.json"
+      system bin/"moco", "http", "-p", port, "-c", testpath/"config.json"
     end
 
     # Wait for Moco to start.

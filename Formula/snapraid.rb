@@ -1,21 +1,20 @@
 class Snapraid < Formula
   desc "Backup program for disk arrays"
-  homepage "http://snapraid.sourceforge.net/"
-  url "https://downloads.sourceforge.net/project/snapraid/snapraid-8.1.tar.gz"
-  sha256 "6bf89a1319ac3403958cd2c98a9c6102728c0070cfa1aedd90c4561d93c54e5d"
+  homepage "https://snapraid.sourceforge.io/"
+  url "https://github.com/amadvance/snapraid/releases/download/v11.2/snapraid-11.2.tar.gz"
+  sha256 "735cdeb7656ac48cbb0b4a89a203dd566505071e465d5effbcc56bcb8fd3a0d7"
+
+  bottle do
+    sha256 "a3cdc8a3975bf5f3073e21d089d5e3c067fb809ccf758724f25fc092bebf7b71" => :high_sierra
+    sha256 "eba431c9a6d92f379e0063c3c40cf6a655fa2a29256da707f851569046e7d7c9" => :sierra
+    sha256 "e6be5ae4ae3aa3bffbd4f57c4dab84602d3883673ce9f2b74189a0f39c82b4b2" => :el_capitan
+  end
 
   head do
     url "https://github.com/amadvance/snapraid.git"
+
     depends_on "automake" => :build
     depends_on "autoconf" => :build
-  end
-
-  bottle do
-    cellar :any_skip_relocation
-    sha256 "87755e2cc7cfe7525c39f50a7614d54d3f3f0f43440bc24127a291ca5ccf856c" => :el_capitan
-    sha256 "10123687aa79706617cf0d62ee0a2d5e27d43ab633d9dc914089d325b3e22464" => :yosemite
-    sha256 "d5a7af73bdf89fd946d96139ae94dcb8e5b4e437a8836ba6c9c9a21d618af763" => :mavericks
-    sha256 "b5f0e760a5448d744cc279df69686d65d4aaa3d8523ca8d9a8731615ef55d059" => :mountain_lion
   end
 
   def install

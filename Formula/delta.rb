@@ -7,7 +7,9 @@ class Delta < Formula
 
   bottle do
     cellar :any_skip_relocation
-    revision 2
+    rebuild 2
+    sha256 "46734f3eb952455ecd9237ce455aebb3e66be791bbf190021d894dae39d55b66" => :high_sierra
+    sha256 "07e775a1054966ad2924512386643bc8cb4ef3ad7e12ce9a140015c82fba3072" => :sierra
     sha256 "202409012500969cfd034c9d44c441a809445a3b367d514357346438aa850f14" => :el_capitan
     sha256 "d3374cc3e84c93bb84615b1669503ea8b708ab65baf629ee0be9a728b12b10bc" => :yosemite
     sha256 "04102ae55ffc2cc4351816b010544b854c21f1c5e2a462a6af0e57ec2f57b501" => :mavericks
@@ -19,7 +21,7 @@ class Delta < Formula
   end
 
   test do
-    (testpath/"test1.c").write <<-EOS.undent
+    (testpath/"test1.c").write <<~EOS
       #include <stdio.h>
 
       int main() {
@@ -29,7 +31,7 @@ class Delta < Formula
       }
 
     EOS
-    (testpath/"test1.sh").write <<-EOS.undent
+    (testpath/"test1.sh").write <<~EOS
       #!/usr/bin/env bash
 
       clang -Weverything "$(dirname "${BASH_SOURCE[0]}")"/test1.c 2>&1 | \

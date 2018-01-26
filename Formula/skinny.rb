@@ -1,14 +1,15 @@
 class Skinny < Formula
   desc "Full-stack web app framework in Scala"
   homepage "http://skinny-framework.org/"
-  url "https://github.com/skinny-framework/skinny-framework/releases/download/2.0.8/skinny-2.0.8.tar.gz"
-  sha256 "49a15752131cb62c5332d188bc546acef95973aad0820dc4e104efc6283256c4"
+  url "https://github.com/skinny-framework/skinny-framework/releases/download/2.5.2/skinny-2.5.2.tar.gz"
+  sha256 "0d21d017ef2a32a3e0ef497262c846ad3d04f32d4339b26d6cffc70f952527f6"
 
   bottle :unneeded
+  depends_on :java => "1.8+"
 
   def install
     libexec.install Dir["*"]
-    (bin/"skinny").write <<-EOS.undent
+    (bin/"skinny").write <<~EOS
       #!/bin/bash
       export PATH=#{bin}:$PATH
       PREFIX="#{libexec}" exec "#{libexec}/skinny" "$@"

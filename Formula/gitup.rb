@@ -2,42 +2,41 @@ class Gitup < Formula
   desc "Update multiple git repositories at once"
   homepage "https://github.com/earwig/git-repo-updater"
   url "https://github.com/earwig/git-repo-updater.git",
-    :revision => "10494e677bba19622acfa3fc62093a06451c8562",
-    :tag => "v0.3"
+    :revision => "bf66406c10d3e7654ca3f56f4ec6b57bcc068fea",
+    :tag => "v0.4.1"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "51b4abede9028a4762fbdd2983a11532b65826e2a566c7e2519d3346f5fdbb0f" => :el_capitan
-    sha256 "0b5f3064bcdc561e931afbd126bd472a7d7ad87a68c02f5c03defbdb9c140d85" => :yosemite
-    sha256 "c0b86146ca84fd6962066a3bc11634d504c97df17bcf113f77ea3ff16543aa41" => :mavericks
-    sha256 "030291b81b361518a13917c16235fac9bb06ce12ce8f9c7ebb8ae38a9e4ad531" => :mountain_lion
+    sha256 "8a11d7864ef368045ba5ebed1580fe3a22f4e04b24f4f24c9678eefbf186afc7" => :high_sierra
+    sha256 "8a11d7864ef368045ba5ebed1580fe3a22f4e04b24f4f24c9678eefbf186afc7" => :sierra
+    sha256 "c1659d82d045517de16860042a53360b5ce061c8d13e57b8ea15db624ad7289f" => :el_capitan
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
-
-  resource "smmap" do
-    url "https://pypi.python.org/packages/source/s/smmap/smmap-0.9.0.tar.gz"
-    sha256 "0e2b62b497bd5f0afebc002eda4d90df9d209c30ef257e8673c90a6b5c119d62"
-  end
+  depends_on "python" if MacOS.version <= :snow_leopard
 
   resource "colorama" do
-    url "https://pypi.python.org/packages/source/c/colorama/colorama-0.3.3.tar.gz"
-    sha256 "eb21f2ba718fbf357afdfdf6f641ab393901c7ca8d9f37edd0bee4806ffa269c"
+    url "https://files.pythonhosted.org/packages/source/c/colorama/colorama-0.3.9.tar.gz"
+    sha256 "48eb22f4f8461b1df5734a074b57042430fb06e1d61bd1e11b078c0fe6d7a1f1"
   end
 
-  resource "gitdb" do
-    url "https://pypi.python.org/packages/source/g/gitdb/gitdb-0.6.4.tar.gz"
-    sha256 "a3ebbc27be035a2e874ed904df516e35f4a29a778a764385de09de9e0f139658"
+  resource "smmap2" do
+    url "https://files.pythonhosted.org/packages/source/s/smmap2/smmap2-2.0.3.tar.gz"
+    sha256 "c7530db63f15f09f8251094b22091298e82bf6c699a6b8344aaaef3f2e1276c3"
+  end
+
+  resource "gitdb2" do
+    url "https://files.pythonhosted.org/packages/source/g/gitdb2/gitdb2-2.0.3.tar.gz"
+    sha256 "b60e29d4533e5e25bb50b7678bbc187c8f6bcff1344b4f293b2ba55c85795f09"
   end
 
   resource "GitPython" do
-    url "https://pypi.python.org/packages/source/G/GitPython/GitPython-1.0.1.tar.gz"
-    sha256 "9c88c17bbcae2a445ff64024ef13526224f70e35e38c33416be5ceb56ca7f760"
+    url "https://files.pythonhosted.org/packages/source/G/GitPython/GitPython-2.1.8.tar.gz"
+    sha256 "ad61bc25deadb535b047684d06f3654c001d9415e1971e51c9c20f5b510076e9"
   end
 
   def install
     ENV.prepend_create_path "PYTHONPATH", libexec/"vendor/lib/python2.7/site-packages"
-    %w[smmap colorama gitdb GitPython].each do |r|
+    %w[colorama smmap2 gitdb2 GitPython].each do |r|
       resource(r).stage do
         system "python", *Language::Python.setup_install_args(libexec/"vendor")
       end
@@ -71,7 +70,7 @@ class Gitup < Formula
       prepare_repo("https://github.com/pr0d1r2/homebrew-cask-games.git", second_head_start)
     end
 
-    system "gitup", "first", "second"
+    system bin/"gitup", "first", "second"
 
     first_head = `cd first ; git rev-parse HEAD`.split.first
     assert_not_equal first_head, first_head_start
@@ -84,14 +83,14 @@ class Gitup < Formula
       prepare_repo("https://github.com/pr0d1r2/homebrew-contrib.git", third_head_start)
     end
 
-    system "gitup", "--add", "third"
+    system bin/"gitup", "--add", "third"
 
-    system "gitup"
+    system bin/"gitup"
     third_head = `cd third ; git rev-parse HEAD`.split.first
     assert_not_equal third_head, third_head_start
 
-    assert_match %r{#{Dir.pwd}/third}, `gitup --list`.strip
+    assert_match %r{#{Dir.pwd}/third}, `#{bin}/gitup --list`.strip
 
-    system "gitup", "--delete", "#{Dir.pwd}/third"
+    system bin/"gitup", "--delete", "#{Dir.pwd}/third"
   end
 end

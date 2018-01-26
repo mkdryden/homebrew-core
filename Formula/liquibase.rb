@@ -1,8 +1,8 @@
 class Liquibase < Formula
   desc "Library for database change tracking"
   homepage "http://liquibase.org"
-  url "https://github.com/liquibase/liquibase/releases/download/liquibase-parent-3.4.2/liquibase-3.4.2-bin.tar.gz"
-  sha256 "c52f6c795169073158a30ee528b1f566ba57bb56e242cac2aa175789bec47dcf"
+  url "https://github.com/liquibase/liquibase/releases/download/liquibase-parent-3.5.3/liquibase-3.5.3-bin.tar.gz"
+  sha256 "fb85d27f1ef8aef0539a74eca3b71692292f2e961171701a38ba82cdbcb39711"
 
   bottle :unneeded
 
@@ -14,9 +14,9 @@ class Liquibase < Formula
     bin.install_symlink libexec/"liquibase"
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     You should set the environment variable LIQUIBASE_HOME to
-      #{libexec}
+      #{opt_libexec}
     EOS
   end
 

@@ -1,21 +1,21 @@
 class Libmill < Formula
   desc "Go-style concurrency in C"
   homepage "http://libmill.org/"
-  url "http://libmill.org/libmill-1.1.tar.gz"
-  sha256 "146add8283cb88f3d42418e4666211d4a085f57c317a24a56e9afab8167db77d"
+  url "http://libmill.org/libmill-1.18.tar.gz"
+  sha256 "12e538dbee8e52fd719a9a84004e0aba9502a6e62cd813223316a1e45d49577d"
   head "https://github.com/sustrik/libmill.git"
 
   bottle do
     cellar :any
-    sha256 "f5b5974a8cdc1d8701e184a412c8438f9ad1f13665b33db30a52439287d626cc" => :el_capitan
-    sha256 "652e19d0eea9b7bd9ea009eb03c025ed5a3a393d5ba899e375109aad3bf06b73" => :yosemite
-    sha256 "c8bc0246d358809bc9c429b8f91ed01b44c60ebe1720a2d83a735a50f6239df3" => :mavericks
+    sha256 "5e0fff326f0d0d5a7c09f20bb1612ba4034bec1cc3befd99977bfb5b587ca70b" => :high_sierra
+    sha256 "6eb891740171f0471d420da7e92df829dd64e108cdf115588a639f6be3906e0a" => :sierra
+    sha256 "37103d981777f9c30dda9add67a2cafc72b405ee7d10ac3a32b1f267b0b5cda5" => :el_capitan
+    sha256 "4f8a2b4ddbcac88459c0f4b463e497a82e8d6a02b43419e29e2be8230c15123d" => :yosemite
   end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
-  depends_on "cmake" => :build
 
   def install
     system "./autogen.sh" if build.head?
@@ -24,7 +24,7 @@ class Libmill < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <stdio.h>
       #include <libmill.h>
 

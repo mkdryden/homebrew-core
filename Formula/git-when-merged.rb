@@ -1,8 +1,8 @@
 class GitWhenMerged < Formula
-  desc "Find where a commit was merged in git."
+  desc "Find where a commit was merged in git"
   homepage "https://github.com/mhagger/git-when-merged"
-  url "https://github.com/mhagger/git-when-merged/archive/v1.0.0.tar.gz"
-  sha256 "1be0f2c660e6e0cef66593aac681163b97027a7be028b6d2b3901fee00639ad7"
+  url "https://github.com/mhagger/git-when-merged/archive/v1.2.0.tar.gz"
+  sha256 "3fb3ee2f186103c2dae1e4a2e104bc37199641f4ffdb38d85ca612cf16636982"
 
   bottle :unneeded
 

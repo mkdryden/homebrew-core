@@ -1,15 +1,14 @@
 class Libphonenumber < Formula
   desc "C++ Phone Number library by Google"
   homepage "https://github.com/googlei18n/libphonenumber"
-  url "https://github.com/googlei18n/libphonenumber/archive/libphonenumber-7.2.3.tar.gz"
-  sha256 "9f93615b23d8a12a42099d8113a8d6304278bee4d0ef09fd366188a206aacd46"
-  revision 1
+  url "https://github.com/googlei18n/libphonenumber/archive/v8.8.9.tar.gz"
+  sha256 "9bbbfbbd57a0c10f0982c9b14d83edca2d6b5f9a636a9cae1420b8509308c140"
 
   bottle do
     cellar :any
-    sha256 "902322710c531ee7cb9a7a41dfd4f8cb0137523495ed6808531ee398a5346858" => :el_capitan
-    sha256 "b354ffee1b2946065c941d72e7abb04e34d0201de937bdaa13fff05646784158" => :yosemite
-    sha256 "8b76c0ab466504346eb39cd9eeb6af76765dff0da4dfe3111009ee558798c64a" => :mavericks
+    sha256 "620cea637088a45a6c6b1ee61cc7a35ebda48851b3f76d80466e7a898dd982d0" => :high_sierra
+    sha256 "299ab5efe1a8426fabe52a443c489b9e2b51ab0b1e372b4b3b65ea7a93ff7f43" => :sierra
+    sha256 "ca41e0d8144d20d1a400b2a462d4870a3a745ca45b0763f4e5614bbf0080697a" => :el_capitan
   end
 
   depends_on "cmake" => :build
@@ -20,36 +19,30 @@ class Libphonenumber < Formula
   depends_on "re2"
 
   resource "gtest" do
-    url "https://googletest.googlecode.com/files/gtest-1.7.0.zip"
-    sha256 "247ca18dd83f53deb1328be17e4b1be31514cedfc1e3424f672bf11fd7e0d60d"
+    url "https://github.com/google/googletest/archive/release-1.8.0.tar.gz"
+    sha256 "58a6f4277ca2bc8565222b3bbd58a177609e9c488e8a72649359ba51450db7d8"
   end
 
-  # This patch is from
-  # https://github.com/googlei18n/libphonenumber/issues/822#issuecomment-163038243
-  #
-  # In OSX there's an issue with compilation not linking references correctly.
-  # This patch fixes that.
-  patch :DATA
+  needs :cxx11
+
+  # Upstream PR from 2 Dec 2017 "Only use lib64 directory on Linux"
+  # See https://github.com/googlei18n/libphonenumber/issues/2044
+  patch do
+    url "https://github.com/googlei18n/libphonenumber/pull/2045.patch?full_index=1"
+    sha256 "4d47d0f92c994ca74e3bbbf020064b2d249d0b01f93bf6f5d82736eb9ed3aa43"
+  end
 
   def install
+    ENV.cxx11
     (buildpath/"gtest").install resource("gtest")
-
-    cd "gtest" do
-      system "cmake", ".", *std_cmake_args
-      system "make"
-    end
-
-    args = std_cmake_args
-    args << "-DGTEST_INCLUDE_DIR:PATH=#{(buildpath/"gtest/include")}"
-    args << "-DGTEST_LIB:PATH=#{buildpath/"gtest/libgtest.a"}"
-    args << "-DGTEST_SOURCE_DIR:PATH=#{buildpath/"gtest/src"}"
-
-    system "cmake", "cpp", *args
+    system "cmake", "cpp", "-DGTEST_SOURCE_DIR=gtest/googletest",
+                           "-DGTEST_INCLUDE_DIR=gtest/googletest/include",
+                           *std_cmake_args
     system "make", "install"
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <phonenumbers/phonenumberutil.h>
       #include <phonenumbers/phonenumber.pb.h>
       #include <iostream>
@@ -75,17 +68,3 @@ class Libphonenumber < Formula
     system "./test"
   end
 end
-__END__
-diff --git a/cpp/CMakeLists.txt b/cpp/CMakeLists.txt
-index 3539b94..9a1def9 100644
---- a/cpp/CMakeLists.txt
-+++ b/cpp/CMakeLists.txt
-@@ -415,7 +415,7 @@ if (${BUILD_GEOCODER} STREQUAL "ON")
-   # Note that the subset of base/ on which the geocoder relies is implemented
-   # on top of Boost header-only libraries (e.g. scoped_ptr.hpp).
-   target_link_libraries (geocoding ${LIBRARY_DEPS})
--  target_link_libraries (geocoding-shared ${LIBRARY_DEPS})
-+  target_link_libraries (geocoding-shared phonenumber-shared ${LIBRARY_DEPS})
- endif ()
-
- # Build a specific library for testing purposes.

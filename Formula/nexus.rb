@@ -1,9 +1,9 @@
 class Nexus < Formula
   desc "Repository manager for binary software components"
-  homepage "http://www.sonatype.org/"
-  url "https://sonatype-download.global.ssl.fastly.net/nexus/oss/nexus-2.12.0-01-bundle.tar.gz"
-  version "2.12.0-01"
-  sha256 "bf3c02ef9cdea0e854e0feba85d74f79215db04b692aebbaea37e4caf83c7fcc"
+  homepage "https://www.sonatype.org/"
+  url "https://sonatype-download.global.ssl.fastly.net/nexus/oss/nexus-2.14.5-02-bundle.tar.gz"
+  version "2.14.5-02"
+  sha256 "e63ecd36d2daec6f406793864510b1f516b9a6c9cf1842e204fca95b58070c22"
 
   bottle :unneeded
 
@@ -19,7 +19,7 @@ class Nexus < Formula
 
   plist_options :manual => "nexus start"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">

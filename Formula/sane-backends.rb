@@ -1,61 +1,49 @@
 class SaneBackends < Formula
   desc "Backends for scanner access"
   homepage "http://www.sane-project.org/"
-  url "https://fossies.org/linux/misc/sane-backends-1.0.24.tar.gz"
-  mirror "https://mirrors.kernel.org/debian/pool/main/s/sane-backends/sane-backends_1.0.24.orig.tar.gz"
-  sha256 "27c7085a54f1505d8b551e6f1e69d30e1ee57328b18429bb2225dabf4c45462d"
+  url "https://alioth.debian.org/frs/download.php/file/4224/sane-backends-1.0.27.tar.gz"
+  mirror "https://mirrors.kernel.org/debian/pool/main/s/sane-backends/sane-backends_1.0.27.orig.tar.gz"
+  mirror "https://fossies.org/linux/misc/sane-backends-1.0.27.tar.gz"
+  sha256 "293747bf37275c424ebb2c833f8588601a60b2f9653945d5a3194875355e36c9"
+  revision 3
+  head "https://anonscm.debian.org/cgit/sane/sane-backends.git"
+
   bottle do
-    revision 1
-    sha256 "e8cd147368ca911b15da016a09cb3d0b58843b5169291a75fe2a42fed7c9c887" => :el_capitan
-    sha256 "006f73ab657625408f5d56ec1596498b911781164db60cc4518370b2a08686f3" => :yosemite
-    sha256 "168d5dc5f38b6e568f2d757de77dc86c7b3bab1a84a50f1b30103eb9ba9bf367" => :mavericks
-    sha256 "483533ac9a7d48d15350afaed266ac9472cd8c945fdd34d610253253e3c384e7" => :mountain_lion
+    sha256 "ac27058e0edd6bc0af11af3de0703169ce4508ba9840a598155bc1fcdccd00b5" => :high_sierra
+    sha256 "2fce948374f59735fc55c2ef4803f44fba0ac9979943dadc30d11f9a262c6fd2" => :sierra
+    sha256 "2faeb4b16e4e2ea851c1cfc100d8deedea3bb042ba3b21b66ba2865812500479" => :el_capitan
+    sha256 "68242fa7feb502d1b5001df7db05837268085f6f97e58768323566e671ac59f9" => :yosemite
   end
-
-  revision 1
-
-  option :universal
 
   depends_on "jpeg"
   depends_on "libtiff"
-  depends_on "libusb-compat"
+  depends_on "libusb"
   depends_on "openssl"
-
-  # Fixes u_long missing error. Reported upstream:
-  # https://github.com/fab1an/homebrew/commit/2a716f1a2b07705aa891e2c7fbb5148506aa5a01
-  # When updating this formula, check on the usptream status of this patch.
-  patch :DATA
+  depends_on "net-snmp"
+  depends_on "pkg-config" => :build
 
   def install
-    ENV.universal_binary if build.universal?
-    ENV.j1 # Makefile does not seem to be parallel-safe
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--localstatedir=#{var}",
                           "--without-gphoto2",
                           "--enable-local-backends",
-                          "--enable-libusb",
-                          "--disable-latex"
+                          "--with-usb=yes"
+
+    # Remove for > 1.0.27
+    # Workaround for bug in Makefile.am described here:
+    # https://lists.alioth.debian.org/pipermail/sane-devel/2017-August/035576.html
+    # It's already fixed in commit 519ff57.
     system "make"
     system "make", "install"
+  end
 
+  def post_install
     # Some drivers require a lockfile
-    (var+"lock/sane").mkpath
+    (var/"lock/sane").mkpath
+  end
+
+  test do
+    assert_match prefix.to_s, shell_output("#{bin}/sane-config --prefix")
   end
 end
-
-__END__
-diff --git a/include/sane/sane.h.orig b/include/sane/sane.h
-index 5320b4a..6cb7090 100644
---- a/include/sane/sane.h.orig
-+++ b/include/sane/sane.h
-@@ -20,6 +20,9 @@
- extern "C" {
- #endif
- 
-+// Fixes u_long missing error
-+#include <sys/types.h>
-+
- /*
-  * SANE types and defines
-  */

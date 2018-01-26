@@ -1,14 +1,14 @@
 class Apcupsd < Formula
   desc "Daemon for controlling APC UPSes"
   homepage "http://www.apcupsd.org"
-  url "https://downloads.sourceforge.net/project/apcupsd/apcupsd%20-%20Stable/3.14.13/apcupsd-3.14.13.tar.gz"
-  sha256 "57ecbde01d0448bf8c4dbfe0ad016724ae66ab98adf2de955bf2be553c5d03f9"
+  url "https://downloads.sourceforge.net/project/apcupsd/apcupsd%20-%20Stable/3.14.14/apcupsd-3.14.14.tar.gz"
+  sha256 "db7748559b6b4c3784f9856561ef6ac6199ef7bd019b3edcd7e0a647bf8f9867"
 
   bottle do
-    cellar :any
-    sha256 "99759baac67d1133831cffcd7f3536064ee9b7dd521cd636aa7891239810011b" => :el_capitan
-    sha256 "f69e0d86dbd74242d264618223d1f6aa893037fdf102bf4c0b82586f438376dd" => :yosemite
-    sha256 "9396f5c9ba3788888b5f86e635bae2ec85d3f8d25a7de133dc781526c74d5a55" => :mavericks
+    rebuild 1
+    sha256 "beee3be60fc8aafbd2a8fdb215ec8f0d531cc6750d00fd176039a0e5d8ee0d1e" => :high_sierra
+    sha256 "8cf3f4840ec564f859fa0b02eda9aec274180de519b512e28e19a31b6eab583c" => :sierra
+    sha256 "d000cc771fde79714b634a49b31afd207d6a26b76924c586e0af9fa80f539db5" => :el_capitan
   end
 
   depends_on "gd"
@@ -25,20 +25,13 @@ class Apcupsd < Formula
     end
 
     cd "platforms/darwin" do
-      # Fixes the `--sbindir` option.
-      # Patch submitted to upstream repo:
-      # https://sourceforge.net/p/apcupsd/mailman/message/34627459/
-      inreplace "Makefile", "/sbin", "$(sbindir)"
-
       # Install launch daemon and kernel extension to subdirectories of `prefix`.
       inreplace "Makefile", "/Library/LaunchDaemons", "#{prefix}/Library/LaunchDaemons"
       inreplace "Makefile", "/System/Library/Extensions", kext_prefix
 
       # Use appropriate paths for launch daemon and launch script.
-      inreplace "apcupsd-start", "/sbin", opt_sbin
-      inreplace "apcupsd-start", "/etc/apcupsd", sysconfdir
-      inreplace "org.apcupsd.apcupsd.plist", "/sbin", opt_sbin
-      inreplace "org.apcupsd.apcupsd.plist", "/etc/apcupsd", sysconfdir
+      inreplace "apcupsd-start.in", "/etc/apcupsd", sysconfdir
+      inreplace "org.apcupsd.apcupsd.plist.in", "/etc/apcupsd", sysconfdir
 
       # Custom uninstaller not needed as this is handled by Homebrew.
       inreplace "Makefile", /.*apcupsd-uninstall.*/, ""
@@ -54,7 +47,7 @@ class Apcupsd < Formula
   end
 
   def caveats
-    s = <<-EOS.undent
+    s = <<~EOS
       For #{name} to be able to communicate with UPSes connected via USB,
       the kernel extension must be installed by the root user:
 
@@ -65,7 +58,7 @@ class Apcupsd < Formula
     EOS
 
     if MacOS.version >= :el_capitan
-      s += <<-EOS.undent
+      s += <<~EOS
         Note: On OS X El Capitan and above, the kernel extension currently
         does not work as expected.
 
@@ -75,7 +68,7 @@ class Apcupsd < Formula
       EOS
     end
 
-    s += <<-EOS.undent
+    s += <<~EOS
       To load #{name} at startup, activate the included Launch Daemon:
 
         sudo cp #{prefix}/Library/LaunchDaemons/org.apcupsd.apcupsd.plist /Library/LaunchDaemons

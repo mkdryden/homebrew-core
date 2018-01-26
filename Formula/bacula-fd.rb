@@ -1,13 +1,13 @@
 class BaculaFd < Formula
   desc "Network backup solution"
-  homepage "http://www.bacula.org/"
-  url "https://downloads.sourceforge.net/project/bacula/bacula/7.4.0/bacula-7.4.0.tar.gz"
-  sha256 "fe850b783523edb19fb4dbfa8c44752d20955121b71a52b0740a9e765bfd73cb"
+  homepage "https://www.bacula.org/"
+  url "https://downloads.sourceforge.net/project/bacula/bacula/9.0.6/bacula-9.0.6.tar.gz"
+  sha256 "44db9d12dd4a510b0dfa6f8ad877ad4c0df04c13ef28f99c690a259314ee2e47"
 
   bottle do
-    sha256 "4442ef7ae75951cf59f07dec86638799e8905ddcfc1384f917656a85acfaf703" => :el_capitan
-    sha256 "9fe5f23706dd4ba5f9654f71a80fce372b296247fb560aaa1b4334d3a9020adf" => :yosemite
-    sha256 "88f23b78925f81db0b64ae60aaccbad872efbb133041b627effeba048c55df35" => :mavericks
+    sha256 "1b3e2d01ab6e9cfec13a6c67d28db18360d2a63e88d653a0efa23534c7cd5ae6" => :high_sierra
+    sha256 "0d9d8431213e08e6dedb35cda294cff991a88eb67012a9ea0de264116feb72b0" => :sierra
+    sha256 "4cdb1d6e9d2229351804ae1d5484050f56be0b63f61444341d4a1d7a16ab0337" => :el_capitan
   end
 
   depends_on "readline"
@@ -18,29 +18,28 @@ class BaculaFd < Formula
     #   (conio support not tested)
     # * working directory in /var/lib/bacula, reasonable place that
     #   matches Debian's location.
-    readline = Formula["readline"].opt_prefix
     system "./configure", "--prefix=#{prefix}",
                           "--sbindir=#{bin}",
                           "--with-working-dir=#{var}/lib/bacula",
-                          "--with-pid-dir=#{HOMEBREW_PREFIX}/var/run",
+                          "--with-pid-dir=#{var}/run",
                           "--with-logdir=#{var}/log/bacula",
                           "--enable-client-only",
                           "--disable-conio",
-                          "--with-readline=#{readline}"
+                          "--with-readline=#{Formula["readline"].opt_prefix}"
 
     system "make"
     system "make", "install"
 
-    # Ensure var/run exists:
-    (var + "run").mkpath
+    (var/"lib/bacula").mkpath
+  end
 
-    # Create the working directory:
-    (var + "lib/bacula").mkpath
+  def post_install
+    (var/"run").mkpath
   end
 
   plist_options :startup => true, :manual => "bacula-fd"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="0.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -54,10 +53,12 @@ class BaculaFd < Formula
           <string>#{opt_bin}/bacula-fd</string>
           <string>-f</string>
         </array>
-        <key>UserName</key>
-        <string>root</string>
       </dict>
     </plist>
   EOS
+  end
+
+  test do
+    assert_match version.to_s, shell_output("#{bin}/bacula-fd -? 2>&1", 1)
   end
 end

@@ -1,44 +1,34 @@
+# This formula tracks 1.0.2 branch of OpenSSL, not the 1.1.0 branch. Due to
+# significant breaking API changes in 1.1.0 other formulae will be migrated
+# across slowly, so core will ship `openssl` & `openssl@1.1` for foreseeable.
 class Openssl < Formula
   desc "SSL/TLS cryptography library"
   homepage "https://openssl.org/"
-  url "https://www.openssl.org/source/openssl-1.0.2g.tar.gz"
-  mirror "https://dl.bintray.com/homebrew/mirror/openssl-1.0.2g.tar.gz"
-  mirror "https://www.mirrorservice.org/sites/ftp.openssl.org/source/openssl-1.0.2g.tar.gz"
-  sha256 "b784b1b3907ce39abf4098702dade6365522a253ad1552e267a9a0e89594aa33"
+  url "https://www.openssl.org/source/openssl-1.0.2n.tar.gz"
+  mirror "https://dl.bintray.com/homebrew/mirror/openssl-1.0.2n.tar.gz"
+  mirror "https://www.mirrorservice.org/sites/ftp.openssl.org/source/openssl-1.0.2n.tar.gz"
+  mirror "http://artfiles.org/openssl.org/source/openssl-1.0.2n.tar.gz"
+  sha256 "370babb75f278c39e0c50e8c4e7493bc0f18db6867478341a832a982fd15a8fe"
 
   bottle do
-    sha256 "b1de0682c7a838a75da3a06ddad2b9700d208b2faaaa1b51c0889ba403c7dd22" => :el_capitan
-    sha256 "68e5432c7b863341bc0c42c9a9391c11ba244519f110ba7c5ef4d97eb5c6b8fa" => :yosemite
-    sha256 "cdb9ddcc2bc683afa836b40258acbd40fa82dc67b68b245b7413d85e18d98ca0" => :mavericks
+    sha256 "6d3f21c1f60c5fd77df43eb470fbe753ab030b565c9360ebb7335377cb13e047" => :high_sierra
+    sha256 "a2446c29a356d0348380ce9f32120c6fe5e39d2a2dd01b076540e13279db32e7" => :sierra
+    sha256 "fa3baf756b1f1ee919675137284dde4ed45b5e5109f0c351f65ee811db6c7d43" => :el_capitan
   end
 
-  keg_only :provided_by_osx,
+  keg_only :provided_by_macos,
     "Apple has deprecated use of OpenSSL in favor of its own TLS and crypto libraries"
 
-  option :universal
   option "without-test", "Skip build-time tests (not recommended)"
 
   deprecated_option "without-check" => "without-test"
 
   depends_on "makedepend" => :build
 
-  # Replace with upstream url if they merge the more robust fix
-  # https://github.com/openssl/openssl/pull/597
-  if MacOS.version <= :snow_leopard
-    patch do
-      url "https://raw.githubusercontent.com/Homebrew/patches/3f1dc8ea145a70543aded8101a0c725abf82fc45/openssl/revert-pass-pure-constants-verbatim.patch"
-      sha256 "e38f84181a56e70028ade8408ad70aaffaea386b7e1b35de55728ae878d544aa"
-    end
-    patch do
-      url "https://raw.githubusercontent.com/Homebrew/patches/3f1dc8ea145a70543aded8101a0c725abf82fc45/openssl/tshort-asm.patch"
-      sha256 "f161e2fc1395efcb53d785004d67d4962d28aa8ce282a91020f12809c03b2afd"
-    end
-  end
-
   def arch_args
     {
       :x86_64 => %w[darwin64-x86_64-cc enable-ec_nistp_64_gcc_128],
-      :i386   => %w[darwin-i386-cc],
+      :i386 => %w[darwin-i386-cc],
     }
   end
 
@@ -53,6 +43,12 @@ class Openssl < Formula
   end
 
   def install
+    # OpenSSL will prefer the PERL environment variable if set over $PATH
+    # which can cause some odd edge cases & isn't intended. Unset for safety,
+    # along with perl modules in PERL5LIB.
+    ENV.delete("PERL")
+    ENV.delete("PERL5LIB")
+
     # Load zlib from an explicit path instead of relying on dyld's fallback
     # path, which is empty in a SIP context. This patch will be unnecessary
     # when we begin building openssl with no-comp to disable TLS compression.
@@ -61,74 +57,19 @@ class Openssl < Formula
               'zlib_dso = DSO_load(NULL, "z", NULL, 0);',
               'zlib_dso = DSO_load(NULL, "/usr/lib/libz.dylib", NULL, DSO_FLAG_NO_NAME_TRANSLATION);'
 
-    if build.universal?
-      ENV.permit_arch_flags
-      archs = Hardware::CPU.universal_archs
-    elsif MacOS.prefer_64_bit?
-      archs = [Hardware::CPU.arch_64_bit]
+    if MacOS.prefer_64_bit?
+      arch = Hardware::CPU.arch_64_bit
     else
-      archs = [Hardware::CPU.arch_32_bit]
+      arch = Hardware::CPU.arch_32_bit
     end
 
-    dirs = []
-
-    archs.each do |arch|
-      if build.universal?
-        dir = "build-#{arch}"
-        dirs << dir
-        mkdir dir
-        mkdir "#{dir}/engines"
-        system "make", "clean"
-      end
-
-      ENV.deparallelize
-      system "perl", "./Configure", *(configure_args + arch_args[arch])
-      system "make", "depend"
-      system "make"
-
-      if (MacOS.prefer_64_bit? || arch == MacOS.preferred_arch) && build.with?("test")
-        system "make", "test"
-      end
-
-      if build.universal?
-        cp "include/openssl/opensslconf.h", dir
-        cp Dir["*.?.?.?.dylib", "*.a", "apps/openssl"], dir
-        cp Dir["engines/**/*.dylib"], "#{dir}/engines"
-      end
-    end
+    ENV.deparallelize
+    system "perl", "./Configure", *(configure_args + arch_args[arch])
+    system "make", "depend"
+    system "make"
+    system "make", "test" if build.with?("test")
 
     system "make", "install", "MANDIR=#{man}", "MANSUFFIX=ssl"
-
-    if build.universal?
-      %w[libcrypto libssl].each do |libname|
-        system "lipo", "-create", "#{dirs.first}/#{libname}.1.0.0.dylib",
-                                  "#{dirs.last}/#{libname}.1.0.0.dylib",
-                       "-output", "#{lib}/#{libname}.1.0.0.dylib"
-        system "lipo", "-create", "#{dirs.first}/#{libname}.a",
-                                  "#{dirs.last}/#{libname}.a",
-                       "-output", "#{lib}/#{libname}.a"
-      end
-
-      Dir.glob("#{dirs.first}/engines/*.dylib") do |engine|
-        libname = File.basename(engine)
-        system "lipo", "-create", "#{dirs.first}/engines/#{libname}",
-                                  "#{dirs.last}/engines/#{libname}",
-                       "-output", "#{lib}/engines/#{libname}"
-      end
-
-      system "lipo", "-create", "#{dirs.first}/openssl",
-                                "#{dirs.last}/openssl",
-                     "-output", "#{bin}/openssl"
-
-      confs = archs.map do |arch|
-        <<-EOS.undent
-          #ifdef __#{arch}__
-          #{(buildpath/"build-#{arch}/opensslconf.h").read}
-          #endif
-          EOS
-      end
-      (include/"openssl/opensslconf.h").atomic_write confs.join("\n")
-    end
   end
 
   def openssldir
@@ -137,13 +78,12 @@ class Openssl < Formula
 
   def post_install
     keychains = %w[
-      /Library/Keychains/System.keychain
       /System/Library/Keychains/SystemRootCertificates.keychain
     ]
 
     certs_list = `security find-certificate -a -p #{keychains.join(" ")}`
     certs = certs_list.scan(
-      /-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----/m
+      /-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----/m,
     )
 
     valid_certs = certs.select do |cert|
@@ -152,16 +92,17 @@ class Openssl < Formula
         openssl_io.close_write
       end
 
-      $?.success?
+      $CHILD_STATUS.success?
     end
 
     openssldir.mkpath
     (openssldir/"cert.pem").atomic_write(valid_certs.join("\n"))
   end
 
-  def caveats; <<-EOS.undent
-    A CA file has been bootstrapped using certificates from the system
-    keychain. To add additional certificates, place .pem files in
+  def caveats; <<~EOS
+    A CA file has been bootstrapped using certificates from the SystemRoots
+    keychain. To add additional certificates (e.g. the certificates added in
+    the System keychain), place .pem files in
       #{openssldir}/certs
 
     and run
@@ -171,7 +112,7 @@ class Openssl < Formula
 
   test do
     # Make sure the necessary .cnf file exists, otherwise OpenSSL gets moody.
-    assert (HOMEBREW_PREFIX/"etc/openssl/openssl.cnf").exist?,
+    assert_predicate HOMEBREW_PREFIX/"etc/openssl/openssl.cnf", :exist?,
             "OpenSSL requires the .cnf file for some functionality"
 
     # Check OpenSSL itself functions as expected.

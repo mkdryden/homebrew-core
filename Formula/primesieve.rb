@@ -1,23 +1,26 @@
 class Primesieve < Formula
   desc "Fast C/C++ prime number generator"
   homepage "http://primesieve.org/"
-  url "https://dl.bintray.com/kimwalisch/primesieve/primesieve-5.6.0.tar.gz"
-  sha256 "dc4dc76288cd8b48f530153d8f56b0e095212d0f6c83a2b4e4ab1b8538456de0"
+  url "https://github.com/kimwalisch/primesieve/archive/v6.3.tar.gz"
+  sha256 "d359575d17979c01f19203e61849d1bfea1867de0005e119f15f2f37ae2af83f"
 
   bottle do
     cellar :any
-    sha256 "b7b5b03ab3c266646c5204390c9bb87dcf277a80853d6e69d5416f77722386f5" => :el_capitan
-    sha256 "37807685a64d9f3ff6ec39769b8609db24c63a6ad3584ba825cd5fa9934647ab" => :yosemite
-    sha256 "a9c2ffee2b6c72bb1ee0ffc9bd81b40e45227b4e57950923635e65e8f5f24c72" => :mavericks
+    sha256 "af3893734990e12ecea5f2137ceddcf0a96464b942c1e35bc9245355ccc1f20c" => :high_sierra
+    sha256 "6a4af4c35f124c87885009ee345d2f4d65514ce1441ac443723374913783f1b3" => :sierra
+    sha256 "ae3dde00955961cef5c8e46b5f8f7f9c2a9581e9cfc01ea31407d825a4cf0b7c" => :el_capitan
   end
 
+  depends_on "cmake" => :build
+
   def install
-    system "./configure", "--disable-dependency-tracking", "--disable-silent-rules",
-           "--prefix=#{prefix}"
-    system "make", "install"
+    mkdir "build" do
+      system "cmake", "..", *std_cmake_args
+      system "make", "install"
+    end
   end
 
   test do
-    system "#{bin}/primesieve", "2", "1000", "--count=1", "-p2"
+    system "#{bin}/primesieve", "100", "--count", "--print"
   end
 end

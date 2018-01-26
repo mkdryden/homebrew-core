@@ -1,40 +1,29 @@
 class Aubio < Formula
   desc "Extract annotations from audio signals"
   homepage "https://aubio.org/"
-  url "https://aubio.org/pub/aubio-0.4.2.tar.bz2"
-  sha256 "1cc58e0fed2b9468305b198ad06b889f228b797a082c2ede716dc30fcb4f8f1f"
-
-  head "https://github.com/piem/aubio.git", :branch => "develop"
+  url "https://aubio.org/pub/aubio-0.4.6.tar.bz2"
+  sha256 "bdc73be1f007218d3ea6d2a503b38a217815a0e2ccc4ed441f6e850ed5d47cfb"
 
   bottle do
     cellar :any
-    sha256 "ccc98e1d32cd07973ae559abc1db492c3307d6fa08b206dda54391a10b43f007" => :el_capitan
-    sha256 "4b9b7780d8523f46b4de9da1da42de9a81af06bbe87b1c36125860b8eb014533" => :yosemite
-    sha256 "f23c2aeef3734dadeaa2369da75e20a50269650ab18e9a1a5639df9de8eb43d2" => :mavericks
-    sha256 "770f58a1601edce01bcdd4fffcb6bc7a75c81c3119eab6592cd51c911fe0bc24" => :mountain_lion
+    sha256 "652fd72fcb0937f082213939d18acadd35d39a7c8b790ba29746f628b55d81bc" => :high_sierra
+    sha256 "65cfbadfb34422fcdc74d2d417cec9096b5289e8c4f1f18c9d4b512ada2337f2" => :sierra
+    sha256 "ef260312d855772fb09146508d4b819e0a185f510ecb73fd52e033e3afebd246" => :el_capitan
   end
 
-  option :universal
+  option "with-python", "Build with python support"
 
   depends_on :macos => :lion
-
-  depends_on :python => :optional
   depends_on "pkg-config" => :build
   depends_on "libtool" => :build
-
   depends_on "libav" => :optional
   depends_on "libsndfile" => :optional
   depends_on "libsamplerate" => :optional
   depends_on "fftw" => :optional
   depends_on "jack" => :optional
-
-  if build.with? "python"
-    depends_on "numpy" => :python
-  end
+  depends_on "numpy" if build.with? "python"
 
   def install
-    ENV.universal_binary if build.universal?
-
     # Needed due to issue with recent cland (-fno-fused-madd))
     ENV.refurbish_args
 
@@ -43,10 +32,8 @@ class Aubio < Formula
     system "./waf", "install"
 
     if build.with? "python"
-      cd "python" do
-        system "python", *Language::Python.setup_install_args(prefix)
-        bin.env_script_all_files(libexec+"bin", :PYTHONPATH => ENV["PYTHONPATH"])
-      end
+      system "python", *Language::Python.setup_install_args(prefix)
+      bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
     end
   end
 

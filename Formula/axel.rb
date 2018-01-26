@@ -1,24 +1,26 @@
 class Axel < Formula
   desc "Light UNIX download accelerator"
-  homepage "https://packages.debian.org/sid/axel"
-  url "https://mirrors.ocf.berkeley.edu/debian/pool/main/a/axel/axel_2.5.orig.tar.gz"
-  mirror "https://mirrorservice.org/sites/ftp.debian.org/debian/pool/main/a/axel/axel_2.5.orig.tar.gz"
-  sha256 "02376767e7f9e6c4292333e69ad0f615f62be5df176a8daaee395f25b0ab1a83"
+  homepage "https://github.com/eribertomota/axel"
+  url "https://github.com/axel-download-accelerator/axel/archive/v2.15.tar.gz"
+  sha256 "0e223f18954e4c6c34b882a474c526b9c7d107168220c2f3892598248236a172"
+  head "https://github.com/eribertomota/axel.git"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "5bf1bfc2e77a9e08c629fca2519166ba6edef07940c466fd95fafb828bd5f1b4" => :el_capitan
-    sha256 "1a00cb5af07025ba54e1fb48dea4e0723dcd81142aca8e74caafa79f8ea51dfd" => :yosemite
-    sha256 "b0a7bcbab57df1b9877ac3a6a8343a3a5b4256b4cfa5a6bfe777b9ba92930d31" => :mavericks
+    sha256 "18d458adef55854c33e4be487ce77eaa294fa9b7c8f09bcd3aff68cea063c2ab" => :high_sierra
+    sha256 "2ed9747656442072e684c56a6354fcbfd1179b01cd0873cc77760a6e64270662" => :sierra
+    sha256 "10257917ed87edf070064ad51dac4a3685415f969a6999a5a55938aab355f584" => :el_capitan
   end
 
-  def install
-    system "./configure", "--prefix=#{prefix}",
-                          "--etcdir=#{etc}",
-                          "--debug=0",
-                          "--i18n=0"
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "gettext"
+  depends_on "openssl"
 
-    system "make"
+  def install
+    system "./autogen.sh"
+    system "./configure", "--disable-dependency-tracking",
+                          "--prefix=#{prefix}",
+                          "--sysconfdir=#{etc}"
     system "make", "install"
   end
 
@@ -26,6 +28,6 @@ class Axel < Formula
     filename = (testpath/"axel.tar.gz")
     system bin/"axel", "-o", "axel.tar.gz", stable.url
     filename.verify_checksum stable.checksum
-    assert File.exist?("axel.tar.gz")
+    assert_predicate testpath/"axel.tar.gz", :exist?
   end
 end

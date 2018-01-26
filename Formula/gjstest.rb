@@ -1,16 +1,15 @@
 class Gjstest < Formula
-  desc "Fast javascript unit testing framework that runs on the V8 engine."
+  desc "Fast JavaScript unit testing framework that runs on the V8 engine"
   homepage "https://github.com/google/gjstest"
   url "https://github.com/google/gjstest/archive/v1.0.2.tar.gz"
   sha256 "7bf0de1c4b880b771a733c9a5ce07c71b93f073e6acda09bec7e400c91c2057c"
-  revision 2
-
+  revision 12
   head "https://github.com/google/gjstest.git"
 
   bottle do
-    sha256 "b8bc27f9817665b9623f7c90eea0bca46505905528cc383b78997802059f84ae" => :el_capitan
-    sha256 "a077ef08c34e23218f6ab306a2da20c80a8a61c54b436c8f96288234af544d49" => :yosemite
-    sha256 "1d6006881df18fc2b7ca39417c34d8dad05e7da6d01255ca9457002185c42537" => :mavericks
+    sha256 "23787738847f2dfbe0c3d6943c846ec14530b8b1a79441b3af8d118adc5b3671" => :high_sierra
+    sha256 "848873eb3f3b770f2e67ffe2747a91b0fcddabda910eb2764bcb1e1ce9060c38" => :sierra
+    sha256 "c487833143ddbab1244ce53771436683e6fe294d258b41b344331c5311e288e9" => :el_capitan
   end
 
   depends_on :macos => :mavericks

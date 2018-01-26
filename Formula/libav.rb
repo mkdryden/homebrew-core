@@ -1,36 +1,33 @@
 class Libav < Formula
   desc "Audio and video processing tools"
   homepage "https://libav.org/"
-  url "https://libav.org/releases/libav-11.4.tar.xz"
-  sha256 "0b7dabc2605f3a254ee410bb4b1a857945696aab495fe21b34c3b6544ff5d525"
-  revision 2
+  url "https://libav.org/releases/libav-12.2.tar.xz"
+  sha256 "7b5620261fb3e372bf3992736862f598967988502f7804c39c5246b62348c53b"
 
   head "https://git.libav.org/libav.git"
 
   bottle do
-    revision 1
-    sha256 "3223c7dd692ab5f842161c25bd000dc7e35e4dbd115075e689f24761917c3b28" => :el_capitan
-    sha256 "918a06af5462bb2854099ff9df522f03d86d2913961305a0ea250cae48058f95" => :yosemite
-    sha256 "4d67498870e513e072c2ccbbf43f23657bb90dc6c2871d52221902823bcfbf40" => :mavericks
+    sha256 "f5e07daaf273dfd195589bcad8c5b5ac76a2d2a5303f5049982d8571229e5588" => :high_sierra
+    sha256 "eebcb1c507573e727c3c0fdaf71c7eacd3e812dd2291d9d810e351ba51d44a3d" => :sierra
+    sha256 "2e1471577657408ca11733bab5324f6dcd8ee62db06fa8a0e1d28dc05498981b" => :el_capitan
   end
 
   option "without-faac", "Disable AAC encoder via faac"
   option "without-lame", "Disable MP3 encoder via libmp3lame"
+  option "without-libvorbis", "Disable Vorbis encoding via libvorbis"
+  option "without-libvpx", "Disable VP8 de/encoding via libvpx"
   option "without-x264", "Disable H.264 encoder via x264"
   option "without-xvid", "Disable Xvid MPEG-4 video encoder via xvid"
 
   option "with-opencore-amr", "Enable AMR-NB de/encoding and AMR-WB decoding " \
     "via libopencore-amrnb and libopencore-amrwb"
-  option "with-openjpeg", "Enable JPEG 2000 de/encoding via OpenJPEG"
   option "with-openssl", "Enable SSL support"
   option "with-rtmpdump", "Enable RTMP protocol support"
   option "with-schroedinger", "Enable Dirac video format"
   option "with-sdl", "Enable avplay"
   option "with-speex", "Enable Speex de/encoding via libspeex"
   option "with-theora", "Enable Theora encoding via libtheora"
-  option "with-libvorbis", "Enable Vorbis encoding via libvorbis"
   option "with-libvo-aacenc", "Enable VisualOn AAC encoder"
-  option "with-libvpx", "Enable VP8 de/encoding via libvpx"
 
   depends_on "pkg-config" => :build
   depends_on "yasm" => :build
@@ -39,32 +36,31 @@ class Libav < Formula
   depends_on "texi2html" => :build if MacOS.version >= :mountain_lion
 
   depends_on "faac" => :recommended
+  depends_on "fdk-aac" => :recommended
+  depends_on "freetype" => :recommended
   depends_on "lame" => :recommended
+  depends_on "libvorbis" => :recommended
+  depends_on "libvpx" => :recommended
+  depends_on "opus" => :recommended
   depends_on "x264" => :recommended
   depends_on "xvid" => :recommended
 
   depends_on "fontconfig" => :optional
-  depends_on "freetype" => :optional
-  depends_on "fdk-aac" => :optional
   depends_on "frei0r" => :optional
   depends_on "gnutls" => :optional
   depends_on "libvo-aacenc" => :optional
-  depends_on "libvorbis" => :optional
-  depends_on "libvpx" => :optional
   depends_on "opencore-amr" => :optional
-  depends_on "openjpeg" => :optional
-  depends_on "opus" => :optional
+  depends_on "openssl" => :optional
   depends_on "rtmpdump" => :optional
   depends_on "schroedinger" => :optional
   depends_on "sdl" => :optional
   depends_on "speex" => :optional
   depends_on "theora" => :optional
 
-  # Fixes the use of a removed identifier in libvpx;
-  # will be fixed in the next release.
+  # https://bugzilla.libav.org/show_bug.cgi?id=1033
   patch do
-    url "https://github.com/libav/libav/commit/4d05e9392f84702e3c833efa86e84c7f1cf5f612.patch"
-    sha256 "78f02e231f3931a6630ec4293994fc6933c6a1c3d1dd501989155236843c47f9"
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/b6e917c/libav/Check-for--no_weak_imports-in-ldflags-on-macOS.patch"
+    sha256 "986d748ba2c7c83319a59d76fbb0dca22dcd51f0252b3d1f3b80dbda2cf79742"
   end
 
   def install
@@ -91,7 +87,6 @@ class Libav < Formula
     args << "--enable-libmp3lame" if build.with? "lame"
     args << "--enable-libopencore-amrnb" if build.with? "opencore-amr"
     args << "--enable-libopencore-amrwb" if build.with? "opencore-amr"
-    args << "--enable-libopenjpeg" if build.with? "openjpeg"
     args << "--enable-libopus" if build.with? "opus"
     args << "--enable-librtmp" if build.with? "rtmpdump"
     args << "--enable-libschroedinger" if build.with? "schroedinger"
@@ -120,6 +115,6 @@ class Libav < Formula
     # Create an example mp4 file
     system "#{bin}/avconv", "-y", "-filter_complex",
         "testsrc=rate=1:duration=1", "#{testpath}/video.mp4"
-    assert (testpath/"video.mp4").exist?
+    assert_predicate testpath/"video.mp4", :exist?
   end
 end

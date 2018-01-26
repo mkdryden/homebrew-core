@@ -1,11 +1,13 @@
 class Ucl < Formula
   desc "Data compression library with small memory footprint"
-  homepage "http://www.oberhumer.com/opensource/ucl/"
-  url "http://www.oberhumer.com/opensource/ucl/download/ucl-1.03.tar.gz"
+  homepage "https://www.oberhumer.com/opensource/ucl/"
+  url "https://www.oberhumer.com/opensource/ucl/download/ucl-1.03.tar.gz"
   sha256 "b865299ffd45d73412293369c9754b07637680e5c826915f097577cd27350348"
 
   bottle do
     cellar :any_skip_relocation
+    sha256 "95bba447faa9e980720b780e1db69bf59e72f026a19a965bbb1b18f3de9230de" => :high_sierra
+    sha256 "b2019331517fea2505cb2d25eebbdf6ceb9a45378525d0e36a096ea3c45ad9a8" => :sierra
     sha256 "d56b0d36a68a2bc558742eac0c6632612180797cc45520389b5d87f09c23b1bd" => :el_capitan
     sha256 "32a54309c092854fc5a4a443a1e9d33fb677ff257d983ea7d5b0eb7bb90d3b2e" => :yosemite
     sha256 "3c334012766dce80dac49d279be1be1ae4a1fc5df188cc19a25ba1bec84305a9" => :mavericks
@@ -20,7 +22,7 @@ class Ucl < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       // simplified version of
       // https://github.com/korczis/ucl/blob/master/examples/simple.c
       #include <stdio.h>

@@ -1,17 +1,17 @@
 class RtAudio < Formula
   desc "API for realtime audio input/output"
   homepage "https://www.music.mcgill.ca/~gary/rtaudio/"
-  url "https://www.music.mcgill.ca/~gary/rtaudio/release/rtaudio-4.1.1.tar.gz"
-  sha256 "e279e01243ffddc0ab1640ed2f580b48c2a79ffab3e21c64845f586a9a772598"
+  url "https://www.music.mcgill.ca/~gary/rtaudio/release/rtaudio-5.0.0.tar.gz"
+  sha256 "799deae1192da52cc2c15a078ed3b42449580be7d096fe9bc841c5bba0289c57"
 
   head "https://github.com/thestk/rtaudio.git"
 
   bottle do
     cellar :any
-    sha256 "7caa5b29b82ac28187a059fd4619edb8965be29289cd6db8f4b48a703aa2550d" => :el_capitan
-    sha256 "1ad4fce27b7f11e88bc3d4d958d9f9a9add117dc5ad8fb0a225edcde89b6bce6" => :yosemite
-    sha256 "2ac64592ba5e1c9f5dacd5774d25fea7f968cb632ae3ea48e8d3f8c95fad1420" => :mavericks
-    sha256 "32fb53538dceba914cb8369e25a8d74c6ebf115f237a11dadb618e4339653a32" => :mountain_lion
+    sha256 "497769e931f08d51367dae46ad3f7c3ac52f7d87ed79698c4e564aed74433d4d" => :high_sierra
+    sha256 "d573b5a8e5e832e4b10445a05fe7502e62d42b5f8ae74796944ef3b30af7c3eb" => :sierra
+    sha256 "b47e9e56e72e2e7969f811e8cb11db6a4436e4f5b5363db917043083b8dda612" => :el_capitan
+    sha256 "bd1920ca3ad3c0f67e7824b430fa32a4f48085a9bb7233e9157bf292d73bd099" => :yosemite
   end
 
   depends_on "cmake" => :build

@@ -1,18 +1,15 @@
 class Multimarkdown < Formula
   desc "Turn marked-up plain text into well-formatted documents"
-  homepage "http://fletcherpenney.net/multimarkdown/"
-  # Use git tag instead of the tarball to get submodules
-  url "https://github.com/fletcher/MultiMarkdown-5.git",
-    :tag => "5.2.0",
-    :revision => "101bbad1dc572c5d87788b2b17b6f9375f1d2bc8"
-
-  head "https://github.com/fletcher/MultiMarkdown-5.git"
+  homepage "https://fletcher.github.io/MultiMarkdown-6/"
+  url "https://github.com/fletcher/MultiMarkdown-6/archive/6.2.3.tar.gz"
+  sha256 "639c25ce0285f6e8ff119ef9c6416609a1f8ed0da7847e69245ec01d80262c4f"
+  head "https://github.com/fletcher/MultiMarkdown-6.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "a0ac27ece734aea62e7043fa1d5d5721371da181bcc9c7d3aefcaffdb6b79ae5" => :el_capitan
-    sha256 "21ae8819f596925da49ee77152f9e8f1951b76372fc6231a1c61721ca782837b" => :yosemite
-    sha256 "4b0cf6b5d9f25d4895316c59d25dd45f9d4b92ae7aafc7d38072e1c512639d86" => :mavericks
+    sha256 "35e966adf5a362b9c56968f716cfbffb85ae20aed2e9e42c9ad41b8677fdc841" => :high_sierra
+    sha256 "d9569efcba9b2038fb8ddac568b464cdc724ceeffa7f35855a34d1a1535b0aca" => :sierra
+    sha256 "c6087305b183bc7b29d8334b7e9df67be7078874f566c3748df79d10dbdd241f" => :el_capitan
   end
 
   depends_on "cmake" => :build
@@ -22,9 +19,7 @@ class Multimarkdown < Formula
   conflicts_with "discount", :because => "both install `markdown` binaries"
 
   def install
-    system "sh", "link_git_modules"
-    system "sh", "update_git_modules"
-    system "make"
+    system "make", "release"
 
     cd "build" do
       system "make"

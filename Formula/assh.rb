@@ -1,18 +1,15 @@
-require "language/go"
-
 class Assh < Formula
   desc "Advanced SSH config - Regex, aliases, gateways, includes and dynamic hosts"
   homepage "https://github.com/moul/advanced-ssh-config"
-  url "https://github.com/moul/advanced-ssh-config/archive/v2.2.0.tar.gz"
-  sha256 "8a71969df06e8db0bd4b06cf928780e45e22cf5f131f06aec43cccd955ee2ead"
-
+  url "https://github.com/moul/advanced-ssh-config/archive/v2.7.0.tar.gz"
+  sha256 "b57bc5923e4422f7f2e6fd2a0234fb2c7ce1d07ffdfe21a9179f8ee361d19da3"
   head "https://github.com/moul/advanced-ssh-config.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "3327d87a59a3b905b88b3c356448acec7af015888c2baac10dac21584342d4db" => :el_capitan
-    sha256 "9ebee2d29a5cc75e7406f52a9ec77da25913b688579e345c385820e08a2fb55c" => :yosemite
-    sha256 "002eb1502db3837377c08b829096f6ba7b1e6c23d3b314afdef616b293ba04c2" => :mavericks
+    sha256 "8806717c2c661b8460f208030f2902c91ad24972fcfc337e62f94032c9df96fa" => :high_sierra
+    sha256 "8858022552599fa0af8807b6bdb760c2011884f904f46a3015efc7bedcbecda7" => :sierra
+    sha256 "319f943c77bfd0fd1b6ecebd0bc052e5d11f28d4ae9f6d33ad4f2ccf823c3c2e" => :el_capitan
   end
 
   depends_on "go" => :build
@@ -20,12 +17,13 @@ class Assh < Formula
   def install
     ENV["GOPATH"] = buildpath
     (buildpath/"src/github.com/moul/advanced-ssh-config").install Dir["*"]
-
-    system "go", "build", "-o", "#{bin}/assh", "-v", "github.com/moul/advanced-ssh-config/cmd/assh/"
+    cd "src/github.com/moul/advanced-ssh-config/cmd/assh" do
+      system "go", "build", "-o", bin/"assh"
+      prefix.install_metafiles
+    end
   end
 
   test do
-    output = shell_output(bin/"assh --version")
-    assert_match "assh version 2", output
+    assert_match version.to_s, shell_output("#{bin}/assh --version")
   end
 end

@@ -1,8 +1,8 @@
 class Artifactory < Formula
   desc "Manages binaries"
   homepage "https://www.jfrog.com/artifactory/"
-  url "https://dl.bintray.com/jfrog/artifactory/jfrog-artifactory-oss-4.7.1.zip"
-  sha256 "ee6c11afdd66ad3f5f07a38ce4ffaeadf28ffec987d8bb59beb775eaefa73402"
+  url "https://dl.bintray.com/jfrog/artifactory/jfrog-artifactory-oss-5.8.3.zip"
+  sha256 "c84e19779b3a7e62b86fdd3a71ba6b975838ac4f4531379d284290cc28637461"
 
   bottle :unneeded
 
@@ -20,10 +20,12 @@ class Artifactory < Formula
       'export ARTIFACTORY_HOME="$(cd "$(dirname "${artBinDir}")" && pwd)"',
       "export ARTIFACTORY_HOME=#{libexec}"
 
-    # Reduce memory consumption for non production use
-    inreplace "bin/artifactory.default",
-      "-server -Xms512m -Xmx2g",
-      "-Xms128m -Xmx768m" if build.with? "low-heap"
+    if build.with? "low-heap"
+      # Reduce memory consumption for non production use
+      inreplace "bin/artifactory.default",
+        "-server -Xms512m -Xmx2g",
+        "-Xms128m -Xmx768m"
+    end
 
     libexec.install Dir["*"]
 
@@ -45,7 +47,7 @@ class Artifactory < Formula
 
   plist_options :manual => "#{HOMEBREW_PREFIX}/opt/artifactory/libexec/bin/artifactory.sh"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -57,7 +59,7 @@ class Artifactory < Formula
         <string>#{libexec}</string>
 
         <key>Program</key>
-        <string>bin/artifactory.sh</string>
+        <string>#{bin}/artifactory.sh</string>
 
         <key>KeepAlive</key>
         <true/>
@@ -67,6 +69,6 @@ class Artifactory < Formula
   end
 
   test do
-    assert_match /Checking arguments to Artifactory/, pipe_output("#{bin}/artifactory.sh check")
+    assert_match "Checking arguments to Artifactory", pipe_output("#{bin}/artifactory.sh check")
   end
 end

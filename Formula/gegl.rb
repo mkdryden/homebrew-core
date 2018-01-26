@@ -1,14 +1,13 @@
 class Gegl < Formula
   desc "Graph based image processing framework"
   homepage "http://www.gegl.org/"
-  url "https://download.gimp.org/pub/gegl/0.3/gegl-0.3.4.tar.bz2"
-  mirror "https://mirrors.kernel.org/debian/pool/main/g/gegl/gegl_0.3.4.orig.tar.bz2"
-  sha256 "846290a790854d1e6b7c17a2d6f82ad7cb14c72e240bd3b81b98cc0ceddbc3ec"
+  url "https://download.gimp.org/pub/gegl/0.3/gegl-0.3.28.tar.bz2"
+  sha256 "152f87604a5a191775329dfb63764efa1d5c32403d1438da68e242f96b7d23ff"
 
   bottle do
-    sha256 "8e922b667f68ec27027c3ef756acfd0625b7642a76c389b03cba83fc4e598ce8" => :el_capitan
-    sha256 "433625912481ffb5429be0986e726f03b11292f75dfd864d78340b9915e4411b" => :yosemite
-    sha256 "a9960729dea6a983789a5abf32b3ae1aed304d3264ed084b61f9784680d3b478" => :mavericks
+    sha256 "7580d3d2bbe103eaf350960b8a22ce5f63c8c029bab9dd861ca0fbf89376dd6d" => :high_sierra
+    sha256 "135f49765e4f34b06f8dbac9a84a7d35f53846fe009a8389564f0b33ce0d5d4e" => :sierra
+    sha256 "9e5f682bba155c4e95dd04cf42af1a4d7d59081e05007e4fc58ae465bdbab4ee" => :el_capitan
   end
 
   head do
@@ -19,8 +18,6 @@ class Gegl < Formula
     depends_on "autoconf" => :build
     depends_on "libtool" => :build
   end
-
-  option :universal
 
   depends_on "intltool" => :build
   depends_on "pkg-config" => :build
@@ -36,32 +33,19 @@ class Gegl < Formula
   depends_on "pango" => :optional
   depends_on "sdl" => :optional
 
+  conflicts_with "coreutils", :because => "both install `gcut` binaries"
+
   def install
-    # ./configure breaks when optimization is enabled with llvm
-    ENV.no_optimization if ENV.compiler == :llvm
-
-    argv = %W[
-      --disable-debug
-      --disable-dependency-tracking
-      --prefix=#{prefix}
-      --disable-docs
-    ]
-
-    if build.universal?
-      ENV.universal_binary
-      # ffmpeg's formula is currently not universal-enabled
-      argv << "--without-libavformat"
-
-      opoo "Compilation may fail at gegl-cpuaccel.c using gcc for a universal build" if ENV.compiler == :gcc
-    end
-
     system "./autogen.sh" if build.head?
-    system "./configure", *argv
+    system "./configure", "--disable-debug",
+                          "--disable-dependency-tracking",
+                          "--prefix=#{prefix}",
+                          "--disable-docs"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gegl.h>
       gint main(gint argc, gchar **argv) {
         gegl_init(&argc, &argv);

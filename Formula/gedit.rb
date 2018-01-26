@@ -1,28 +1,35 @@
 class Gedit < Formula
   desc "The GNOME text editor"
   homepage "https://wiki.gnome.org/Apps/Gedit"
-  url "https://download.gnome.org/sources/gedit/3.18/gedit-3.18.3.tar.xz"
-  sha256 "6762ac0d793b0f754a2da5f88739d04fa39daa7491c5c46401d24bcef76c32e7"
+  url "https://download.gnome.org/sources/gedit/3.22/gedit-3.22.1.tar.xz"
+  sha256 "aa7bc3618fffa92fdb7daf2f57152e1eb7962e68561a9c92813d7bbb7fc9492b"
+  revision 2
 
   bottle do
-    sha256 "12119b98084b680cb7db10db4b7a60bffb60ff2ba14dd2b6c4f2af8a95df1630" => :el_capitan
-    sha256 "00212299adb87ff33cb0c87d5bfbb591286eaae2b336f756d80a175fc59f8360" => :yosemite
-    sha256 "ad6eba6059ad411a573a9ebb8c00922dc07fed9214894a243823d39507866a79" => :mavericks
+    sha256 "7034ca573e7ec077be39b582ffad8993225268383acf766fec69cd1326bf5fad" => :high_sierra
+    sha256 "4e3524ae109cf26bb619b5d908cefd7209c089c8ff490dad4f6ff520c2b18a0b" => :sierra
+    sha256 "2668fb181f4d16c4976d4d670988cef16c7acbe392c2fb502de2ab3170bc954f" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
   depends_on "intltool" => :build
   depends_on "itstool" => :build
+  depends_on "atk"
+  depends_on "cairo"
+  depends_on "gdk-pixbuf"
+  depends_on "gettext"
+  depends_on "glib"
+  depends_on "pango"
   depends_on "gtk+3"
   depends_on "gtk-mac-integration"
   depends_on "gobject-introspection"
-  depends_on "enchant"
+  depends_on "gspell"
   depends_on "iso-codes"
   depends_on "libxml2"
   depends_on "libpeas"
   depends_on "gtksourceview3"
   depends_on "gsettings-desktop-schemas"
-  depends_on "gnome-icon-theme"
+  depends_on "adwaita-icon-theme"
 
   def install
     system "./configure", "--disable-dependency-tracking",
@@ -40,9 +47,9 @@ class Gedit < Formula
 
   test do
     # main executable test
-    system "gedit", "--version"
+    system bin/"gedit", "--version"
     # API test
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gedit/gedit-utils.h>
 
       int main(int argc, char *argv[]) {
@@ -67,8 +74,7 @@ class Gedit < Formula
     libpng = Formula["libpng"]
     pango = Formula["pango"]
     pixman = Formula["pixman"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{atk.opt_include}/atk-1.0
       -I#{cairo.opt_include}/cairo
       -I#{fontconfig.opt_include}

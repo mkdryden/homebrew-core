@@ -1,16 +1,17 @@
 class Innoextract < Formula
   desc "Tool to unpack installers created by Inno Setup"
   homepage "https://constexpr.org/innoextract/"
-  url "https://constexpr.org/innoextract/files/innoextract-1.5.tar.gz"
-  sha256 "f2594e992ccf2859455475794803b29a67393fadb69d4df1eec34c451ffa48cf"
+  url "https://constexpr.org/innoextract/files/innoextract-1.6.tar.gz"
+  sha256 "66463f145fffd4d5883c6b3e2f7b2c2837d6f07095810114e514233a88c1033e"
+  revision 2
   head "https://github.com/dscharrer/innoextract.git"
-  revision 1
 
   bottle do
     cellar :any
-    sha256 "2dcfb2167b578c4d5294f636aaa3a9a49d83eb436f370c1e71e496908285b08c" => :el_capitan
-    sha256 "1e6fb6c0385e951cfb660e07d403e834523d6da3990edb924feb265a5a27d4b1" => :yosemite
-    sha256 "112e12920822cfbb1dfbea7db804050f3ef6d829ba1407a1b83015074d9cb40d" => :mavericks
+    sha256 "3ef597b97eebaa9336c73597b7f4dbcec5bfff6fe112524fde4421b34b823060" => :high_sierra
+    sha256 "87e0929063d004f693b5c7dad597334fdb6282fc2b244c2b859f42e62ef3f613" => :sierra
+    sha256 "bc8067405c9d0ce50abcc398dffa9f70bac62e48025cecace2bf3cff44f58974" => :el_capitan
+    sha256 "0581a58c46ee032306d8e73c1ed6429b42f0e01d9fc4765ca455b836aae22931" => :yosemite
   end
 
   depends_on "cmake" => :build

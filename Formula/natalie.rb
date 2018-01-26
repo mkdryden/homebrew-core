@@ -1,31 +1,27 @@
 class Natalie < Formula
   desc "Storyboard Code Generator (for Swift)"
   homepage "https://github.com/krzyzanowskim/Natalie"
-  url "https://github.com/krzyzanowskim/Natalie/archive/0.4.tar.gz"
-  sha256 "cdec277f33fcda3b5287bdc79d6f958ddfabf23fb4bf4f9e68b441173768bfde"
+  url "https://github.com/krzyzanowskim/Natalie/archive/0.6.5.tar.gz"
+  sha256 "ea0586e07ad4aaeea557fdd6bc8a874b206259568c4d9a74932dac7bce00acc6"
   head "https://github.com/krzyzanowskim/Natalie.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "a87cfda63b88d60206a15c2ef27d487f38d410f268367d42728b933f91937edd" => :el_capitan
-    sha256 "dbce3badcef384c4b59968545eb7bb3d7aceb9cf115cbcfe7a7d0f276c8723a0" => :yosemite
+    sha256 "c2b7df54c0844ed33993ba110556bb3547423fd8d22b5034af29f65ba7eade15" => :high_sierra
+    sha256 "6e101ed8ac70707b8366665bea49d98c9095d9a8f91b3736a772d968c4045ed8" => :sierra
   end
 
-  depends_on :xcode => "7.0"
+  depends_on :xcode => ["9.0", :build]
 
   def install
-    mv "natalie.swift", "natalie-script.swift"
-    system "xcrun", "-sdk", "macosx", "swiftc", "-O", "natalie-script.swift", "-o", "natalie.swift"
-    bin.install "natalie.swift"
+    system "swift", "build", "--disable-sandbox", "-c", "release", "-Xswiftc",
+           "-static-stdlib"
+    bin.install ".build/release/natalie"
     share.install "NatalieExample"
   end
 
   test do
-    example_path = "#{share}/NatalieExample"
-    output_path = testpath/"Storyboards.swift"
-    generated_code = `#{bin}/natalie.swift #{example_path}`
-    output_path.write(generated_code)
-    line_count = `wc -l #{output_path}`
-    assert line_count.to_i > 1
+    generated_code = Utils.popen_read("#{bin}/natalie #{share}/NatalieExample")
+    assert generated_code.lines.count > 1, "Natalie failed to generate code!"
   end
 end

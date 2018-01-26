@@ -5,9 +5,11 @@ class Libgdata < Formula
   sha256 "8740e071ecb2ae0d2a4b9f180d2ae5fdf9dc4c41e7ff9dc7e057f62442800827"
 
   bottle do
-    sha256 "51394eee6a100a80d94e271fc65f40450e7dfde73ced8043b053e7acdf64f379" => :el_capitan
-    sha256 "9e57590b09a1daf62ecc2aae202cb1fd2640183a14e82abf8a07ca7ae3de702a" => :yosemite
-    sha256 "1902582821eb789e05f8727f86ddea95c79181b1576c544fc83b595d3872fc8c" => :mavericks
+    rebuild 1
+    sha256 "58c86c6a2a745ef88e8c00026bbd0c715aa5f54006db8e5f4d23bd722b82b848" => :high_sierra
+    sha256 "8f708e61856122562afc224ec5c23f3bb204acc4002f5108f98ea7e76b5f55cb" => :sierra
+    sha256 "2f13d11ca0a27ef52ebcf12c2aff52c921d1105b7b53fd0277a351479c9a7c43" => :el_capitan
+    sha256 "d436dd7128819045779bbbf6f957922ec011940b60982fee9dc394700bffe21d" => :yosemite
   end
 
   depends_on "pkg-config" => :build
@@ -31,7 +33,7 @@ class Libgdata < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gdata/gdata.h>
 
       int main(int argc, char *argv[]) {
@@ -45,8 +47,7 @@ class Libgdata < Formula
     json_glib = Formula["json-glib"]
     liboauth = Formula["liboauth"]
     libsoup = Formula["libsoup"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{gettext.opt_include}
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include
@@ -69,6 +70,11 @@ class Libgdata < Formula
       -lsoup-2.4
       -lxml2
     ]
+    if MacOS::CLT.installed?
+      flags << "-I/usr/include/libxml2"
+    else
+      flags << "-I#{MacOS.sdk_path}/usr/include/libxml2"
+    end
     system ENV.cc, "test.c", "-o", "test", *flags
     system "./test"
   end

@@ -1,33 +1,43 @@
 class FileRoller < Formula
   desc "GNOME archive manager"
   homepage "https://wiki.gnome.org/Apps/FileRoller"
-  url "https://download.gnome.org/sources/file-roller/3.16/file-roller-3.16.4.tar.xz"
-  sha256 "5455980b2c9c7eb063d2d65560ae7ab2e7f01b208ea3947e151680231c7a4185"
+  url "https://download.gnome.org/sources/file-roller/3.26/file-roller-3.26.2.tar.xz"
+  sha256 "3e677b8e1c2f19aead69cf4fc419a19fc3373aaf5d7bf558b4f077f10bbba8a5"
 
   bottle do
-    sha256 "832faed719f2766810d37ecb4ef8448bd69eb6a6256c0ca89489ff364248c604" => :yosemite
-    sha256 "bb3b9af59a8ecd9d3a3d21b9df50105d92d5ff4bd1a681ef5a7882770fd0ef7e" => :mavericks
-    sha256 "0d8f25b0ffb916eacae2a8e84b993d63bb34a07148e739173590fd1a67b9adbd" => :mountain_lion
+    sha256 "0f6ed9638357c88ec9e063f050f9602987f408f858d11f96ede54a889e9fb6ec" => :high_sierra
+    sha256 "527d3641639115a94e2cda64a7804d603a5c72cffff43fd3c12c32ed4b78ccba" => :sierra
+    sha256 "846f18e2a5785cbdb3acb87f86dc375a3362c0acf403888d989417a841912c4c" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
   depends_on "intltool" => :build
   depends_on "itstool" => :build
-  depends_on "libxml2" => ["with-python", :build]
+  depends_on "libxml2" => :build
   depends_on "gtk+3"
   depends_on "json-glib"
   depends_on "libmagic"
   depends_on "libarchive"
   depends_on "hicolor-icon-theme"
-  depends_on "gnome-icon-theme"
+  depends_on "adwaita-icon-theme"
+
+  # Add linked-library dependencies
+  depends_on "atk"
+  depends_on "cairo"
+  depends_on "gdk-pixbuf"
+  depends_on "gettext"
+  depends_on "glib"
+  depends_on "pango"
 
   def install
     # forces use of gtk3-update-icon-cache instead of gtk-update-icon-cache. No bugreport should
     # be filed for this since it only occurs because Homebrew renames gtk+3's gtk-update-icon-cache
     # to gtk3-update-icon-cache in order to avoid a collision between gtk+ and gtk+3.
     inreplace "data/Makefile.in", "gtk-update-icon-cache", "gtk3-update-icon-cache"
+
     ENV.append "CFLAGS", "-I#{Formula["libmagic"].opt_include}"
     ENV.append "LIBS", "-L#{Formula["libmagic"].opt_lib}"
+
     system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--prefix=#{prefix}",
@@ -44,6 +54,6 @@ class FileRoller < Formula
   end
 
   test do
-    system "#{bin}/file-roller", "--version"
+    system bin/"file-roller", "--help"
   end
 end

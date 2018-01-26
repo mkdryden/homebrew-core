@@ -1,12 +1,14 @@
 class Webfs < Formula
   desc "HTTP server for purely static content"
-  homepage "http://linux.bytesex.org/misc/webfs.html"
+  homepage "https://linux.bytesex.org/misc/webfs.html"
   url "https://www.kraxel.org/releases/webfs/webfs-1.21.tar.gz"
   sha256 "98c1cb93473df08e166e848e549f86402e94a2f727366925b1c54ab31064a62a"
   revision 1
 
   bottle do
     cellar :any
+    sha256 "bd713d90ce0e67a1cddf2b3274ddc7467e4b7b5c8ad8b80382e5c0c955c383c3" => :high_sierra
+    sha256 "cbdc088ed6befb87ecda08bf4a23a9eff3bf3d61932d98aa1f8441bb1c0fd3b5" => :sierra
     sha256 "63755af9ac88711d4eb2e80016ef541ed40a1422f2fb2de3ded5c72b362cb39e" => :el_capitan
     sha256 "51985bfb7ca68d15261a296886cf0c6b317d870bc79aadf881429101b9a11e09" => :yosemite
     sha256 "79c670478aeb8f97d702a5112fde2dab07c92145ea836c12bfdf9a1acfca4232" => :mavericks
@@ -16,7 +18,7 @@ class Webfs < Formula
   depends_on "openssl"
 
   patch :p0 do
-    url "https://raw.githubusercontent.com/Homebrew/patches/0518a6d1/webfs/patch-ls.c"
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/0518a6d1/webfs/patch-ls.c"
     sha256 "8ddb6cb1a15f0020bbb14ef54a8ae5c6748a109564fa461219901e7e34826170"
   end
 

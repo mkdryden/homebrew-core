@@ -1,17 +1,14 @@
 class GnupgPkcs11Scd < Formula
   desc "Enable the use of PKCS#11 tokens with GnuPG"
-  homepage "http://gnupg-pkcs11.sourceforge.net"
-  url "https://github.com/alonbl/gnupg-pkcs11-scd/archive/gnupg-pkcs11-scd-0.7.3.tar.gz"
-  sha256 "69412cf0a71778026dd9a8adc5276b43e54dc698d12ca36f7f6969d1a76330b8"
-  revision 1
-
-  head "https://github.com/alonbl/gnupg-pkcs11-scd.git"
+  homepage "https://gnupg-pkcs11.sourceforge.io"
+  url "https://github.com/alonbl/gnupg-pkcs11-scd/releases/download/gnupg-pkcs11-scd-0.9.1/gnupg-pkcs11-scd-0.9.1.tar.bz2"
+  sha256 "abd3d13eb889c3793da319ddedd0f9b688572abb51b050d8284d1b44dfca94a9"
 
   bottle do
     cellar :any
-    sha256 "d9cacdee8efb8ac048b960969d915f09277ae335e07772b06cbc93d1d06bd948" => :el_capitan
-    sha256 "d132133e7e9f4a472e7d8d4cb420ae0933d9415dbd097fb5a2eb301e21ab07ab" => :yosemite
-    sha256 "0626529265338ef096b94253d970495c937bc66de281accb2839c15361394de5" => :mavericks
+    sha256 "b1b94851685ebb8dc920e4e5212c2b7effa2e831f184d8b8e66e44b1c9630d93" => :high_sierra
+    sha256 "eccf8f2df5f2007142529fd3b34085ef3f81500173dc6fccd0a94dfe76c7ad19" => :sierra
+    sha256 "0b236bc743da30e0db9458d55a1e511c792d9ed85c97c726a87b5932e8a21dc7" => :el_capitan
   end
 
   depends_on "autoconf" => :build
@@ -24,16 +21,18 @@ class GnupgPkcs11Scd < Formula
   depends_on "pkcs11-helper"
 
   def install
-    system "autoreconf", "-fvi"
+    system "autoreconf", "-fiv"
     system "./configure", "--disable-dependency-tracking",
                           "--with-libgpg-error-prefix=#{Formula["libgpg-error"].opt_prefix}",
                           "--with-libassuan-prefix=#{Formula["libassuan"].opt_prefix}",
                           "--with-libgcrypt-prefix=#{Formula["libgcrypt"].opt_prefix}",
                           "--prefix=#{prefix}"
+    system "make"
+    system "make", "check"
     system "make", "install"
   end
 
   test do
-    system "#{bin}/gnupg-pkcs11-scd --help > /dev/null ; [ $? -eq 1 ]"
+    system "#{bin}/gnupg-pkcs11-scd", "--help"
   end
 end

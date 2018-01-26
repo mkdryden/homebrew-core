@@ -1,31 +1,33 @@
 class Netpbm < Formula
   desc "Image manipulation"
-  homepage "http://netpbm.sourceforge.net"
-  # Maintainers: Look at http://netpbm.svn.sourceforge.net/viewvc/netpbm/
-  # for versions and matching revisions
-  url "http://svn.code.sf.net/p/netpbm/code/advanced", :revision => 2294
-  version "10.68"
+  homepage "https://netpbm.sourceforge.io/"
+  # Maintainers: Look at https://sourceforge.net/p/netpbm/code/HEAD/tree/
+  # for stable versions and matching revisions.
+  if MacOS.version >= :sierra
+    url "https://svn.code.sf.net/p/netpbm/code/stable", :revision => 3094
+  else
+    url "http://svn.code.sf.net/p/netpbm/code/stable", :revision => 3094
+  end
+  version "10.73.17"
+  version_scheme 1
 
-  head "http://svn.code.sf.net/p/netpbm/code/trunk"
+  head "https://svn.code.sf.net/p/netpbm/code/trunk"
 
   bottle do
     cellar :any
-    revision 2
-    sha256 "ad369fbec6067be0355b02aa02f5b542224cbf9835974de7d0d36ea2a1966e2f" => :el_capitan
-    sha256 "a3c04a8257065886cf7f19d246a586a011b8c7d8fd708e5e669b769340e007fa" => :yosemite
-    sha256 "5d668e7795efa192da1bf14e1cfc27f458b58a40dfaa63873d7a642b5ec06a4f" => :mavericks
-    sha256 "b0c160558d0f764360041069129877bfc7e6d9fc81b3dabfa6cf4fe9a9efc21b" => :mountain_lion
+    sha256 "1c99ab33a5dee99e88a0f39873821bc1b8957cd729b98dc93fca3effc0d73402" => :high_sierra
+    sha256 "c4b338e2880e744a9dabdb6956264ea96f15da55596120d3599568698d9f7018" => :sierra
+    sha256 "bbdd407034a3fa7d842477a8fd9f7bea468508842aa5e2a4474e5b54de81cf0f" => :el_capitan
   end
-
-  option :universal
 
   depends_on "libtiff"
   depends_on "jasper"
+  depends_on "jpeg"
   depends_on "libpng"
 
-  def install
-    ENV.universal_binary if build.universal?
+  conflicts_with "jbigkit", :because => "both install `pbm.5` and `pgm.5` files"
 
+  def install
     cp "config.mk.in", "config.mk"
 
     inreplace "config.mk" do |s|
@@ -57,7 +59,7 @@ class Netpbm < Formula
       # do man pages explicitly; otherwise a junk file is installed in man/web
       man1.install Dir["man/man1/*.1"]
       man5.install Dir["man/man5/*.5"]
-      lib.install Dir["link/*.a"]
+      lib.install Dir["link/*.a"], Dir["link/*.dylib"]
       (lib/"pkgconfig").install "pkgconfig_template" => "netpbm.pc"
     end
 
@@ -65,8 +67,9 @@ class Netpbm < Formula
   end
 
   test do
-    system ("#{bin}/pngtopam #{test_fixtures("test.png")} -alphapam >> test.pam")
-    system "#{bin}/pamdice", "test.pam", "-outstem", "#{testpath}/testing"
-    assert File.exist?("testing_0_0.")
+    fwrite = Utils.popen_read("#{bin}/pngtopam #{test_fixtures("test.png")} -alphapam")
+    (testpath/"test.pam").write fwrite
+    system "#{bin}/pamdice", "test.pam", "-outstem", testpath/"testing"
+    assert_predicate testpath/"testing_0_0.", :exist?
   end
 end

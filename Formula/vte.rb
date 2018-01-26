@@ -3,6 +3,13 @@ class Vte < Formula
   homepage "https://developer.gnome.org/vte/"
   url "https://download.gnome.org/sources/vte/0.28/vte-0.28.2.tar.xz"
   sha256 "86cf0b81aa023fa93ed415653d51c96767f20b2d7334c893caba71e42654b0ae"
+  revision 1
+
+  bottle do
+    sha256 "ede19ccc89ee79e3de5f8f150621c4d4fd966e1fab0f251d26ed56087db00a7d" => :high_sierra
+    sha256 "3bb0bd706103b4d3744d3013955a7133864755d0df75c6309ef43a33a0526c1a" => :sierra
+    sha256 "5c7130cbecd9801ec2acee9190dc02ca8bc2ba70e696419aa6ef7fca10d4847b" => :el_capitan
+  end
 
   depends_on "pkg-config" => :build
   depends_on "intltool" => :build
@@ -11,14 +18,14 @@ class Vte < Formula
   depends_on "gtk+"
   depends_on "pygobject"
   depends_on "pygtk"
-  depends_on :python
+  depends_on "python" if MacOS.version <= :snow_leopard
 
   def install
-    args = [
-      "--disable-dependency-tracking",
-      "--prefix=#{prefix}",
-      "--disable-Bsymbolic",
-      "--enable-python"
+    args = %W[
+      --disable-dependency-tracking
+      --prefix=#{prefix}
+      --disable-Bsymbolic
+      --enable-python
     ]
 
     # pygtk-codegen-2.0 has been deprecated and replaced by
@@ -30,7 +37,7 @@ class Vte < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <vte/vte.h>
 
       int main(int argc, char *argv[]) {
@@ -49,8 +56,7 @@ class Vte < Formula
     libpng = Formula["libpng"]
     pango = Formula["pango"]
     pixman = Formula["pixman"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{atk.opt_include}/atk-1.0
       -I#{cairo.opt_include}/cairo
       -I#{fontconfig.opt_include}

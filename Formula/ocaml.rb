@@ -14,22 +14,26 @@
 class Ocaml < Formula
   desc "General purpose programming language in the ML family"
   homepage "https://ocaml.org/"
-  head "http://caml.inria.fr/svn/ocaml/trunk", :using => :svn
+  url "https://caml.inria.fr/pub/distrib/ocaml-4.06/ocaml-4.06.0.tar.xz"
+  sha256 "1236b5f91e1c075086d69e2d40cfab21e048b9fe38e902f707815bebbc20c5b7"
+  head "https://github.com/ocaml/ocaml.git", :branch => "trunk"
 
-  stable do
-    url "http://caml.inria.fr/pub/distrib/ocaml-4.02/ocaml-4.02.3.tar.gz"
-    sha256 "928fb5f64f4e141980ba567ff57b62d8dc7b951b58be9590ffb1be2172887a72"
+  pour_bottle? do
+    # The ocaml compilers embed prefix information in weird ways that the default
+    # brew detection doesn't find, and so needs to be explicitly blacklisted.
+    reason "The bottle needs to be installed into /usr/local."
+    satisfy { HOMEBREW_PREFIX.to_s == "/usr/local" }
   end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "72fca832d91bda2ed37a72b11207c511f1b3291357ab508e5974431da1602bd7" => :el_capitan
-    sha256 "8b0f9c7ce7b8a710c00f3363709dfa7cee46d2c8d18af6a88affb348eb6a0adb" => :yosemite
-    sha256 "afa78cad62971725b4eab39e9d15bc49b7ae224f42c2a27e2bfbe6fad7b292a9" => :mavericks
-    sha256 "a0fcad6dc20417725ff9fefb0468ead98a6faa0bb4a99a63351171e4b0dc22b1" => :mountain_lion
+    cellar :any
+    sha256 "377756d07b0253fd30eb0d5761d7a0e53d4305daa742122dbcbe70a378277f5c" => :high_sierra
+    sha256 "e62b761a4e814661d3ec110d3e3da378316ad57416d9d01bdc2dbd445d92e2b6" => :sierra
+    sha256 "0422ddaa6ee523fc6c9b30ad239118ae4de011b64bcb9687b917b586b7794595" => :el_capitan
   end
 
   option "with-x11", "Install with the Graphics module"
+  option "with-flambda", "Install with flambda support"
 
   depends_on :x11 => :optional
 
@@ -37,8 +41,9 @@ class Ocaml < Formula
     ENV.deparallelize # Builds are not parallel-safe, esp. with many cores
 
     # the ./configure in this package is NOT a GNU autoconf script!
-    args = ["-prefix", "#{HOMEBREW_PREFIX}", "-with-debug-runtime", "-mandir", man]
+    args = ["-prefix", HOMEBREW_PREFIX.to_s, "-with-debug-runtime", "-mandir", man]
     args << "-no-graph" if build.without? "x11"
+    args << "-flambda" if build.with? "flambda"
     system "./configure", *args
 
     system "make", "world.opt"
@@ -46,7 +51,8 @@ class Ocaml < Formula
   end
 
   test do
-    assert_match "val x : int = 1", shell_output("echo 'let x = 1 ;;' | ocaml 2>&1")
-    assert_match "#{HOMEBREW_PREFIX}", shell_output("ocamlc -where")
+    output = shell_output("echo 'let x = 1 ;;' | #{bin}/ocaml 2>&1")
+    assert_match "val x : int = 1", output
+    assert_match HOMEBREW_PREFIX.to_s, shell_output("#{bin}/ocamlc -where")
   end
 end

@@ -1,13 +1,13 @@
 class Gdl < Formula
   desc "GNOME Docking Library provides docking features for GTK+ 3"
   homepage "https://developer.gnome.org/gdl/"
-  url "https://download.gnome.org/sources/gdl/3.18/gdl-3.18.0.tar.xz"
-  sha256 "1499884e4fce375a963cf2b98b90e6724144f9b1f1ac8b84d765f4c85a2140b2"
+  url "https://download.gnome.org/sources/gdl/3.26/gdl-3.26.0.tar.xz"
+  sha256 "f3ad03f9a34f751f52464e22d962c0dec8ff867b7b7b37fe24907f3dcd54c079"
 
   bottle do
-    sha256 "2510a3cf303aad9f105ee5615e2d23cbbb2c43e73f53bdbeffd815f9818dbcb5" => :el_capitan
-    sha256 "b7ddc50c5dee0c1cc2483cbf5a78b9f06e84aa33d4d06fc025f2af29efcde7f1" => :yosemite
-    sha256 "35e50781d2c3fbbde6599b50b2533411404c96cf1a30e51a4a62a930ce376951" => :mavericks
+    sha256 "0248d4c169e93117bdee5966467e6472077615636ecee14d6d4d829073753a30" => :high_sierra
+    sha256 "37f76b2e3ec79557b3d3519afd3a88f0862b098d4cc0440caff55f5f4ef9fe2d" => :sierra
+    sha256 "a6a61712548c304e4ae6223d52a076ef8ebb09b4ca1c9a0ae5e5697233ab5006" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
@@ -24,7 +24,7 @@ class Gdl < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gdl/gdl.h>
 
       int main(int argc, char *argv[]) {
@@ -45,8 +45,7 @@ class Gdl < Formula
     libpng = Formula["libpng"]
     pango = Formula["pango"]
     pixman = Formula["pixman"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{atk.opt_include}/atk-1.0
       -I#{cairo.opt_include}/cairo
       -I#{fontconfig.opt_include}

@@ -1,46 +1,49 @@
 class Quazip < Formula
   desc "C++ wrapper over Gilles Vollant's ZIP/UNZIP package"
-  homepage "http://quazip.sourceforge.net/"
-  url "https://downloads.sourceforge.net/project/quazip/quazip/0.7.1/quazip-0.7.1.tar.gz"
-  sha256 "78c984103555c51e6f7ef52e3a2128e2beb9896871b2cc4d4dbd4d64bff132de"
+  homepage "https://quazip.sourceforge.io/"
+  url "https://downloads.sourceforge.net/project/quazip/quazip/0.7.3/quazip-0.7.3.tar.gz"
+  sha256 "2ad4f354746e8260d46036cde1496c223ec79765041ea28eb920ced015e269b5"
+  revision 1
 
   bottle do
     cellar :any
-    sha256 "7e4cdb5d97b70dd67092965b00de2981adbcee229a7b00788cce11ebc7fb72d6" => :el_capitan
-    sha256 "d15a12c624d377bd818458635ad078782659f313c223836f1689ed89cca32a63" => :yosemite
-    sha256 "d6ea39c00ad991be78e2b6fdd1d69a5c4079fc85ef6dbdbedab7c8becf77d0c7" => :mavericks
-    sha256 "a6a988cb89a12f6e7c2d5bd8ebe180f40b18f586f3bd1e09a6b881350daee637" => :mountain_lion
+    sha256 "907e72c7b9ee1af624c684c960925b3227409d3c95324bfc00aef2ad6384d22c" => :high_sierra
+    sha256 "9ec688664e0354803611744d1aaeec073cf0912762652be352404ac1c1fadfb4" => :sierra
+    sha256 "ce3454f5f7c5c8083df617ec63ccaf7291091da544287719573fc2c3dbb744c6" => :el_capitan
+    sha256 "dc296670c3c7bd52c825bb545132df0731c274af47f44d8ecefc53eda3c2065c" => :yosemite
   end
 
   depends_on "qt"
 
   def install
-    # On Mavericks we want to target libc++, this requires a unsupported/macx-clang-libc++ flag
-    if ENV.compiler == :clang && MacOS.version >= :mavericks
-      spec = "unsupported/macx-clang-libc++"
-    else
-      spec = "macx-g++"
-    end
-
-    args = %W[
-      -config release -spec #{spec}
-      PREFIX=#{prefix}
-      LIBS+=-L/usr/lib LIBS+=-lz
-      INCLUDEPATH+=/usr/include
-    ]
-
-    system "qmake", "quazip.pro", *args
+    system "qmake", "quazip.pro", "-config", "release",
+                    "PREFIX=#{prefix}", "LIBS+=-lz"
     system "make", "install"
-
-    cd "qztest" do
-      args = %W[-config release -spec #{spec}]
-      system "qmake", *args
-      system "make"
-      bin.install "qztest"
-    end
   end
 
   test do
-    system "#{bin}/qztest"
+    (testpath/"test.pro").write <<~EOS
+      TEMPLATE     = app
+      CONFIG      += console
+      CONFIG      -= app_bundle
+      TARGET       = test
+      SOURCES     += test.cpp
+      INCLUDEPATH += #{include}
+      LIBPATH     += #{lib}
+      LIBS        += -lquazip
+    EOS
+
+    (testpath/"test.cpp").write <<~EOS
+      #include <quazip/quazip.h>
+      int main() {
+        QuaZip zip;
+        return 0;
+      }
+    EOS
+
+    system "#{Formula["qt"].bin}/qmake", "test.pro"
+    system "make"
+    assert_predicate testpath/"test", :exist?, "test output file does not exist!"
+    system "./test"
   end
 end

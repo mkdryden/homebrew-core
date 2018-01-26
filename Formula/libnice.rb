@@ -1,24 +1,67 @@
 class Libnice < Formula
   desc "GLib ICE implementation"
   homepage "https://wiki.freedesktop.org/nice/"
-  url "https://nice.freedesktop.org/releases/libnice-0.1.7.tar.gz"
-  sha256 "4ed165aa2203136dce548c7cef735d8becf5d9869793f96b99dcbbaa9acf78d8"
+  url "https://nice.freedesktop.org/releases/libnice-0.1.14.tar.gz"
+  sha256 "be120ba95d4490436f0da077ffa8f767bf727b82decf2bf499e39becc027809c"
 
   bottle do
     cellar :any
-    revision 2
-    sha256 "fbad262bc1c5ebea09031d33d1c67efedee1a24b3b6fe36f18b1f74a86ad1304" => :el_capitan
-    sha256 "d2fae18378a7d83f0e4f0068f07afa6cdc54a8a25f2aa84990cf1a5a18e9788f" => :yosemite
-    sha256 "9d0b9a844dbeeb8d5ef58710d0dac485af94a9dc010edc585a9e73464a12e596" => :mavericks
+    sha256 "978bc59e76b4477c1742896550cd4a9d5b1a215518fb88785c3064ec2995bfaa" => :high_sierra
+    sha256 "3782f1868a247063e772f0ac5b9f59524ed6c0ad5a72e1d96af7078e5a36f526" => :sierra
+    sha256 "f9247e1697faac654fa25fc461f080486731d8fbcffc7855c46ab9c716fa62fc" => :el_capitan
+    sha256 "2cbf1077ed2e87caf285188031d47710bedc3bfb801f1f0a87ca0fbb081c8e30" => :yosemite
   end
 
   depends_on "pkg-config" => :build
   depends_on "glib"
+  depends_on "gnutls"
   depends_on "gstreamer"
 
   def install
-    system "./configure", "--prefix=#{prefix}", "--disable-dependency-tracking",
-                          "--disable-silent-rules"
+    system "./configure", "--disable-dependency-tracking",
+                          "--disable-silent-rules",
+                          "--prefix=#{prefix}"
     system "make", "install"
+  end
+
+  test do
+    # Based on https://github.com/libnice/libnice/blob/master/examples/simple-example.c
+    (testpath/"test.c").write <<~EOS
+      #include <agent.h>
+      int main(int argc, char *argv[]) {
+        NiceAgent *agent;
+        GMainLoop *gloop;
+        gloop = g_main_loop_new(NULL, FALSE);
+        // Create the nice agent
+        agent = nice_agent_new(g_main_loop_get_context (gloop),
+          NICE_COMPATIBILITY_RFC5245);
+        if (agent == NULL)
+          g_error("Failed to create agent");
+
+        g_main_loop_unref(gloop);
+        g_object_unref(agent);
+        return 0;
+      }
+    EOS
+
+    gettext = Formula["gettext"]
+    glib = Formula["glib"]
+    flags = %W[
+      -I#{gettext.opt_include}
+      -I#{glib.opt_include}/glib-2.0
+      -I#{glib.opt_lib}/glib-2.0/include
+      -I#{include}/nice
+      -D_REENTRANT
+      -L#{gettext.opt_lib}
+      -L#{glib.opt_lib}
+      -L#{lib}
+      -lgio-2.0
+      -lglib-2.0
+      -lgobject-2.0
+      -lintl
+      -lnice
+    ]
+    system ENV.cc, *flags, "test.c", "-o", "test"
+    system "./test"
   end
 end

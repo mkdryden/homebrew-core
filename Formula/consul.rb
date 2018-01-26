@@ -4,200 +4,118 @@ class Consul < Formula
   desc "Tool for service discovery, monitoring and configuration"
   homepage "https://www.consul.io"
   url "https://github.com/hashicorp/consul.git",
-    :tag => "v0.6.3", :revision => "c933efde50d25395c7b5a42167578fda603d43d8"
+      :tag => "v1.0.3",
+      :revision => "48f3dd5642374d079f5a64359023fb8318eb81cc"
 
-  head "https://github.com/hashicorp/consul.git", :shallow => false
+  head "https://github.com/hashicorp/consul.git",
+       :shallow => false
 
   bottle do
     cellar :any_skip_relocation
-    revision 1
-    sha256 "503c9f676c449e4723db01edefd0d1eea09f193461f5d15c86d61422da9e9b1c" => :el_capitan
-    sha256 "75ece59d870ca2c3e8eef6949ef05015f902287c27d3377a0aa0ebe235e545f5" => :yosemite
-    sha256 "aec77618aeacbe6b822d441140faf5cc72f521a4c2d6fe50c745508fb351508c" => :mavericks
+    sha256 "03dbaf930ce4253b3b4e4a83a92635f170b54ef1a69c981ff195a12c2a2118b0" => :high_sierra
+    sha256 "ec82a15dd396db7b7e88aee7c4ed7aeaf68d66a4d5c12c897abb11b4d876090b" => :sierra
+    sha256 "f6503849d3241f10d467064236269f715ebf054fc16e7042831fdadde1d12b37" => :el_capitan
   end
-
-  option "with-web-ui", "Installs the consul web ui"
 
   depends_on "go" => :build
+  depends_on "gox" => :build
 
-  go_resource "github.com/DataDog/datadog-go" do
-    url "https://github.com/DataDog/datadog-go.git",
-      :revision => "bc97e0770ad4edae1c9dc14beb40b79b2dde32f8"
+  go_resource "github.com/axw/gocov" do
+    url "https://github.com/axw/gocov.git",
+        :revision => "3a69a0d2a4ef1f263e2d92b041a69593d6964fe8"
   end
 
-  go_resource "github.com/armon/circbuf" do
-    url "https://github.com/armon/circbuf.git",
-      :revision => "bbbad097214e2918d8543d5201d12bfd7bca254d"
+  go_resource "github.com/elazarl/go-bindata-assetfs" do
+    url "https://github.com/elazarl/go-bindata-assetfs.git",
+        :revision => "30f82fa23fd844bd5bb1e5f216db87fd77b5eb43"
   end
 
-  go_resource "github.com/armon/go-metrics" do
-    url "https://github.com/armon/go-metrics.git",
-      :revision => "345426c77237ece5dab0e1605c3e4b35c3f54757"
+  go_resource "github.com/jteeuwen/go-bindata" do
+    url "https://github.com/jteeuwen/go-bindata.git",
+        :revision => "a0ff2567cfb70903282db057e799fd826784d41d"
   end
 
-  go_resource "github.com/armon/go-radix" do
-    url "https://github.com/armon/go-radix.git",
-      :revision => "4239b77079c7b5d1243b7b4736304ce8ddb6f0f2"
+  go_resource "github.com/magiconair/vendorfmt" do
+    url "https://github.com/magiconair/vendorfmt.git",
+        :revision => "0fde667441ebc14dbd64a1de758ab656b78c607b"
   end
 
-  go_resource "github.com/boltdb/bolt" do
-    url "https://github.com/boltdb/bolt.git",
-      :revision => "ee4a0888a9abe7eefe5a0992ca4cb06864839873"
+  go_resource "github.com/matm/gocov-html" do
+    url "https://github.com/matm/gocov-html.git",
+        :revision => "f6dd0fd0ebc7c8cff8b24c0a585caeef250627a3"
   end
 
-  go_resource "github.com/fsouza/go-dockerclient" do
-    url "https://github.com/fsouza/go-dockerclient.git",
-      :revision => "25bc220b299845ae5489fd19bf89c5278864b050"
-  end
-
-  go_resource "github.com/hashicorp/errwrap" do
-    url "https://github.com/hashicorp/errwrap.git",
-      :revision => "7554cd9344cec97297fa6649b055a8c98c2a1e55"
-  end
-
-  go_resource "github.com/hashicorp/go-checkpoint" do
-    url "https://github.com/hashicorp/go-checkpoint.git",
-      :revision => "e4b2dc34c0f698ee04750bf2035d8b9384233e1b"
-  end
-
-  go_resource "github.com/hashicorp/go-cleanhttp" do
-    url "https://github.com/hashicorp/go-cleanhttp.git",
-      :revision => "ce617e79981a8fff618bb643d155133a8f38db96"
-  end
-
-  go_resource "github.com/hashicorp/go-immutable-radix" do
-    url "https://github.com/hashicorp/go-immutable-radix.git",
-      :revision => "12e90058b2897552deea141eff51bb7a07a09e63"
-  end
-
-  go_resource "github.com/hashicorp/go-memdb" do
-    url "https://github.com/hashicorp/go-memdb.git",
-      :revision => "31949d523ade8a236956c6f1761e9dcf902d1638"
-  end
-
-  go_resource "github.com/hashicorp/go-msgpack" do
-    url "https://github.com/hashicorp/go-msgpack.git",
-      :revision => "fa3f63826f7c23912c15263591e65d54d080b458"
-  end
-
-  go_resource "github.com/hashicorp/go-multierror" do
-    url "https://github.com/hashicorp/go-multierror.git",
-      :revision => "d30f09973e19c1dfcd120b2d9c4f168e68d6b5d5"
-  end
-
-  go_resource "github.com/hashicorp/go-syslog" do
-    url "https://github.com/hashicorp/go-syslog.git",
-      :revision => "42a2b573b664dbf281bd48c3cc12c086b17a39ba"
-  end
-
-  go_resource "github.com/hashicorp/golang-lru" do
-    url "https://github.com/hashicorp/golang-lru.git",
-      :revision => "5c7531c003d8bf158b0fe5063649a2f41a822146"
-  end
-
-  go_resource "github.com/hashicorp/hcl" do
-    url "https://github.com/hashicorp/hcl.git",
-      :revision => "578dd9746824a54637686b51a41bad457a56bcef"
-  end
-
-  go_resource "github.com/hashicorp/logutils" do
-    url "https://github.com/hashicorp/logutils.git",
-      :revision => "0dc08b1671f34c4250ce212759ebd880f743d883"
-  end
-
-  go_resource "github.com/hashicorp/memberlist" do
-    url "https://github.com/hashicorp/memberlist.git",
-      :revision => "9888dc523910e5d22c5be4f6e34520943df21809"
-  end
-
-  go_resource "github.com/hashicorp/net-rpc-msgpackrpc" do
-    url "https://github.com/hashicorp/net-rpc-msgpackrpc.git",
-      :revision => "a14192a58a694c123d8fe5481d4a4727d6ae82f3"
-  end
-
-  go_resource "github.com/hashicorp/raft" do
-    url "https://github.com/hashicorp/raft.git",
-      :revision => "057b893fd996696719e98b6c44649ea14968c811"
-  end
-
-  go_resource "github.com/hashicorp/raft-boltdb" do
-    url "https://github.com/hashicorp/raft-boltdb.git",
-      :revision => "d1e82c1ec3f15ee991f7cc7ffd5b67ff6f5bbaee"
-  end
-
-  go_resource "github.com/hashicorp/scada-client" do
-    url "https://github.com/hashicorp/scada-client.git",
-      :revision => "84989fd23ad4cc0e7ad44d6a871fd793eb9beb0a"
-  end
-
-  go_resource "github.com/hashicorp/serf" do
-    url "https://github.com/hashicorp/serf.git",
-      :revision => "64d10e9428bd70dbcd831ad087573b66731c014b"
-  end
-
-  go_resource "github.com/hashicorp/yamux" do
-    url "https://github.com/hashicorp/yamux.git",
-      :revision => "df949784da9ed028ee76df44652e42d37a09d7e4"
-  end
-
-  go_resource "github.com/inconshreveable/muxado" do
-    url "https://github.com/inconshreveable/muxado.git",
-      :revision => "f693c7e88ba316d1a0ae3e205e22a01aa3ec2848"
-  end
-
-  go_resource "github.com/miekg/dns" do
-    url "https://github.com/miekg/dns.git",
-      :revision => "c144371d31e35dc0588755ada496462c102c90a6"
-  end
-
-  go_resource "github.com/mitchellh/cli" do
-    url "https://github.com/mitchellh/cli.git",
-      :revision => "cb6853d606ea4a12a15ac83cc43503df99fd28fb"
-  end
-
-  go_resource "github.com/mitchellh/mapstructure" do
-    url "https://github.com/mitchellh/mapstructure.git",
-      :revision => "281073eb9eb092240d33ef253c404f1cca550309"
-  end
-
-  go_resource "github.com/ryanuber/columnize" do
-    url "https://github.com/ryanuber/columnize.git",
-      :revision => "983d3a5fab1bf04d1b412465d2d9f8430e2e917e"
-  end
-
-  go_resource "golang.org/x/crypto" do
-    url "https://go.googlesource.com/crypto.git",
-      :revision => "3760e016850398b85094c4c99e955b8c3dea5711"
-  end
-
-  resource "web-ui" do
-    url "https://releases.hashicorp.com/consul/0.6.3/consul_0.6.3_web_ui.zip"
-    sha256 "93bbb300cacfe8de90fb3bd5ede7d37ae6ce014898edc520b9c96a676b2bbb72"
+  go_resource "golang.org/x/tools" do
+    url "https://go.googlesource.com/tools.git",
+        :branch => "release-branch.go1.9"
   end
 
   def install
+    # Avoid running `go get`
+    inreplace "GNUmakefile", "go get -u -v $(GOTOOLS)", ""
+
+    ENV["GOPATH"] = buildpath
     contents = Dir["{*,.git,.gitignore}"]
-    gopath = buildpath/"gopath"
-    (gopath/"src/github.com/hashicorp/consul").install contents
+    (buildpath/"src/github.com/hashicorp/consul").install contents
 
-    ENV["GOPATH"] = gopath
-    ENV.prepend_create_path "PATH", gopath/"bin"
+    ENV.prepend_create_path "PATH", buildpath/"bin"
+    Language::Go.stage_deps resources, buildpath/"src"
 
-    Language::Go.stage_deps resources, gopath/"src"
+    build_tools = [
+      "github.com/axw/gocov/gocov",
+      "github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs",
+      "github.com/jteeuwen/go-bindata/go-bindata",
+      "github.com/magiconair/vendorfmt/cmd/vendorfmt",
+      "github.com/matm/gocov-html",
+      "golang.org/x/tools/cmd/cover",
+      "golang.org/x/tools/cmd/stringer",
+    ]
 
-    cd gopath/"src/github.com/hashicorp/consul" do
-      system "make"
-      bin.install "bin/consul"
-      zsh_completion.install "contrib/zsh-completion/_consul"
+    build_tools.each do |tool|
+      cd "src/#{tool}" do
+        system "go", "install"
+      end
     end
 
-    # install web-ui to package share folder.
-    (pkgshare/"web-ui").install resource("web-ui") if build.with? "web-ui"
+    cd "src/github.com/hashicorp/consul" do
+      system "make"
+      bin.install "bin/consul"
+      prefix.install_metafiles
+    end
   end
 
-  def caveats; <<-EOS.undent
-    If consul was built with --with-web-ui, you can activate the UI by running
-    consul with `-ui-dir #{pkgshare}/web-ui`.
+  plist_options :manual => "consul agent -dev -advertise 127.0.0.1"
+
+  def plist; <<~EOS
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+      <dict>
+        <key>KeepAlive</key>
+        <dict>
+          <key>SuccessfulExit</key>
+          <false/>
+        </dict>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_bin}/consul</string>
+          <string>agent</string>
+          <string>-dev</string>
+          <string>-advertise</string>
+          <string>127.0.0.1</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>WorkingDirectory</key>
+        <string>#{var}</string>
+        <key>StandardErrorPath</key>
+        <string>#{var}/log/consul.log</string>
+        <key>StandardOutPath</key>
+        <string>#{var}/log/consul.log</string>
+      </dict>
+    </plist>
     EOS
   end
 

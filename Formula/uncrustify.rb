@@ -1,38 +1,40 @@
 class Uncrustify < Formula
   desc "Source code beautifier"
-  homepage "http://uncrustify.sourceforge.net/"
-  url "https://downloads.sourceforge.net/project/uncrustify/uncrustify/uncrustify-0.61/uncrustify-0.61.tar.gz"
-  sha256 "1df0e5a2716e256f0a4993db12f23d10195b3030326fdf2e07f8e6421e172df9"
-
-  head "https://github.com/bengardner/uncrustify.git"
+  homepage "https://uncrustify.sourceforge.io/"
+  url "https://github.com/uncrustify/uncrustify/archive/uncrustify-0.66.1.tar.gz"
+  sha256 "0862778fb692ce9859f4ece5e801db72841d8d76d9304e2da52bdd098b05331f"
+  head "https://github.com/uncrustify/uncrustify.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "0d6c1d92a813e4a27140bf85e5f859749573b715c73c77f1efb381f95b304f47" => :el_capitan
-    sha256 "dbe3a584778aa7139d560abe1400417f7fa4e83e363a414d4f9d9990a066ed73" => :yosemite
-    sha256 "2d6b33c9397482a3b5013563262ea62737dcc4d2a9a77416ffd646e3842f2e15" => :mavericks
-    sha256 "04548fc7f44bd61aadad55e3dc8a69634783e349ca4156d605953779aecaf8b8" => :mountain_lion
+    sha256 "e902a2207489b25f23908161c8695b68a05d30c697621f2233fc03e48ba3960f" => :high_sierra
+    sha256 "d95da710ae416bfacd68d923455d600132490e688b71d0d99963a082cacfdc66" => :sierra
+    sha256 "a736e794ffde1ad84cdc8d8f259496af608e42d66ef6bb9b2b348f17e34e66f8" => :el_capitan
   end
 
+  depends_on "cmake" => :build
+
   def install
-    system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}"
-    system "make", "install"
+    mkdir "build" do
+      system "cmake", "..", *std_cmake_args
+      system "make", "install"
+    end
+    doc.install (buildpath/"documentation").children
   end
 
   test do
-    (testpath/"t.c").write <<-EOS.undent
+    (testpath/"t.c").write <<~EOS
       #include <stdio.h>
       int main(void) {return 0;}
     EOS
-    expected = <<-EOS.undent
+    expected = <<~EOS
       #include <stdio.h>
       int main(void) {
       \treturn 0;
       }
     EOS
 
-    system "#{bin}/uncrustify", "-c", "#{share}/uncrustify/defaults.cfg", "t.c"
+    system "#{bin}/uncrustify", "-c", "#{doc}/htdocs/default.cfg", "t.c"
     assert_equal expected, File.read("#{testpath}/t.c.uncrustify")
   end
 end

@@ -1,7 +1,7 @@
 class Jbig2enc < Formula
   desc "JBIG2 encoder (for monochrome documents)"
   homepage "https://github.com/agl/jbig2enc"
-  revision 1
+  revision 3
 
   stable do
     url "https://github.com/agl/jbig2enc/archive/0.28-dist.tar.gz"
@@ -11,13 +11,15 @@ class Jbig2enc < Formula
     # Patch data from https://github.com/agl/jbig2enc/commit/53ce5fe7e73d7ed95c9e12b52dd4984723f865fa
     patch :DATA
   end
+
   bottle do
     cellar :any
-    sha256 "41a5acbc72d2830e74690f979e902683ad0594bc50ee24339aacb83c03cccd44" => :el_capitan
-    sha256 "d4bc377df69aab54e624982ba617c4ba970cc82229d7a01d6fda18491c8e97cf" => :yosemite
-    sha256 "72935a0c1f1d543b0c1d0f915cb855a16dd2b7471a7ec0987108f8ac4a7c7390" => :mavericks
+    rebuild 1
+    sha256 "b962a5771955a2926ba066ade4fd379df745b4afc8f2ee74d0f1429294cca275" => :high_sierra
+    sha256 "0d092aaa3d99143057610d44328dda7ca35549f9a80683b637a5265d26e0cffd" => :sierra
+    sha256 "6164ddfa8f877e4d8cacbe4437d8dd5ec10465910446cb43e2d52f4f19023101" => :el_capitan
+    sha256 "0a34215dfcd908571ca6b65d3ca4d79c2758e3a4edbf4d3c8da944a8567fc02f" => :yosemite
   end
-
 
   head do
     url "https://github.com/agl/jbig2enc.git"

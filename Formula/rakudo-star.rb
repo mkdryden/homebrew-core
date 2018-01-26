@@ -1,31 +1,30 @@
 class RakudoStar < Formula
   desc "Perl 6 compiler"
   homepage "http://rakudo.org/"
-  url "http://rakudo.org/downloads/star/rakudo-star-2016.01.tar.gz"
-  sha256 "feb385c5d05166061f413882e442d3a0ec53884918768940d3f00bb63bc85497"
+  url "https://rakudo.perl6.org/downloads/star/rakudo-star-2017.10.tar.gz"
+  sha256 "d52498b8838f168d654fa669cfc3abc5f4908d04e6c6e657ce2e14e77c8823b0"
 
   bottle do
-    revision 1
-    sha256 "9c8be44025eb35613659c3dbde873a7090fad7dbec2c22eb10f7c9ecc6579d72" => :el_capitan
-    sha256 "f76450ba4d31834c2ad6fd91082b7ff5d2674380d2f22ea6bad2ce98abd300b3" => :yosemite
-    sha256 "41eab69efeaf9c2f2154b48b52d9a54f4f2353ae0ded7608a0aa123df5b8db28" => :mavericks
+    sha256 "65370fb85df2d558595ddea8177a3ae8e9841ecd703b409779450146598e95b1" => :high_sierra
+    sha256 "9b393529595e9045fa451a7d550babb03bb0fec79a94f820d107b0989ed076c4" => :sierra
+    sha256 "0c9dd03afa5520fafdc6f9829262f2e159ff598a1fa8c7ac8c6f86225ba00bf3" => :el_capitan
   end
 
   option "with-jvm", "Build also for jvm as an alternate backend."
-
-  conflicts_with "parrot"
 
   depends_on "gmp" => :optional
   depends_on "icu4c" => :optional
   depends_on "pcre" => :optional
   depends_on "libffi"
 
+  conflicts_with "parrot"
+
   def install
     libffi = Formula["libffi"]
     ENV.remove "CPPFLAGS", "-I#{libffi.include}"
     ENV.prepend "CPPFLAGS", "-I#{libffi.lib}/libffi-#{libffi.version}/include"
 
-    ENV.j1  # An intermittent race condition causes random build failures.
+    ENV.deparallelize # An intermittent race condition causes random build failures.
 
     backends = ["moar"]
     generate = ["--gen-moar"]
@@ -42,14 +41,12 @@ class RakudoStar < Formula
     # Move the man pages out of the top level into share.
     # Not all backends seem to generate man pages at this point (moar does not, parrot does),
     # so we need to check if the directory exists first.
-    if File.directory?("#{prefix}/man")
-      mv "#{prefix}/man", share
-    end
+    mv "#{prefix}/man", share if File.directory?("#{prefix}/man")
   end
 
   test do
     out = `#{bin}/perl6 -e 'loop (my $i = 0; $i < 10; $i++) { print $i }'`
     assert_equal "0123456789", out
-    assert_equal 0, $?.exitstatus
+    assert_equal 0, $CHILD_STATUS.exitstatus
   end
 end

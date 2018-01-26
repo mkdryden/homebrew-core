@@ -1,34 +1,33 @@
 class Libdap < Formula
   desc "Framework for scientific data networking"
-  homepage "http://www.opendap.org"
-  url "https://github.com/OPENDAP/libdap4/archive/version-3.17.1.tar.gz"
-  sha256 "b9ee8e8dcc1a93a5c2d2e3a6fee39a3dc05c82e0e44151f8df3fc7c0f6363885"
-  head "https://github.com/OPENDAP/libdap4.git"
+  homepage "https://www.opendap.org/"
+  url "https://www.opendap.org/pub/source/libdap-3.19.1.tar.gz"
+  sha256 "5215434bacf385ba3f7445494ce400a5ade3995533d8d38bb97fcef1478ad33e"
 
   bottle do
-    sha256 "0ed1a25312873af1797bade7a0f3706df5cf1b2049bd1eec3d0ca0618b38da92" => :el_capitan
-    sha256 "07bba9bf47aa4d7d8c73dad126160f82a9b6dec7c3a9b54d915fcd8524727b23" => :yosemite
-    sha256 "bb4b42776292f6adb3af91fb2a5df61a1e13d1dfcc07a275c0595a470dbddb64" => :mavericks
+    sha256 "acb605289bb709760f85304a454047adc51bc7c62f789b1a6e994def60320707" => :high_sierra
+    sha256 "643d28d3e211bbca74f1d3a11e3af23128e5da457551d695d6e23fd350bb673c" => :sierra
+    sha256 "999d0a4e5235b9c646047e12ebf48c023f073f66ee7cc9952d2873242a66c8b7" => :el_capitan
+  end
+
+  head do
+    url "https://github.com/OPENDAP/libdap4.git"
+
+    depends_on "automake" => :build
+    depends_on "autoconf" => :build
+    depends_on "libtool" => :build
   end
 
   option "without-test", "Skip build-time tests (Not recommended)"
 
   depends_on "pkg-config" => :build
   depends_on "bison" => :build
-  depends_on "automake" => :build
-  depends_on "autoconf" => :build
-  depends_on "libtool" => :build
   depends_on "libxml2"
   depends_on "openssl"
 
   needs :cxx11 if MacOS.version < :mavericks
 
   def install
-    # NOTE:
-    # To future maintainers: if you ever want to build this library as a
-    # universal binary, see William Kyngesburye's notes:
-    #     http://www.kyngchaos.com/macosx/build/dap
-
     # Otherwise, "make check" fails
     ENV.cxx11 if MacOS.version < :mavericks
 
@@ -47,11 +46,15 @@ class Libdap < Formula
     # over to `dap-config` and from there the contamination will spread.
     args << "--with-curl=/usr" if MacOS.version <= :snow_leopard
 
-    system "autoreconf", "-fvi"
+    system "autoreconf", "-fvi" if build.head?
     system "./configure", *args
     system "make"
     system "make", "check" if build.with? "test"
     system "make", "install"
+
+    # Ensure no Cellar versioning of libxml2 path in dap-config entries
+    xml2 = Formula["libxml2"]
+    inreplace bin/"dap-config", xml2.opt_prefix.realpath, xml2.opt_prefix
   end
 
   test do

@@ -1,28 +1,20 @@
-class GoRequirement < Requirement
-  fatal true
-  default_formula "go"
-  satisfy { which "go" }
-
-  def message
-    "Go is required to use gpm."
-  end
-end
-
 class Gpm < Formula
   desc "Barebones dependency manager for Go"
   homepage "https://github.com/pote/gpm"
-  url "https://github.com/pote/gpm/archive/v1.3.2.tar.gz"
-  sha256 "c79b10c9f13d9cc79f2dcf08323daac86b9bb50cf7b84924ebeb28e98334c0ae"
+  url "https://github.com/pote/gpm/archive/v1.4.0.tar.gz"
+  sha256 "2e213abbb1a12ecb895c3f02b74077d3440b7ae3221b4b524659c2ea9065b02a"
+  revision 1
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "baef6fd02013c452c8d74ac109de4191823ebc4fb957e184ffd620b4d71b87d4" => :el_capitan
-    sha256 "8694759b92b7a01d234ab3369391dcd65fb5558a15d678d5c73cb957eb7573d4" => :yosemite
-    sha256 "c4fb2b9cea8b116d1c6145619797bff68cd97c8be9f14dcd9c99cd6bf6e24deb" => :mavericks
-    sha256 "0efe4d9fbd5207cff83169a571c7ddb815b434e99b206fc9989e9a309436451f" => :mountain_lion
+    sha256 "cac9f1ce7bb82555763015539417c9e709ca27d414c24f100ed045b593573cee" => :high_sierra
+    sha256 "816976b12502697adb886dfbee31bbc2cfcbe2cff1302927f8da6cef4e4b08cf" => :sierra
+    sha256 "ba26a6b34e92b4333d636ae3d9e54d726f6bd3bbabdabbfbdd9c3fec569e10fe" => :el_capitan
+    sha256 "0ed200c92c086eebf306065403c6a18db6e55e6d2764904cbd53f442f3043179" => :yosemite
+    sha256 "87cf43901daa271a5d27fbea5e6f103c15e287318152f02f0ef14bd77d51cb63" => :mavericks
   end
 
-  depends_on GoRequirement
+  depends_on "go"
 
   def install
     system "./configure", "--prefix=#{prefix}"
@@ -30,26 +22,14 @@ class Gpm < Formula
   end
 
   test do
-    Pathname("Godeps").write "github.com/pote/gpm-testing-package v6.1"
-
     ENV["GOPATH"] = testpath
+    (testpath/"Godeps").write("github.com/pote/gpm-testing-package v6.1")
     system bin/"gpm", "install"
-
-    Pathname("go_code.go").write <<-EOS.undent
+    (testpath/"go_code.go").write <<~EOS
       package main
-
-      import (
-              "fmt"
-              "github.com/pote/gpm-testing-package"
-      )
-
-      func main() {
-              fmt.Print(gpm_testing_package.Version())
-      }
+      import ("fmt"; "github.com/pote/gpm-testing-package")
+      func main() { fmt.Print(gpm_testing_package.Version()) }
     EOS
-
-    out = `go run go_code.go`
-    assert_equal "v6.1", out
-    assert_equal 0, $?.exitstatus
+    assert_equal "v6.1", shell_output("go run go_code.go")
   end
 end

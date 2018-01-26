@@ -1,18 +1,22 @@
 class CucumberCpp < Formula
   desc "Support for writing Cucumber step definitions in C++"
   homepage "https://cucumber.io"
-  url "https://github.com/cucumber/cucumber-cpp/archive/v0.3.tar.gz"
-  sha256 "1c0f9949627e7528017bf00cbe49693ba9cbc3e11087f70aa33b21df93f341d6"
+  url "https://github.com/cucumber/cucumber-cpp/archive/v0.4.tar.gz"
+  sha256 "57391dfade3639e5c219463cecae2ee066c620aa29fbb89e834a7067f9b8e0c8"
+  revision 4
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "3edd3a357ca5f0461e82129ed4a45a79c4561480da164a16b41608090d6eec25" => :el_capitan
-    sha256 "1cb739294fe06cfee8cc3721cee292c9ec066a00a08295bbeb2657b210195a37" => :yosemite
-    sha256 "2fbe84f026a5211bf9573dfe1fed4c334c966b730de14339aca7e5895c4d59eb" => :mavericks
+    sha256 "bd077e11bfdca0049b6a0cf328325a1862e682e3342f7dedb824def2cb145511" => :high_sierra
+    sha256 "dd3b90818b60c6842e150c3f324591d7e3135bad7a224a0ca810de1b2f367549" => :sierra
+    sha256 "1a2858aef5463172589ebab10d30b639581f455605749aed275096d769b2c8c3" => :el_capitan
   end
 
   depends_on "cmake" => :build
-  depends_on "boost"
+
+  # Upstream issue from 19 Dec 2017 "Build fails with Boost 1.66.0"
+  # See https://github.com/cucumber/cucumber-cpp/issues/178
+  depends_on "boost@1.60"
 
   def install
     args = std_cmake_args
@@ -29,21 +33,21 @@ class CucumberCpp < Formula
   test do
     ENV["GEM_HOME"] = testpath
     ENV["BUNDLE_PATH"] = testpath
-    system "gem", "install", "cucumber"
+    system "gem", "install", "cucumber", "-v", "3.0.0"
 
-    (testpath/"features/test.feature").write <<-EOS.undent
+    (testpath/"features/test.feature").write <<~EOS
       Feature: Test
         Scenario: Just for test
           Given A given statement
           When A when statement
           Then A then statement
     EOS
-    (testpath/"features/step_definitions/cucumber.wire").write <<-EOS.undent
+    (testpath/"features/step_definitions/cucumber.wire").write <<~EOS
       host: localhost
       port: 3902
     EOS
-    (testpath/"test.cpp").write <<-EOS.undent
-      #include <cucumber-cpp/defs.hpp>
+    (testpath/"test.cpp").write <<~EOS
+      #include <cucumber-cpp/generic.hpp>
       GIVEN("^A given statement$") {
       }
       WHEN("^A when statement$") {
@@ -51,11 +55,13 @@ class CucumberCpp < Formula
       THEN("^A then statement$") {
       }
     EOS
-    system ENV.cxx, "test.cpp", "-L#{lib}", "-lcucumber-cpp", "-o", "test",
-      "-lboost_regex", "-lboost_system"
+    system ENV.cxx, "test.cpp", "-o", "test", "-I#{include}", "-L#{lib}",
+           "-lcucumber-cpp", "-I#{Formula["boost@1.60"].opt_include}",
+           "-L#{Formula["boost@1.60"].opt_lib}", "-lboost_regex", "-lboost_system",
+           "-lboost_program_options", "-lboost_filesystem"
     begin
       pid = fork { exec "./test" }
-      expected = <<-EOS.undent
+      expected = <<~EOS
         Feature: Test
 
           Scenario: Just for test   # features\/test.feature:2

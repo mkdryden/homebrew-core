@@ -1,15 +1,15 @@
 class Mvtools < Formula
   desc "Filters for motion estimation and compensation"
   homepage "https://github.com/dubhater/vapoursynth-mvtools"
-  url "https://github.com/dubhater/vapoursynth-mvtools/archive/v9.tar.gz"
-  sha256 "e417764cddcc2b24ee5a91c1136e95237ce1424f5d7f49ceb62ff092db18d907"
+  url "https://github.com/dubhater/vapoursynth-mvtools/archive/v19.tar.gz"
+  sha256 "41848bf526f1807e6894513534d5243bbce5b796d798a3cf47f617229d7b6e9e"
   head "https://github.com/dubhater/vapoursynth-mvtools.git"
 
   bottle do
     cellar :any
-    sha256 "1edd2c510374f7f7100b702e81ef68ea1b7461b2f4d93fac013052bbb8c2f4f5" => :el_capitan
-    sha256 "a9fe49ecb6275bd8f183caf6ad7ea662abb7ba8417757186681b5b517eeedb2f" => :yosemite
-    sha256 "cbb7dd3106bf1407eeded6b894454c9c7dbec765e00c9a6909301db2d2c83cd1" => :mavericks
+    sha256 "3dd4f5e61df28a742322bc13a0b4c8390cb544ec9dd74e9d2699be9a3522ea3d" => :high_sierra
+    sha256 "a1e8772b4d9306f46c6639d37668565ccadbe7bd702190a252275d4d98e70095" => :sierra
+    sha256 "0da949dba3b2e7fffee8cc70b4848bb0dea404476636333db22f889347b0b6aa" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
@@ -19,6 +19,7 @@ class Mvtools < Formula
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
+  depends_on :macos => :el_capitan # due to zimg
 
   def install
     system "./autogen.sh"
@@ -27,7 +28,7 @@ class Mvtools < Formula
   end
 
   def caveats
-    <<-EOS.undent
+    <<~EOS
       MVTools will not be autoloaded in your VapourSynth scripts. To use it
       use the following code in your scripts:
 
@@ -36,11 +37,11 @@ class Mvtools < Formula
   end
 
   test do
-    script = <<-PYTHON.undent.split("\n").join(";")
+    script = <<~EOS.split("\n").join(";")
       import vapoursynth as vs
       core = vs.get_core()
-      core.std.LoadPlugin(path="#{HOMEBREW_PREFIX}/lib/libmvtools.dylib")
-    PYTHON
+      core.std.LoadPlugin(path="#{lib}/libmvtools.dylib")
+    EOS
 
     system "python3", "-c", script
   end

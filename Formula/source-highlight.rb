@@ -1,16 +1,16 @@
 class SourceHighlight < Formula
   desc "Source-code syntax highlighter"
   homepage "https://www.gnu.org/software/src-highlite/"
-  url "http://ftpmirror.gnu.org/src-highlite/source-highlight-3.1.8.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/src-highlite/source-highlight-3.1.8.tar.gz"
-  mirror "http://mirror.anl.gov/pub/gnu/src-highlite/source-highlight-3.1.8.tar.gz"
+  url "https://ftp.gnu.org/gnu/src-highlite/source-highlight-3.1.8.tar.gz"
+  mirror "https://ftpmirror.gnu.org/src-highlite/source-highlight-3.1.8.tar.gz"
+  mirror "https://fossies.org/linux/www/source-highlight-3.1.8.tar.gz"
   sha256 "01336a7ea1d1ccc374201f7b81ffa94d0aecb33afc7d6903ebf9fbf33a55ada3"
-  revision 1
+  revision 8
 
   bottle do
-    sha256 "d9d498b1fc3eb7075ecb76c87c8ce9d6241f00c5e82b0b03f2a4b46c25fa625f" => :el_capitan
-    sha256 "543c6b217e90a61ae369db03b190f11439dd6b7de1cda32c1728a490a9b5be16" => :yosemite
-    sha256 "513fe0f5454d4cd73ee77ca06478d32fdbd246149b47d6d3ce5cd80b79f4650a" => :mavericks
+    sha256 "3101cb3776039eba399f7a9d42cbd68120abaa2c3fd02401bd43128020bdf22c" => :high_sierra
+    sha256 "c8f9401b678b754e82d3cd7a78f6e7c164a1ece1832ca73ac77f11023de87de9" => :sierra
+    sha256 "d8f960586c5a0b5249ceacbe3996042fdfbce29a50c3adc65087e02f3daf361b" => :el_capitan
   end
 
   depends_on "boost"

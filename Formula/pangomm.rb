@@ -1,14 +1,16 @@
 class Pangomm < Formula
   desc "C++ interface to Pango"
   homepage "http://www.pango.org/"
-  url "https://download.gnome.org/sources/pangomm/2.38/pangomm-2.38.1.tar.xz"
-  sha256 "effb18505b36d81fc32989a39ead8b7858940d0533107336a30bc3eef096bc8b"
+  url "https://download.gnome.org/sources/pangomm/2.40/pangomm-2.40.1.tar.xz"
+  sha256 "9762ee2a2d5781be6797448d4dd2383ce14907159b30bc12bf6b08e7227be3af"
 
   bottle do
     cellar :any
-    sha256 "50082fe5f81f38716feafff9f58e75adff98df488e92579809cf59b9322ae351" => :el_capitan
-    sha256 "d328b948209dbcca1b4eb16f55c32e8af74c8b0f258c2a05aaa7885628092f0f" => :yosemite
-    sha256 "21aa382200bd78610bdf2e0e19144e79061c4187d040471b4eceaad33ba69874" => :mavericks
+    sha256 "f1270ae7605b8f1a679770b37c63daeb7d8d14cdb5d1af09c6d67e83484256c2" => :high_sierra
+    sha256 "0f5fe35f77d9ab084cdb0ecba758a61771ec33650de30e3c57ddf56af240cabf" => :sierra
+    sha256 "7565443483138210e191d3fe044c04d55755057b4c3d53187baf2857c966f0a5" => :el_capitan
+    sha256 "09d9b38d15273c02968cb4330159c8cfa0b9e06701f69b7495c12f64f7f370b8" => :yosemite
+    sha256 "1d2a6f8d96059a189be9d39e6d20fd5a8a7a14293cc64c71eab506522ff5c1e5" => :mavericks
   end
 
   depends_on "pkg-config" => :build
@@ -24,7 +26,7 @@ class Pangomm < Formula
     system "make", "install"
   end
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <pangomm.h>
       int main(int argc, char *argv[])
       {
@@ -44,8 +46,7 @@ class Pangomm < Formula
     libsigcxx = Formula["libsigc++"]
     pango = Formula["pango"]
     pixman = Formula["pixman"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{cairo.opt_include}/cairo
       -I#{cairomm.opt_include}/cairomm-1.0
       -I#{cairomm.opt_lib}/cairomm-1.0/include

@@ -1,42 +1,40 @@
 class Collectd < Formula
   desc "Statistics collection and monitoring daemon"
   homepage "https://collectd.org/"
-
-  stable do
-    url "https://collectd.org/files/collectd-5.5.1.tar.bz2"
-    mirror "http://pkgs.fedoraproject.org/repo/pkgs/collectd/collectd-5.5.1.tar.bz2/fd24b947cef9351ce3e2d6d2a0762e18/collectd-5.5.1.tar.bz2"
-    sha256 "f9c5d526e1f0429a7db1ccd90bdf9e23923a2fd43b7285cfda8f0341e5c0bc3f"
-  end
+  url "https://collectd.org/files/collectd-5.8.0.tar.bz2"
+  sha256 "b06ff476bbf05533cb97ae6749262cc3c76c9969f032bd8496690084ddeb15c9"
 
   bottle do
-    sha256 "2d0ea64e88be3e27d28e8419c88eda50180d82b4070c4a819bfa54fecad3030d" => :el_capitan
-    sha256 "40e0865b2e465387ead14eedb6ae5f639a60a00e0aaa36380ef9f23966772d4a" => :yosemite
-    sha256 "2626142f0ec513f28faac27c1c81af720a6da37980b994d918fef7ed08da3b16" => :mavericks
+    sha256 "c228054cab6171395cf7fc0aae7baa020743514a41dd374e668d4d9440675e7f" => :high_sierra
+    sha256 "e49db6c81c43d172e13ced53c61175afb5bcd3f14121e501c4a111267ad014ae" => :sierra
+    sha256 "5bad0992c7a9022f3b083a8d127d6cd7aa9f024b4aec6f5edc21a8dac3115324" => :el_capitan
   end
 
   head do
     url "https://github.com/collectd/collectd.git"
 
-    depends_on "libtool" => :build
     depends_on "automake" => :build
     depends_on "autoconf" => :build
   end
 
   option "with-java", "Enable Java support"
-  option "with-protobuf-c", "Enable write_riemann via protobuf-c support"
+  option "with-python", "Enable Python support"
+  option "with-riemann-client", "Enable write_riemann support"
   option "with-debug", "Enable debug support"
 
   deprecated_option "java" => "with-java"
   deprecated_option "debug" => "with-debug"
 
   depends_on "pkg-config" => :build
-  depends_on "protobuf-c" => :optional
+  depends_on "libtool" => :run
+  depends_on "riemann-client" => :optional
   depends_on :java => :optional
-  depends_on "openssl"
+  depends_on "python" => :optional
+  depends_on "net-snmp"
 
   fails_with :clang do
     build 318
-    cause <<-EOS.undent
+    cause <<~EOS
       Clang interacts poorly with the collectd-bundled libltdl,
       causing configure to fail.
     EOS
@@ -50,9 +48,9 @@ class Collectd < Formula
       --localstatedir=#{var}
     ]
 
-    args << "--disable-embedded-perl" if MacOS.version <= :leopard
     args << "--disable-java" if build.without? "java"
-    args << "--enable-write_riemann" if build.with? "protobuf-c"
+    args << "--enable-python" if build.with? "python"
+    args << "--enable-write_riemann" if build.with? "riemann-client"
     args << "--enable-debug" if build.with? "debug"
 
     system "./build.sh" if build.head?
@@ -60,7 +58,9 @@ class Collectd < Formula
     system "make", "install"
   end
 
-  def plist; <<-EOS.undent
+  plist_options :manual => "#{HOMEBREW_PREFIX}/sbin/collectd -f -C #{HOMEBREW_PREFIX}/etc/collectd.conf"
+
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -88,9 +88,19 @@ class Collectd < Formula
   end
 
   test do
+    log = testpath/"collectd.log"
+    (testpath/"collectd.conf").write <<~EOS
+      LoadPlugin logfile
+      <Plugin logfile>
+        File "#{log}"
+      </Plugin>
+      LoadPlugin memory
+    EOS
     begin
-      pid = fork { exec sbin/"collectd", "-f" }
-      assert shell_output("nc -u -w 2 127.0.0.1 25826", 0)
+      pid = fork { exec sbin/"collectd", "-f", "-C", "collectd.conf" }
+      sleep 1
+      assert_predicate log, :exist?, "Failed to create log file"
+      assert_match "plugin \"memory\" successfully loaded.", log.read
     ensure
       Process.kill("SIGINT", pid)
       Process.wait(pid)

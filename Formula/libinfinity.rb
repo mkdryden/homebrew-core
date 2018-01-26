@@ -1,14 +1,13 @@
 class Libinfinity < Formula
   desc "GObject-based C implementation of the Infinote protocol"
   homepage "https://gobby.github.io"
-  url "http://releases.0x539.de/libinfinity/libinfinity-0.6.6.tar.gz"
-  sha256 "3df9397b52d61392cbe98084aada9b7362a34811ef21baa0db87fdfd754f92cc"
-  revision 1
+  url "http://releases.0x539.de/libinfinity/libinfinity-0.6.8.tar.gz"
+  sha256 "0c4e7e0e5cb6ad5df4dbe19568de37b100a13e61475cf9d4e0f2a68fcdd2d45b"
 
   bottle do
-    sha256 "43aed53c6130683c7a2cbc75f72f640ac4a8890f0a4d0d5324802722fb9e595a" => :el_capitan
-    sha256 "f8814b4172c821d45b26edd01fd19ead1e1e3c54b53ebb199b851761dbd9c429" => :yosemite
-    sha256 "a657d5cb68e8dec8efee285e1dc1bb69e9d7753593c49876aaffe2825a136b91" => :mavericks
+    sha256 "1faad7e989ee0b318a6bc083d6dabc09b1bff20f29e85fb2eeaf0e204db77ed2" => :high_sierra
+    sha256 "a57e350ab3149f0992f1ae56953eb951dea73601c0837d8268679395f247f8ec" => :sierra
+    sha256 "b4d21db6a91949753057955b38fd47b8d289a2e5961ba6fc5e1fdc06c6f0d7a1" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
@@ -19,7 +18,7 @@ class Libinfinity < Formula
 
   # MacPorts patch to fix pam include. This is still applicable to 0.6.4.
   patch :p0 do
-    url "https://raw.githubusercontent.com/Homebrew/patches/f8e3d2e4/libinfinity/patch-infinoted-infinoted-pam.c.diff"
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/f8e3d2e4/libinfinity/patch-infinoted-infinoted-pam.c.diff"
     sha256 "d5924d6ee90c3aa756e52b97e32345dc1d77afdb5e4e0de8eac2a343d95ade00"
   end
 
@@ -31,7 +30,7 @@ class Libinfinity < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <libinfinity/common/inf-init.h>
 
       int main(int argc, char *argv[]) {
@@ -47,8 +46,7 @@ class Libinfinity < Formula
     gsasl = Formula["gsasl"]
     libtasn1 = Formula["libtasn1"]
     nettle = Formula["nettle"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{gettext.opt_include}
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include

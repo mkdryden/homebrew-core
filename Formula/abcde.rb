@@ -1,31 +1,18 @@
 class Abcde < Formula
   desc "Better CD Encoder"
-  homepage "http://abcde.einval.com"
+  homepage "https://abcde.einval.com"
+  url "https://abcde.einval.com/download/abcde-2.8.1.tar.gz"
+  mirror "https://mirrors.ocf.berkeley.edu/debian/pool/main/a/abcde/abcde_2.8.1.orig.tar.gz"
+  sha256 "e49c71d7ddcd312dcc819c3be203abd3d09d286500ee777cde434c7881962b39"
   revision 1
-
-  head "http://git.einval.com/git/abcde.git"
-
-  stable do
-    url "http://abcde.einval.com/download/abcde-2.7.1.tar.gz"
-    mirror "https://mirrors.ocf.berkeley.edu/debian/pool/main/a/abcde/abcde_2.7.1.orig.tar.gz"
-    sha256 "3401e39785b20edee843d4d875b47d2b559f764681c482c4491a8c8ba605f250"
-
-    # Fix "Expansion of $REDIR quoted on MacOSX breaks cp" bug
-    # (http://abcde.einval.com/bugzilla/show_bug.cgi?id=22)
-    # Obsolete once a new version is released as upstream already merged this
-    # patch in c024365a846faae390f23c86f32235d6209e6edf
-    # (http://git.einval.com/cgi-bin/gitweb.cgi?p=abcde.git;a=commit;h=c024365a846faae390f23c86f32235d6209e6edf)
-    patch do
-      url "http://abcde.einval.com/bugzilla/attachment.cgi?id=12"
-      sha256 "4620dd5ef7ab32b6511782da85831661ccee292fadff1f58acc3b4992486af62"
-    end
-  end
+  head "https://git.einval.com/git/abcde.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "91bebd8a7c17518bfc99f2b8067234024fe012205f2d5d0e193eb64dd2882fc5" => :el_capitan
-    sha256 "f553e4ef30cdc2a3a7f01f4874d98cc3fbcb5fb4dabd2ee36496ad7fff2cec89" => :yosemite
-    sha256 "754737e1e8adaa267e77f1cec57e414e9e7d4598fe24f3428cc4ad07d280994b" => :mavericks
+    sha256 "c80c6497db51329cd2e09cf4fc51aa49bf7e540b9f213f9d471aaa96c816c569" => :high_sierra
+    sha256 "6103b36d2a9d39a8dc303c96f12741ec0f83750688832cf79aa4156a7efae5ce" => :sierra
+    sha256 "6103b36d2a9d39a8dc303c96f12741ec0f83750688832cf79aa4156a7efae5ce" => :el_capitan
+    sha256 "6103b36d2a9d39a8dc303c96f12741ec0f83750688832cf79aa4156a7efae5ce" => :yosemite
   end
 
   depends_on "cd-discid"
@@ -38,10 +25,15 @@ class Abcde < Formula
   depends_on "glyr" => :optional
 
   def install
-    system "make", "install", "prefix=#{prefix}", "etcdir=#{etc}"
+    # Fixes MD5SUM being set to nonexistent md5sum
+    # Reported upstream 2017-03-18 18:03 GMT
+    # https://abcde.einval.com/bugzilla/show_bug.cgi?id=59
+    inreplace "abcde", "OSFLAVOUR=OSX", "MD5SUM=md5\n\tOSFLAVOUR=OSX"
+
+    system "make", "install", "prefix=#{prefix}", "sysconfdir=#{etc}"
   end
 
   test do
-    system "#{bin}/abcde", "-v"
+    assert_match version.to_s, shell_output("#{bin}/abcde -v")
   end
 end

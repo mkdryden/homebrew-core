@@ -1,15 +1,14 @@
 class Mawk < Formula
   desc "Interpreter for the AWK Programming Language"
-  homepage "http://invisible-island.net/mawk/"
-  url "ftp://invisible-island.net/mawk/mawk-1.3.4-20141027.tgz"
-  sha256 "a88f50c1a0800ae6d2cedb0672b15bd32cc57e482715ca7c1471fb398e89767a"
+  homepage "https://invisible-island.net/mawk/"
+  url "https://invisible-mirror.net/archives/mawk/mawk-1.3.4-20171017.tgz"
+  sha256 "db17115d1ed18ed1607c8b93291db9ccd4fe5e0f30d2928c3c5d127b23ec9e5b"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "140cb2b2b1054fa25390ebe43e26de53482be5587a401b9137b2a7d1011a6281" => :el_capitan
-    sha256 "d513669dc87cf81fc1526d1784191f613837b871bde25e2a3eaaa0b7f0d991ad" => :yosemite
-    sha256 "e116bc17922da25b037f2b5cf15f93cf0f8f535efe5fc3435cf337af10f553e7" => :mavericks
-    sha256 "3d38eee059da9baa8aa70feb54b9e1eeaff8023b80bea0dfcd482039ee971476" => :mountain_lion
+    sha256 "c5cf51c1eba34b38ca2e9d3409842a0cf4af5e00f1436bf84b164d2a4385f572" => :high_sierra
+    sha256 "f5ff9c8eba46e085ad689358a2d969d8949dee1c850c2125f388776f54e61700" => :sierra
+    sha256 "4ef13dbc1202c66b982a91a103ed3d3204b036c0ab63b2f30938662c14436f68" => :el_capitan
   end
 
   def install
@@ -23,8 +22,8 @@ class Mawk < Formula
   end
 
   test do
-    version=`mawk '/version/ { print $2 }' #{prefix}/README`
-    assert_equal 0, $?.exitstatus
-    assert_equal version, "#{version}"
+    mawk_expr = '/^mawk / {printf("%s-%s", $2, $3)}'
+    ver_out = shell_output("#{bin}/mawk -W version 2>&1 | #{bin}/mawk '#{mawk_expr}'")
+    assert_equal version.to_s, ver_out
   end
 end

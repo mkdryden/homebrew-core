@@ -1,14 +1,15 @@
 class Wavpack < Formula
   desc "Hybrid lossless audio compression"
   homepage "http://www.wavpack.com/"
-  url "http://www.wavpack.com/wavpack-4.75.2.tar.bz2"
-  sha256 "7d31b34166c33c3109b45c6e4579b472fd05e3ee8ec6d728352961c5cdd1d6b0"
+  url "http://www.wavpack.com/wavpack-5.1.0.tar.bz2"
+  sha256 "1939627d5358d1da62bc6158d63f7ed12905552f3a799c799ee90296a7612944"
 
   bottle do
     cellar :any
-    sha256 "2558e5df140a20b53ed4b8022844803f7f3c31902ea484d1b0fa5817f93342b4" => :el_capitan
-    sha256 "62bbb3a5c1c0f30e8b121791d58c67c55bf43f88aa4b68b3cbd53739abad1491" => :yosemite
-    sha256 "fd1a0d8e4de7612abc11f1f84620290f2606e0797872a368bda943bc065b3d44" => :mavericks
+    sha256 "3c474a8b2b524f596888089a374aa733c09615e4a861a11b7317204ef42c8c25" => :high_sierra
+    sha256 "caaf7a9f778270e2f445c4a4f864afbdbc5c410531866c06a5bfe9d0b10dbc36" => :sierra
+    sha256 "5ad0e936fa7f53926838964c434e34c303bb540f676fb42b03d37845ace86940" => :el_capitan
+    sha256 "14d36c9f2f704d8d1181f63ad965690a4594444394ce42d2cfaf63cbfc981051" => :yosemite
   end
 
   head do
@@ -32,6 +33,6 @@ class Wavpack < Formula
 
   test do
     system bin/"wavpack", test_fixtures("test.wav"), "-o", testpath/"test.wv"
-    File.exist? "test.wv"
+    assert_predicate testpath/"test.wv", :exist?
   end
 end

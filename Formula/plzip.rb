@@ -1,26 +1,31 @@
 class Plzip < Formula
   desc "Data compressor"
   homepage "http://www.nongnu.org/lzip/plzip.html"
-  url "http://download.savannah.gnu.org/releases/lzip/plzip/plzip-1.4.tar.gz"
-  sha256 "2a152ee429495cb96c22a51b618d1d19882db3e24aff79329d9c755a2a2f67bb"
+  url "https://download.savannah.gnu.org/releases/lzip/plzip/plzip-1.6.tar.gz"
+  sha256 "5d1d79fe4a1e41aa05e3926d067243efbaa607ed238036152f867662b7d14c7c"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "23e72d690f7e1984510c109a1076450df7604d012253c32d4cb028204d5455eb" => :el_capitan
-    sha256 "d6034ff78f2a1e85f7794450bdd06bc95b1a07e30ee99c1227bf642d5be09ad4" => :yosemite
-    sha256 "8cd3d1ac2c5b8c04a172188efdbc89dd1a7cfe936057d047d728484691e67adb" => :mavericks
-    sha256 "7e8f6bbcb52876b808fc247a46e9f189b1e8a04f829717dc27979d1393f7a15a" => :mountain_lion
+    sha256 "f02744640715200d1114550c798c637eb851c8541dc2d204f31f41def197e338" => :high_sierra
+    sha256 "6575ae533b2d6b3c4a575d29e97abf688f2900be61b0f27d722fd098fb3a9b94" => :sierra
+    sha256 "ed2718fc204a2adda79b4e228ba64493225bd7f56edfcd08e300ff4074d570a2" => :el_capitan
   end
 
   depends_on "lzlib"
 
+  # error: unknown type name 'pthread_mutex_t' and 'pthread_cond_t'
+  # Reported 24 Nov 2017 to lzip-bug AT nongnu DOT org
+  patch do
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/68e2af8/plzip/pthread.diff"
+    sha256 "9e6653248ade666922b353b362eda6383af73c85cd93936c70bd8257e027f2b1"
+  end
+
   def install
-    system "./configure", "--prefix=#{prefix}",
-                          "CXX=#{ENV.cxx}",
-                          "CXXFLAGS=#{ENV.cflags}"
+    system "./configure", "--prefix=#{prefix}"
     system "make"
     system "make", "check"
-    system "make", "-j1", "install"
+    ENV.deparallelize
+    system "make", "install"
   end
 
   test do

@@ -1,30 +1,28 @@
 class Nasm < Formula
   desc "Netwide Assembler (NASM) is an 80x86 assembler"
   homepage "http://www.nasm.us/"
-  url "http://www.nasm.us/pub/nasm/releasebuilds/2.12.01/nasm-2.12.01.tar.xz"
-  sha256 "9dbba1ce620512e435ba57e69e811fe8e07d04359e47e0a0b5e94a5dd8367489"
+  url "http://www.nasm.us/pub/nasm/releasebuilds/2.13.02/nasm-2.13.02.tar.xz"
+  sha256 "8ac3235f49a6838ff7a8d7ef7c19a4430d0deecc0c2d3e3e237b5e9f53291757"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "3b0bdc6ddb5bdd7ba59f52e8c4043e755e39d4fc5d1ee01e5e3ae7c50f8fc515" => :el_capitan
-    sha256 "21f3c053d9542ad5c7b8d0d787b88dde4bfd08a7ec2e51a4e2f2af5c4477cf7f" => :yosemite
-    sha256 "904315d256c85e6bf5cb776d7c553fb5998192c3fc574256b2b35ae762d92d0e" => :mavericks
+    sha256 "c85b863a69d578d3939543ba336fa09361ba69ef41352702dee297044299ee2e" => :high_sierra
+    sha256 "7707dec14dd94ac8a0890b98d2f98364cf2e87463456a470925cb1173f67906c" => :sierra
+    sha256 "52af51190b40798a1e2a8413a3130a4392f089c8973d18afcca0bd365d894071" => :el_capitan
   end
 
   head do
-    url "git://repo.or.cz/nasm.git"
+    url "http://repo.or.cz/nasm.git"
     depends_on "autoconf" => :build
     depends_on "asciidoc" => :build
     depends_on "xmlto" => :build
   end
 
-  option :universal
-
   def install
-    ENV.universal_binary if build.universal?
     system "./autogen.sh" if build.head?
     system "./configure", "--prefix=#{prefix}"
     system "make", "manpages" if build.head?
+    system "make", "rdf"
     system "make", "install", "install_rdf"
   end
 

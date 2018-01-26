@@ -1,27 +1,25 @@
 class Glade < Formula
   desc "RAD tool for the GTK+ and GNOME environment"
   homepage "https://glade.gnome.org/"
-  url "https://download.gnome.org/sources/glade3/3.8/glade3-3.8.5.tar.xz"
-  sha256 "58a5f6e4df4028230ddecc74c564808b7ec4471b1925058e29304f778b6b2735"
-  revision 1
+  url "https://download.gnome.org/sources/glade/3.20/glade-3.20.2.tar.xz"
+  sha256 "07d1545570951aeded20e9fdc6d3d8a56aeefe2538734568c5335be336c6abed"
 
   bottle do
-    sha256 "5c910f1666f6e261369aa166bea2e48e5b03856928900448c2c577ec4f04eca2" => :el_capitan
-    sha256 "8f0c1d019b71e76381c0f4437395f1e1eb3da24e8ef1b16051535209aeeaf5d7" => :yosemite
-    sha256 "f4eae837311b7aadfff8a27720ce2bbc71871e9b095d31e90d4b833ec725205f" => :mavericks
+    sha256 "ac87e6105abb447609d5eec17e38606b558a1931dced66c708a32ba65ff5a1ac" => :high_sierra
+    sha256 "e61b53f6b7aab37ac47bb91825c0504fd615d152e310d990ed238b0af503b8f7" => :sierra
+    sha256 "567f482c5b8efedd1e1bdccffa8f9a10d6ddcdeddb19fb5dcb67dedc27c381e9" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
   depends_on "intltool" => :build
+  depends_on "itstool" => :build
+  depends_on "docbook-xsl" => :build
   depends_on "gettext"
   depends_on "libxml2"
+  depends_on "adwaita-icon-theme"
   depends_on "hicolor-icon-theme"
-  depends_on "gtk+"
+  depends_on "gtk+3"
   depends_on "gtk-mac-integration"
-
-  # patch restores compatibility with the latest gtk-mac-integration version
-  # this bug has been filed: https://bugzilla.gnome.org/show_bug.cgi?id=730778
-  patch :DATA
 
   def install
     # Find our docbook catalog
@@ -29,16 +27,22 @@ class Glade < Formula
 
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
-                          "--prefix=#{prefix}"
+                          "--prefix=#{prefix}",
+                          "--enable-gladeui",
+                          "--enable-introspection"
+    # objective-c is needed for glade-registration.c. unfortunately build fails if -x objective-c is added to global CFLAGS.
+    # Bugreport Upstream: https://bugzilla.gnome.org/show_bug.cgi?id=768032
+    inreplace "src/Makefile", "-c -o glade-glade-registration.o", "-x objective-c -c -o glade-glade-registration.o"
+
     system "make" # separate steps required
     system "make", "install"
   end
 
   test do
     # executable test (GUI)
-    system "#{bin}/glade-3", "--version"
+    system "#{bin}/glade", "--version"
     # API test
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gladeui/glade.h>
 
       int main(int argc, char *argv[]) {
@@ -54,9 +58,12 @@ class Glade < Formula
     gdk_pixbuf = Formula["gdk-pixbuf"]
     gettext = Formula["gettext"]
     glib = Formula["glib"]
-    gtkx = Formula["gtk+"]
+    gtkx3 = Formula["gtk+3"]
+    harfbuzz = Formula["harfbuzz"]
+    libepoxy = Formula["libepoxy"]
     libpng = Formula["libpng"]
     pango = Formula["pango"]
+    pcre = Formula["pcre"]
     pixman = Formula["pixman"]
     flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
     flags += %W[
@@ -66,13 +73,16 @@ class Glade < Formula
       -I#{freetype.opt_include}/freetype2
       -I#{gdk_pixbuf.opt_include}/gdk-pixbuf-2.0
       -I#{gettext.opt_include}
+      -I#{glib.opt_include}/gio-unix-2.0/
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include
-      -I#{gtkx.opt_include}/gtk-2.0
-      -I#{gtkx.opt_lib}/gtk-2.0/include
-      -I#{include}/libgladeui-1.0
+      -I#{gtkx3.opt_include}/gtk-3.0
+      -I#{harfbuzz.opt_include}/harfbuzz
+      -I#{include}/libgladeui-2.0
+      -I#{libepoxy.opt_include}
       -I#{libpng.opt_include}/libpng16
       -I#{pango.opt_include}/pango-1.0
+      -I#{pcre.opt_include}
       -I#{pixman.opt_include}/pixman-1
       -D_REENTRANT
       -L#{atk.opt_lib}
@@ -80,18 +90,19 @@ class Glade < Formula
       -L#{gdk_pixbuf.opt_lib}
       -L#{gettext.opt_lib}
       -L#{glib.opt_lib}
-      -L#{gtkx.opt_lib}
+      -L#{gtkx3.opt_lib}
       -L#{lib}
       -L#{pango.opt_lib}
       -latk-1.0
       -lcairo
-      -lgdk-quartz-2.0
+      -lcairo-gobject
+      -lgdk-3
       -lgdk_pixbuf-2.0
       -lgio-2.0
-      -lgladeui-1
+      -lgladeui-2
       -lglib-2.0
       -lgobject-2.0
-      -lgtk-quartz-2.0
+      -lgtk-3
       -lintl
       -lpango-1.0
       -lpangocairo-1.0
@@ -101,51 +112,3 @@ class Glade < Formula
     system "./test"
   end
 end
-__END__
-diff --git a/src/glade-window.c b/src/glade-window.c
-index f244c55..d7fb435 100644
---- a/src/glade-window.c
-+++ b/src/glade-window.c
-@@ -3395,34 +3395,34 @@ glade_window_init (GladeWindow *window)
-	{
-		/* Fix up the menubar for MacOSX Quartz builds */
-		GtkWidget *sep;
--		GtkOSXApplication *theApp = g_object_new(GTK_TYPE_OSX_APPLICATION, NULL);
-+		GtkosxApplication *theApp = g_object_new(GTKOSX_TYPE_APPLICATION, NULL);
-		gtk_widget_hide (menubar);
--		gtk_osxapplication_set_menu_bar(theApp, GTK_MENU_SHELL(menubar));
-+		gtkosx_application_set_menu_bar(theApp, GTK_MENU_SHELL(menubar));
-		widget =
-			gtk_ui_manager_get_widget (window->priv->ui, "/MenuBar/FileMenu/Quit");
-		gtk_widget_hide (widget);
-		widget =
-			gtk_ui_manager_get_widget (window->priv->ui, "/MenuBar/HelpMenu/About");
--		gtk_osxapplication_insert_app_menu_item (theApp, widget, 0);
-+		gtkosx_application_insert_app_menu_item (theApp, widget, 0);
-		sep = gtk_separator_menu_item_new();
-		g_object_ref(sep);
--		gtk_osxapplication_insert_app_menu_item (theApp, sep, 1);
-+		gtkosx_application_insert_app_menu_item (theApp, sep, 1);
-
-		widget =
-			gtk_ui_manager_get_widget (window->priv->ui, "/MenuBar/EditMenu/Preferences");
--		gtk_osxapplication_insert_app_menu_item  (theApp, widget, 2);
-+		gtkosx_application_insert_app_menu_item  (theApp, widget, 2);
-		sep = gtk_separator_menu_item_new();
-		g_object_ref(sep);
--		gtk_osxapplication_insert_app_menu_item (theApp, sep, 3);
-+		gtkosx_application_insert_app_menu_item (theApp, sep, 3);
-
-		widget =
-			gtk_ui_manager_get_widget (window->priv->ui, "/MenuBar/HelpMenu");
--		gtk_osxapplication_set_help_menu(theApp, GTK_MENU_ITEM(widget));
-+		gtkosx_application_set_help_menu(theApp, GTK_MENU_ITEM(widget));
-
-		g_signal_connect(theApp, "NSApplicationWillTerminate",
-				 G_CALLBACK(quit_cb), window);
-
--		gtk_osxapplication_ready(theApp);
-+		gtkosx_application_ready(theApp);
-
-	}
- #endif

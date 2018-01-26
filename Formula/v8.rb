@@ -3,14 +3,16 @@
 class V8 < Formula
   desc "Google's JavaScript engine"
   homepage "https://github.com/v8/v8/wiki"
-  url "https://github.com/v8/v8-git-mirror/archive/4.9.385.35.tar.gz"
-  sha256 "d775d0de8f0fa481254f81ccceffcdd14816316e2514a2f52b262e8ecfc390b6"
+  url "https://github.com/v8/v8-git-mirror/archive/5.1.281.47.tar.gz"
+  sha256 "63c9933227d6912689ea6bc012eea6a1fabaf526ac04bc245d9381e3ea238bf6"
 
   bottle do
     cellar :any
-    sha256 "8fe4e607c1a068ecdef73f9b5da7a43e031d03d9d4b9894fe95c4a46c609e3fa" => :el_capitan
-    sha256 "465719b89b764cbc468c8c5f43244475db4b6e7ae95880ae3f2ebdd6bd8c7d40" => :yosemite
-    sha256 "9c2c8d7fd429d1b4b4ea1bd474d4c1a8c0dff24cf3d6cc874f291787ed9fb7e7" => :mavericks
+    sha256 "179a8442510eb0a022ea6823cd6a76044c14c4fe18415710cac3d746d432020e" => :high_sierra
+    sha256 "8106efc14371982af11a66d8db533dc0589bc240950e0e445467cf6ce8871393" => :sierra
+    sha256 "487f2ca72096ee27d13533a6dad2d472a92ba40ef518a45226f19e94d4a79242" => :el_capitan
+    sha256 "dc9af3e08eda8a4acd1ff3c6b47a4c5170a92dbab7d2d79958a14d8aa42eefac" => :yosemite
+    sha256 "7bcd1bbd66c11305eeea0c36ca472de8a639f511abe0909c8815b1208dbce7b6" => :mavericks
   end
 
   option "with-readline", "Use readline instead of libedit"
@@ -19,9 +21,10 @@ class V8 < Formula
   # https://github.com/Homebrew/homebrew/issues/21426
   depends_on :macos => :lion
 
-  depends_on :python => :build # gyp doesn't run under 2.6 or lower
+  # gyp doesn't run under 2.6 or lower
+  depends_on "python" => :build if MacOS.version <= :snow_leopard
+
   depends_on "readline" => :optional
-  depends_on "icu4c" => :optional
 
   needs :cxx11
 
@@ -29,27 +32,27 @@ class V8 < Formula
   # Note that we don't require the "test" DEPS because we don't run the tests.
   resource "gyp" do
     url "https://chromium.googlesource.com/external/gyp.git",
-        :revision => "b85ad3e578da830377dbc1843aa4fbc5af17a192"
+        :revision => "4ec6c4e3a94bd04a6da2858163d40b2429b8aad1"
   end
 
   resource "icu" do
     url "https://chromium.googlesource.com/chromium/deps/icu.git",
-        :revision => "8d342a405be5ae8aacb1e16f0bc31c3a4fbf26a2"
+        :revision => "c291cde264469b20ca969ce8832088acb21e0c48"
   end
 
   resource "buildtools" do
     url "https://chromium.googlesource.com/chromium/buildtools.git",
-        :revision => "0f8e6e4b126ee88137930a0ae4776c4741808740"
+        :revision => "80b5126f91be4eb359248d28696746ef09d5be67"
   end
 
   resource "common" do
     url "https://chromium.googlesource.com/chromium/src/base/trace_event/common.git",
-        :revision => "d83d44b13d07c2fd0a40101a7deef9b93b841732"
+        :revision => "c8c8665c2deaf1cc749d9f8e153256d4f67bf1b8"
   end
 
   resource "swarming_client" do
     url "https://chromium.googlesource.com/external/swarming.client.git",
-        :revision => "9cdd76171e517a430a72dcd7d66ade67e109aa00"
+        :revision => "df6e95e7669883c8fe9ef956c69a544154701a49"
   end
 
   resource "gtest" do
@@ -64,7 +67,7 @@ class V8 < Formula
 
   resource "clang" do
     url "https://chromium.googlesource.com/chromium/src/tools/clang.git",
-        :revision => "24e8c1c92fe54ef8ed7651b5850c056983354a4a"
+        :revision => "faee82e064e04e5cbf60cc7327e7a81d2a4557ad"
   end
 
   def install
@@ -73,13 +76,6 @@ class V8 < Formula
     ENV["GYP_DEFINES"] = "clang=1 mac_deployment_target=#{MacOS.version}"
     # https://code.google.com/p/v8/issues/detail?id=4511#c3
     ENV.append "GYP_DEFINES", "v8_use_external_startup_data=0"
-
-    if build.with? "icu4c"
-      ENV.append "GYP_DEFINES", "use_system_icu=1"
-      i18nsupport = "i18nsupport=on"
-    else
-      i18nsupport = "i18nsupport=off"
-    end
 
     # fix up libv8.dylib install_name
     # https://github.com/Homebrew/homebrew/issues/36571
@@ -98,7 +94,7 @@ class V8 < Formula
     (buildpath/"tools/clang").install resource("clang")
 
     system "make", "native", "library=shared", "snapshot=on",
-                   "console=readline", i18nsupport,
+                   "console=readline", "i18nsupport=off",
                    "strictaliasing=off"
 
     include.install Dir["include/*"]

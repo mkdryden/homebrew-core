@@ -1,26 +1,39 @@
 class Sslscan < Formula
-  desc "Test SSL/TLS enabled services to discover supported cipher suites."
+  desc "Test SSL/TLS enabled services to discover supported cipher suites"
   homepage "https://github.com/rbsec/sslscan"
-  url "https://github.com/rbsec/sslscan/archive/1.11.4-rbsec.tar.gz"
-  version "1.11.4"
-  sha256 "25720c0caf25a1a81841417658201030ac17c20be59e14dc466c79a92c7bfe10"
+  url "https://github.com/rbsec/sslscan/archive/1.11.11-rbsec.tar.gz"
+  version "1.11.11"
+  sha256 "93fbe1570073dfb2898a546759836ea4df5054e3a8f6d2e3da468eddac8b1764"
   head "https://github.com/rbsec/sslscan.git"
 
   bottle do
-    cellar :any
-    sha256 "b885f2a0a26d764eb80634ffd3834738b498a355704f5f6303f365b4208ae2b2" => :el_capitan
-    sha256 "90f200a5d92d4d2561a31474ca5a17b1014a1945203c9f670c027ef8b67139bd" => :yosemite
-    sha256 "b74ae765db7d73449c4a9231bdb90554171befc13b60c6813bc7069acb039b5d" => :mavericks
+    cellar :any_skip_relocation
+    sha256 "b45535639610fd506cad8ff708810d2ef033fb2eb23a887705191a34c8505bc9" => :high_sierra
+    sha256 "7b608acf33d2cbb2e5dd66f99a5c2ca731304ad01f3f5e55e0daadcf2efe69f9" => :sierra
+    sha256 "25b58dc0d59e2da5c85fefc128965e882a10b659e63a1f719d89eca5f6fdb25c" => :el_capitan
   end
 
-  depends_on "openssl"
+  resource "insecure-openssl" do
+    url "https://github.com/openssl/openssl/archive/OpenSSL_1_0_2f.tar.gz"
+    sha256 "4c9492adcb800ec855f11121bd64ddff390160714d93f95f279a9bd7241c23a6"
+  end
 
   def install
-    system "make"
+    (buildpath/"openssl").install resource("insecure-openssl")
+
+    # prevent sslscan from fetching the tip of the openssl fork
+    # at https://github.com/PeterMosmans/openssl
+    inreplace "Makefile", "openssl/Makefile: .openssl.is.fresh",
+                          "openssl/Makefile:"
+
+    ENV.deparallelize do
+      system "make", "static"
+    end
     system "make", "install", "PREFIX=#{prefix}"
   end
 
   test do
+    assert_match "static", shell_output("#{bin}/sslscan --version")
     system "#{bin}/sslscan", "google.com"
   end
 end

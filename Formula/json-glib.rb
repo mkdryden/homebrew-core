@@ -1,14 +1,14 @@
 class JsonGlib < Formula
   desc "Library for JSON, based on GLib"
   homepage "https://live.gnome.org/JsonGlib"
-  url "https://download.gnome.org/sources/json-glib/1.0/json-glib-1.0.4.tar.xz"
-  sha256 "80f3593cb6bd13f1465828e46a9f740e2e9bd3cd2257889442b3e62bd6de05cd"
+  url "https://download.gnome.org/sources/json-glib/1.2/json-glib-1.2.8.tar.xz"
+  sha256 "fd55a9037d39e7a10f0db64309f5f0265fa32ec962bf85066087b83a2807f40a"
 
   bottle do
-    sha256 "08cf8e09c827d20869eb11b6a5422caf49a291142dc3c403cc4392b15d03d1fb" => :el_capitan
-    sha256 "6892a414c3e09d955ddf5ae6b757d5b49c46fc4adb230afda9262a821a5da3af" => :yosemite
-    sha256 "d45ce5b7d2a3077b61a36565792b626e15ffc2b3f3cdc1011b349ee770b6019b" => :mavericks
-    sha256 "ef7772e0fc8f65c2b6b795de8b6743cefad78b309eeccf12e92c23705bd6f4a2" => :mountain_lion
+    sha256 "ef94f622668cfdc0bbf6f9788ab9b41742fb9c6e80639e0212e4d33fdba8af4f" => :high_sierra
+    sha256 "3faa6b4be8e06f768fc550e7373edccd09ec308e00a65fd48a01eb46f0d77bac" => :sierra
+    sha256 "d26028a584955b8ebe2002261ccd34cd8ef8b5f287b6da211276fb981bd405dd" => :el_capitan
+    sha256 "6bd1f2ed688b6f637a942400d55fc6f4e51db40887421a80b1ffcce185d3e084" => :yosemite
   end
 
   depends_on "pkg-config" => :build
@@ -16,15 +16,16 @@ class JsonGlib < Formula
   depends_on "gobject-introspection"
 
   def install
-    system "./configure", "--disable-debug",
+    system "./configure", "--disable-silent-rules",
                           "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--enable-introspection=yes"
+    system "make"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <json-glib/json-glib.h>
 
       int main(int argc, char *argv[]) {
@@ -34,8 +35,7 @@ class JsonGlib < Formula
     EOS
     gettext = Formula["gettext"]
     glib = Formula["glib"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{gettext.opt_include}
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include

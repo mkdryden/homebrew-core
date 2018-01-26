@@ -1,19 +1,18 @@
 class Qtfaststart < Formula
   desc "Utility for Quicktime files"
   homepage "https://libav.org/"
-  url "https://libav.org/releases/libav-11.2.tar.gz"
-  sha256 "1f1448e1245444a1fae2f077f6846fedb47dfb294bef797e6742c095a6b4d769"
+  url "https://libav.org/releases/libav-12.2.tar.gz"
+  sha256 "49c3ccda32458192c00ab25b30f4d1a6a4772b83458cbbf3a25b210d0688f55c"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "77aac045ac61652f58012dc5f0661e67f7b4a7b4b6fffb471be792ba145f2b31" => :el_capitan
-    sha256 "2a489212e330d6286bc3cad6c8d03f5f29313c0d4e41dc84193c6f6efc8597b8" => :yosemite
-    sha256 "3c4a8acf49e665b22b088246ec5b06c8e92077e0f7f64e3445a69e2a76742391" => :mavericks
-    sha256 "e97d00bb8dac4155d6040e0d28be3134d7d64e0aced0503b255f0fd763efdca9" => :mountain_lion
+    sha256 "e6cb881b5847a3dda9f56a2b244c6c6123b13e28b41c91dbcd1bc4afd6fcd773" => :high_sierra
+    sha256 "8848267a2ab440f0c428baa9347351cf54d57221ae5f7d83db2c24623a7263e4" => :sierra
+    sha256 "892c2705b879a778794892e3655da5f2f747c4061ea919372e8e35b0470135a2" => :el_capitan
   end
 
   resource "mov" do
-    url "http://download.wavetlan.com/SVV/Media/HTTP/H264/Talkinghead_Media/H264_test4_Talkingheadclipped_mov_480x320.mov"
+    url "https://github.com/van7hu/fanca/raw/master/examples/kmplayer/samples/H264_test4_Talkingheadclipped_mov_480x320.mov"
     sha256 "5af004e182ac7214dadf34816086d0a25c7a6cac568ae3741fca527cbbd242fc"
   end
 
@@ -28,6 +27,6 @@ class Qtfaststart < Formula
     resource("mov").stage testpath
     system "#{bin}/qt-faststart", input, output
 
-    assert File.exist? output
+    assert_predicate testpath/output, :exist?
   end
 end

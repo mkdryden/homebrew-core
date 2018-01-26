@@ -1,17 +1,16 @@
 class Zookeeper < Formula
   desc "Centralized server for distributed coordination of services"
   homepage "https://zookeeper.apache.org/"
-
-  stable do
-    url "https://www.apache.org/dyn/closer.cgi?path=zookeeper/zookeeper-3.4.8/zookeeper-3.4.8.tar.gz"
-    sha256 "f10a0b51f45c4f64c1fe69ef713abf9eb9571bc7385a82da892e83bb6c965e90"
-  end
+  url "https://www.apache.org/dyn/closer.cgi?path=zookeeper/zookeeper-3.4.10/zookeeper-3.4.10.tar.gz"
+  mirror "https://archive.apache.org/dist/zookeeper/zookeeper-3.4.10/zookeeper-3.4.10.tar.gz"
+  sha256 "7f7f5414e044ac11fee2a1e0bc225469f51fb0cdf821e67df762a43098223f27"
 
   bottle do
     cellar :any
-    sha256 "b45ec5b5e847bb31357700c3fb02821dc5b42f41f81f432ed6990e35c6719a8b" => :el_capitan
-    sha256 "9988bce4d4e77d580e27ead20a2a9d0d82cc34c795a3dbdaccb71a7e619d0c03" => :yosemite
-    sha256 "7d7c14e893642c5625f34676622ca3766e74cbb7cb39d921cf67bc21afb44a9d" => :mavericks
+    rebuild 1
+    sha256 "08431d9c2f04f5a735149f374975df4f2e0d8140b1cc901f505d379ef7e20fe0" => :high_sierra
+    sha256 "8c7304be183d4c28c0f5d88e22626188c76794bee004e1b330c3e79bf5ae9d53" => :sierra
+    sha256 "2d792cb3963a7caf57922635888ae4e3cf363ef5a81d23f13a11d0ee42a780cf" => :el_capitan
   end
 
   head do
@@ -28,10 +27,10 @@ class Zookeeper < Formula
 
   deprecated_option "perl" => "with-perl"
 
-  depends_on :python => :optional
+  depends_on "python" => :optional
 
   def shim_script(target)
-    <<-EOS.undent
+    <<~EOS
       #!/usr/bin/env bash
       . "#{etc}/zookeeper/defaults"
       cd "#{libexec}/bin"
@@ -40,15 +39,15 @@ class Zookeeper < Formula
   end
 
   def default_zk_env
-    <<-EOS.undent
-      export ZOOCFGDIR="#{etc}/zookeeper"
+    <<~EOS
+      [ -z "$ZOOCFGDIR" ] && export ZOOCFGDIR="#{etc}/zookeeper"
     EOS
   end
 
   def default_log4j_properties
-    <<-EOS.undent
+    <<~EOS
       log4j.rootCategory=WARN, zklog
-      log4j.appender.zklog = org.apache.log4j.FileAppender
+      log4j.appender.zklog = org.apache.log4j.RollingFileAppender
       log4j.appender.zklog.File = #{var}/log/zookeeper/zookeeper.log
       log4j.appender.zklog.Append = true
       log4j.appender.zklog.layout = org.apache.log4j.PatternLayout
@@ -58,7 +57,7 @@ class Zookeeper < Formula
 
   def install
     # Don't try to build extensions for PPC
-    if Hardware.is_32_bit?
+    if Hardware::CPU.is_32_bit?
       ENV["ARCHFLAGS"] = "-arch #{Hardware::CPU.arch_32_bit}"
     else
       ENV["ARCHFLAGS"] = Hardware::CPU.universal_archs.as_arch_flags
@@ -96,9 +95,11 @@ class Zookeeper < Formula
 
     if build.head?
       system "ant"
-      libexec.install Dir["bin", "src/contrib", "src/java/lib", "build/*.jar"]
+      libexec.install "bin", "src/contrib", "src/java/lib"
+      libexec.install Dir["build/*.jar"]
     else
-      libexec.install Dir["bin", "contrib", "lib", "*.jar"]
+      libexec.install "bin", "contrib", "lib"
+      libexec.install Dir["*.jar"]
     end
 
     bin.mkpath
@@ -127,7 +128,7 @@ class Zookeeper < Formula
 
   plist_options :manual => "zkServer start"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -156,5 +157,10 @@ class Zookeeper < Formula
       </dict>
     </plist>
     EOS
+  end
+
+  test do
+    output = shell_output("#{bin}/zkServer -h 2>&1")
+    assert_match "Using config: #{etc}/zookeeper/zoo.cfg", output
   end
 end

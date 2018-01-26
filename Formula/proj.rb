@@ -1,14 +1,21 @@
 class Proj < Formula
-  desc "PROJ.4, a Cartographic Projections Library"
-  homepage "https://trac.osgeo.org/proj/"
-  url "http://download.osgeo.org/proj/proj-4.9.2.tar.gz"
-  sha256 "60bf9ad1ed1c18158e652dfff97865ba6fb2b67f1511bc8dceae4b3c7e657796"
-  head "http://svn.osgeo.org/metacrs/proj/trunk/proj"
+  desc "Cartographic Projections Library"
+  homepage "http://proj4.org"
+  url "http://download.osgeo.org/proj/proj-4.9.3.tar.gz"
+  sha256 "6984542fea333488de5c82eea58d699e4aff4b359200a9971537cd7e047185f7"
 
   bottle do
-    sha256 "b38c33321502ff9d808f06e1f8ff932c0c2c2c832c121c61cd30d5cd98fbaf8e" => :el_capitan
-    sha256 "8146548590a89b1c82a115594b282f6d6708067490dd8c2f83d1e0d8a03845c3" => :yosemite
-    sha256 "d76df7d958194e3e71993de9496480f0ee636170251b50013f79628ae27c9888" => :mavericks
+    sha256 "3bb7bda64844e30e4103a33e2bd15985359a90c1d8db7244bbd8055bb121b810" => :high_sierra
+    sha256 "82ea2f4d18b24bf337bf10bbb42f3e7d98a24803db252c8ea0383873c1d944cc" => :sierra
+    sha256 "4a18c02f82a4ee75c4cb61bb201bfe14d05fdf663781270ccaba6cad3cd3bc86" => :el_capitan
+    sha256 "eecdee32c333c828b17c0246d2cdf0580f144029c43c278555f793c5e3fead02" => :yosemite
+  end
+
+  head do
+    url "https://github.com/OSGeo/proj.4.git"
+    depends_on "autoconf" => :build
+    depends_on "automake" => :build
+    depends_on "libtool" => :build
   end
 
   option "with-vdatum", "Install vertical datum files (~380 MB)"
@@ -67,10 +74,6 @@ class Proj < Formula
 
   skip_clean :la
 
-  fails_with :llvm do
-    build 2334
-  end
-
   def install
     resources.each do |r|
       if r.name == "datumgrid"
@@ -80,19 +83,20 @@ class Proj < Formula
       end
     end
 
+    system "./autogen.sh" if build.head?
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make", "install"
   end
 
   test do
-    (testpath/"test").write <<-EOS.undent
+    (testpath/"test").write <<~EOS
       45d15n 71d07w Boston, United States
       40d40n 73d58w New York, United States
       48d51n 2d20e Paris, France
       51d30n 7'w London, England
     EOS
-    match = <<-EOS.undent
+    match = <<~EOS
       -4887590.49\t7317961.48 Boston, United States
       -5542524.55\t6982689.05 New York, United States
       171224.94\t5415352.81 Paris, France

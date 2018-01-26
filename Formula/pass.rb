@@ -1,32 +1,49 @@
 class Pass < Formula
   desc "Password manager"
   homepage "https://www.passwordstore.org/"
-  url "https://git.zx2c4.com/password-store/snapshot/password-store-1.6.5.tar.xz"
-  sha256 "337a39767e6a8e69b2bcc549f27ff3915efacea57e5334c6068fcb72331d7315"
+  url "https://git.zx2c4.com/password-store/snapshot/password-store-1.7.1.tar.xz"
+  mirror "https://mirrors.ocf.berkeley.edu/debian/pool/main/p/password-store/password-store_1.7.1.orig.tar.xz"
+  sha256 "f6d2199593398aaefeaa55e21daddfb7f1073e9e096af6d887126141e99d9869"
+  revision 1
   head "https://git.zx2c4.com/password-store", :using => :git
 
   bottle do
     cellar :any_skip_relocation
-    revision 1
-    sha256 "41f0fe499d0d20df5962ef0f51b18445eacd26705d4c4eb2e2283fc8f911a6ca" => :el_capitan
-    sha256 "a304dad35621f226856262d16fb3045f3ba424c255ff434eed27ee4543cd93ed" => :yosemite
-    sha256 "ce1f893a53205dc65cd857025a54067a36e37468948922114c46602da66f1bb4" => :mavericks
+    sha256 "cf0b79bd037b53d985c758b9b1e90c530e6ce4fd976e9ad14595806610f4f248" => :high_sierra
+    sha256 "cf0b79bd037b53d985c758b9b1e90c530e6ce4fd976e9ad14595806610f4f248" => :sierra
+    sha256 "cf0b79bd037b53d985c758b9b1e90c530e6ce4fd976e9ad14595806610f4f248" => :el_capitan
   end
 
-  depends_on "pwgen"
+  depends_on "qrencode"
   depends_on "tree"
   depends_on "gnu-getopt"
-  depends_on :gpg
+  depends_on "gnupg"
 
   def install
-    system "make", "PREFIX=#{prefix}", "install"
-    share.install "contrib"
-    zsh_completion.install "src/completion/pass.zsh-completion" => "_pass"
-    bash_completion.install "src/completion/pass.bash-completion" => "password-store"
-    fish_completion.install "src/completion/pass.fish-completion" => "pass.fish"
+    system "make", "PREFIX=#{prefix}", "WITH_ALLCOMP=yes", "BASHCOMPDIR=#{bash_completion}", "ZSHCOMPDIR=#{zsh_completion}", "FISHCOMPDIR=#{fish_completion}", "install"
+    elisp.install "contrib/emacs/password-store.el"
+    pkgshare.install "contrib"
   end
 
   test do
-    system "#{bin}/pass", "--version"
+    (testpath/"batch.gpg").write <<~EOS
+      Key-Type: RSA
+      Key-Length: 2048
+      Subkey-Type: RSA
+      Subkey-Length: 2048
+      Name-Real: Testing
+      Name-Email: testing@foo.bar
+      Expire-Date: 1d
+      %no-protection
+      %commit
+    EOS
+    begin
+      system Formula["gnupg"].opt_bin/"gpg", "--batch", "--gen-key", "batch.gpg"
+      system bin/"pass", "init", "Testing"
+      system bin/"pass", "generate", "Email/testing@foo.bar", "15"
+      assert_predicate testpath/".password-store/Email/testing@foo.bar.gpg", :exist?
+    ensure
+      system Formula["gnupg"].opt_bin/"gpgconf", "--kill", "gpg-agent"
+    end
   end
 end

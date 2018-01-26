@@ -1,35 +1,27 @@
 class Expat < Formula
   desc "XML 1.0 parser"
-  homepage "http://www.libexpat.org"
-  url "https://downloads.sourceforge.net/project/expat/expat/2.1.0/expat-2.1.0.tar.gz"
-  mirror "https://fossies.org/linux/www/expat-2.1.0.tar.gz"
-  sha256 "823705472f816df21c8f6aa026dd162b280806838bb55b3432b0fb1fcca7eb86"
-  revision 1
-
-  head ":pserver:anonymous:@expat.cvs.sourceforge.net:/cvsroot/expat", :using => :cvs
+  homepage "https://libexpat.github.io/"
+  url "https://downloads.sourceforge.net/project/expat/expat/2.2.5/expat-2.2.5.tar.bz2"
+  sha256 "d9dc32efba7e74f788fcc4f212a43216fc37cf5f23f4c2339664d473353aedf6"
+  head "https://github.com/libexpat/libexpat.git"
 
   bottle do
     cellar :any
-    revision 1
-    sha256 "c866592f74d84d50d2465120deac0309ea2a192dbc647785553cce5d42c445e6" => :el_capitan
-    sha256 "159b1125406c697ec737f7ba548c2f43cde630e6c78ad02cb3071786f8799d6b" => :yosemite
-    sha256 "bfea179a87f894127f9a7454ef9bf31800b29f7579ec06cbed34aae02517f8f6" => :mavericks
-    sha256 "760375f5814e2b1b3c1f2f2c8b31b0ed37fdc5022b4ca484dc6b8f106d14a72a" => :mountain_lion
+    sha256 "0ef65624ae99120f21c4ef319a8a056697db296efd9bbd662529334711c7bc15" => :high_sierra
+    sha256 "653edd989854be055f50853486a4945d68e49cc8f6e944776bf2be67b51ac304" => :sierra
+    sha256 "618683020e64ef1ca99d0c2f388262cf32117d93d7f047bf8251461d8af3f04e" => :el_capitan
   end
 
-  keg_only :provided_by_osx, "OS X includes Expat 1.5."
-
-  option :universal
+  keg_only :provided_by_macos
 
   def install
-    ENV.universal_binary if build.universal?
     system "./configure", "--prefix=#{prefix}",
                           "--mandir=#{man}"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <stdio.h>
       #include "expat.h"
 
@@ -63,7 +55,7 @@ class Expat < Formula
         return result;
       }
     EOS
-    system ENV.cc, "test.c", "-lexpat", "-o", "test"
+    system ENV.cc, "test.c", "-I#{include}", "-L#{lib}", "-lexpat", "-o", "test"
     assert_equal "tag:str|data:Hello, world!|", shell_output("./test")
   end
 end

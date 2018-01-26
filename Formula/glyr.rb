@@ -1,14 +1,15 @@
 class Glyr < Formula
   desc "Music related metadata search engine with command-line interface and C API"
   homepage "https://github.com/sahib/glyr"
-  url "https://github.com/sahib/glyr/archive/1.0.8.tar.gz"
-  sha256 "0f25f291c7d956bc76d097a4a28595b6607ae8f599988018b36769ef3284b29a"
+  url "https://github.com/sahib/glyr/archive/1.0.10.tar.gz"
+  sha256 "77e8da60221c8d27612e4a36482069f26f8ed74a1b2768ebc373c8144ca806e8"
 
   bottle do
     cellar :any
-    sha256 "7b240a58a5d1560d2d161935be8dc14c670098b76398c45afb528a8bc654b2ef" => :el_capitan
-    sha256 "cdf7b602cdf76dad1371363ff5ae75d92d66a2fb683ae4a618d23ac654b1883b" => :yosemite
-    sha256 "c1c0fc54aa3937936c41b92138661c760bcf03f260be7a0486c53f66273b7b20" => :mavericks
+    sha256 "9b7448df01aa5a4c2971d627ebd119fe59ab6c37ad1ded6f1471037a3af3d820" => :high_sierra
+    sha256 "66daab90aa98c16fa6e3c031e4036ccb7f41f133212f6fff004bcede05dd42b7" => :sierra
+    sha256 "3a015fb80957abdedfcbaccff3f614653f62b1154cec1ee59eb7f34f8f060071" => :el_capitan
+    sha256 "3be5650f4bc70c13e62c3092aef3629357e68424485590304de80345c6a817e1" => :yosemite
   end
 
   depends_on "cmake" => :build
@@ -22,8 +23,8 @@ class Glyr < Formula
   end
 
   test do
-    out = testpath/"cover.txt"
-    system "#{bin}/glyrc", "cover", "-D", "--artist", "Beatles", "--album", "Please Please Me", "-w", out
-    assert_match %r{^https?://}, out.read
+    search = "--artist Beatles --album \"Please Please Me\""
+    cmd = "#{bin}/glyrc cover --no-download #{search} -w stdout"
+    assert_match %r{^https?://}, pipe_output(cmd, nil, 0)
   end
 end

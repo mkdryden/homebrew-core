@@ -1,19 +1,20 @@
 class FonFlashCli < Formula
   desc "Flash La Fonera and Atheros chipset compatible devices"
   homepage "https://www.gargoyle-router.com/wiki/doku.php?id=fon_flash"
-  url "https://www.gargoyle-router.com/downloads/src/gargoyle_1.8.0-src.tar.gz"
-  version "1.8.0"
-  sha256 "89493cfedbe38800121fbe5e281e0542df4026f76de242ef664120649900772a"
-
+  url "https://www.gargoyle-router.com/downloads/src/gargoyle_1.10.0-src.tar.gz"
+  version "1.10.0"
+  sha256 "6397505b4a0c1f65c4823314d73fe6ad71f8c860d4582c581f47f16615597245"
   head "https://github.com/ericpaulbishop/gargoyle.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "9f6a248a19a645ea96026056c282c0a50487e0157e7524dcb132e5d68819036b" => :el_capitan
-    sha256 "81a834863603744f16c18b9aa5ea35c2a2d94cab29ec813ebbb26f036a7cbe05" => :yosemite
-    sha256 "6d9553416c6ee3357c1c160b2f77bcea950a9c326c659011c11ea039200d3384" => :mavericks
-    sha256 "0e2e7ff173495f9e9d908be176ad95589637da5f4849ce4702ee82ee410f3308" => :mountain_lion
+    sha256 "eefb911151deebc71f57de54004b2d8622223b60c8bf6313fcf94a4309c7ce9a" => :high_sierra
+    sha256 "9aa03dd80f5796ef9087b1e109660fa2c9dc612d399e24c5d61905934d087ac8" => :sierra
+    sha256 "c612973622cb2b87b5043fecd3aa3419bfc75d469dd7c470e25b72a2d346b834" => :el_capitan
   end
+
+  # requires at least the 10.11 SDK
+  depends_on :macos => :yosemite
 
   def install
     cd "fon-flash" do

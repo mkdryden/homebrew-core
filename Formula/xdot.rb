@@ -1,23 +1,23 @@
 class Xdot < Formula
-  desc "Interactive viewer for graphs written in Graphviz's dot language."
+  desc "Interactive viewer for graphs written in Graphviz's dot language"
   homepage "https://github.com/jrfonseca/xdot.py"
-  url "https://pypi.python.org/packages/source/x/xdot/xdot-0.6.tar.gz"
-  sha256 "c71d82bad0fec696af36af788c2a1dbb5d9975bd70bfbdc14bda15b5c7319e6c"
+  url "https://files.pythonhosted.org/packages/f5/52/7cec1decf2b07c7749eb997fa5f365781a512722f48e6ad4294e31c94629/xdot-0.7.tar.gz"
+  sha256 "d2100c3201d974915d1b89220ce52f380334eb365ab48903573a8135f51d0ee0"
+  revision 1
 
-  head "https://github.com/jrfonseca/xdot.git"
+  head "https://github.com/jrfonseca/xdot.py.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "fb2840cd83fe13ba5a93832dd5aa605feca8f156121cd1d8beb4772e47ab3801" => :el_capitan
-    sha256 "9cf28bdc65d88717d0d7bac2f4aa8d2481dc1fbae3d0bb0ccd3966f27134fa2d" => :yosemite
-    sha256 "cc1909be49ac10c929613451862498c817fe691a60c49ae6bb5eeef4ee122d66" => :mavericks
-    sha256 "041b79d9ca753ec9005c7485417da74e5595ceadc4a6288dbe5c51d298e2886a" => :mountain_lion
+    sha256 "1c748698c57c726086ca193b424c46fd62763bb98ead4f5a53adca4fec07f04a" => :high_sierra
+    sha256 "4034a49a5d0d730089b5d55755e2d39edd8f17c67a65e9d210adf09b4916239c" => :sierra
+    sha256 "4034a49a5d0d730089b5d55755e2d39edd8f17c67a65e9d210adf09b4916239c" => :el_capitan
+    sha256 "4034a49a5d0d730089b5d55755e2d39edd8f17c67a65e9d210adf09b4916239c" => :yosemite
   end
 
-  depends_on "graphviz"
+  depends_on "pygobject3"
   depends_on "pygtk"
-  depends_on "cairo"
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python" if MacOS.version <= :snow_leopard
 
   def install
     ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python2.7/site-packages"

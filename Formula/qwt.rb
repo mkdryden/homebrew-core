@@ -1,15 +1,15 @@
 class Qwt < Formula
-  desc "Qt Widgets for Technical Applications (v5.1)"
-  homepage "http://qwt.sourceforge.net/"
-  url "https://downloads.sourceforge.net/project/qwt/qwt/6.1.2/qwt-6.1.2.tar.bz2"
-  sha256 "2b08f18d1d3970e7c3c6096d850f17aea6b54459389731d3ce715d193e243d0c"
+  desc "Qt Widgets for Technical Applications"
+  homepage "https://qwt.sourceforge.io/"
+  url "https://downloads.sourceforge.net/project/qwt/qwt/6.1.3/qwt-6.1.3.tar.bz2"
+  sha256 "f3ecd34e72a9a2b08422fb6c8e909ca76f4ce5fa77acad7a2883b701f4309733"
+  revision 4
 
   bottle do
-    cellar :any
-    revision 2
-    sha256 "0203eb8c150c368c97e00e607c2bbda1bf7bd50740a987ba59f6198a408a4fc6" => :el_capitan
-    sha256 "e855bb9cec6c3c2a1c977a1ec3719eaf5f032b8c8654919ed8c1cbbc22ab63c3" => :yosemite
-    sha256 "e5e240d5a1b148679d79b95216615bfb997a41be27d178d8b056e0be3ffab6cd" => :mavericks
+    sha256 "d91a8d16588cd615df09fc8bdf288c1eea5be8c0ad7e0fe894ad70914eb47488" => :high_sierra
+    sha256 "5e25de79818df25e3dab96795d24c4de066a39ae9d616d77c05f528ace671f6f" => :sierra
+    sha256 "b486e9d7b4a9d15886b51d9536ea6b32a642262d3acff5a7ea6985d7fd88db1a" => :el_capitan
+    sha256 "81fcb45fea416bc89e99b213d991c08ccb3ed34ef7da67346a273f8a1f203293" => :yosemite
   end
 
   option "with-qwtmathml", "Build the qwtmathml library"
@@ -26,15 +26,15 @@ class Qwt < Formula
       s.gsub! /^\s*QWT_INSTALL_PREFIX\s*=(.*)$/, "QWT_INSTALL_PREFIX=#{prefix}"
       s.sub! /\+(=\s*QwtDesigner)/, "-\\1" if build.without? "plugin"
 
-      # Install Qt plugin in `lib/qt4/plugins/designer`, not `plugins/designer`.
+      # Install Qt plugin in `lib/qt/plugins/designer`, not `plugins/designer`.
       s.sub! %r{(= \$\$\{QWT_INSTALL_PREFIX\})/(plugins/designer)$},
-             "\\1/lib/qt4/\\2"
+             "\\1/lib/qt/\\2"
     end
 
     args = ["-config", "release", "-spec"]
     # On Mavericks we want to target libc++, this requires a unsupported/macx-clang-libc++ flag
     if ENV.compiler == :clang && MacOS.version >= :mavericks
-      args << "unsupported/macx-clang-libc++"
+      args << "macx-clang"
     else
       args << "macx-g++"
     end
@@ -53,7 +53,7 @@ class Qwt < Formula
     s = ""
 
     if build.with? "qwtmathml"
-      s += <<-EOS.undent
+      s += <<~EOS
         The qwtmathml library contains code of the MML Widget from the Qt solutions package.
         Beside the Qwt license you also have to take care of its license:
         #{opt_prefix}/qtmmlwidget-license
@@ -61,6 +61,24 @@ class Qwt < Formula
     end
 
     s
+  end
+
+  test do
+    (testpath/"test.cpp").write <<~EOS
+      #include <qwt_plot_curve.h>
+      int main() {
+        QwtPlotCurve *curve1 = new QwtPlotCurve("Curve 1");
+        return (curve1 == NULL);
+      }
+    EOS
+    system ENV.cxx, "test.cpp", "-o", "out",
+      "-std=c++11",
+      "-framework", "qwt", "-framework", "QtCore",
+      "-F#{lib}", "-F#{Formula["qt"].opt_lib}",
+      "-I#{lib}/qwt.framework/Headers",
+      "-I#{Formula["qt"].opt_lib}/QtCore.framework/Versions/5/Headers",
+      "-I#{Formula["qt"].opt_lib}/QtGui.framework/Versions/5/Headers"
+    system "./out"
   end
 end
 

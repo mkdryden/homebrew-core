@@ -1,29 +1,26 @@
 class Stlink < Formula
-  desc "stm32 discovery line Linux programmer"
+  desc "STM32 discovery line Linux programmer"
   homepage "https://github.com/texane/stlink"
-  url "https://github.com/texane/stlink/archive/1.1.0.tar.gz"
-  sha256 "3ac4dfcf1da0da40a1b71a8789ff0f1e7d978ea0222158bebd2de916c550682c"
+  url "https://github.com/texane/stlink/archive/1.4.0.tar.gz"
+  sha256 "d99b8385cce8071d5e58de21b6c8866058af20a8dd46ecf01e1c1dc3aa038cc9"
 
   head "https://github.com/texane/stlink.git"
 
   bottle do
     cellar :any
-    revision 1
-    sha256 "ab03c755109f6fb00dc5ba0b667c91b1b06887098b5e7ca9b4ff95407f7e6dfd" => :el_capitan
-    sha256 "68217df89dd719dc8345ec065f16a5c48a909fb1dbe4f6d638707110e6526e3f" => :yosemite
-    sha256 "36ad00988ff74f08da8be3653ed7070b206ac53c9720e5c6e2a5476b2d1fa7cf" => :mavericks
+    sha256 "1c00964c08eeb84ec190481201ecc7470f673fc42f1fda818490dc418c930fa8" => :high_sierra
+    sha256 "1f90c0e23af7e9cfb12a14e895093a1b9ffe119a07e5a5fe5111b720ae6d7c2f" => :sierra
+    sha256 "4a5c0b1d04d0d410ff99829d71fc2e7832b586e82cd29c731f2093cefa213e57" => :el_capitan
+    sha256 "88f7976a27b805d2481c9a3cadc391ed3aa0124cedd52f72feecb8e3e09e6c88" => :yosemite
   end
 
-  depends_on "libusb"
-
-  depends_on "autoconf" => :build
-  depends_on "automake" => :build
+  depends_on "cmake" => :build
   depends_on "pkg-config" => :build
+  depends_on "libusb"
+  depends_on "gtk+3" => :optional
 
   def install
-    system "./autogen.sh"
-    system "./configure", "--prefix=#{prefix}"
-    system "make"
+    system "cmake", ".", *std_cmake_args
     system "make", "install"
   end
 

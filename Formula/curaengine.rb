@@ -8,10 +8,11 @@ class Curaengine < Formula
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "3ff512abcab846bd63db5a6bfb11b544c416284b46d978cd7db854879e5421d9" => :el_capitan
-    sha256 "eef2771a72371fd9d541d83cf5ba92c88f1ab614017e03860f59bfacaa5eb948" => :yosemite
-    sha256 "4cfea42552a3acb1ec939d882ef38bfd766a15f0f462f595e6da5f6d851a0437" => :mavericks
-    sha256 "6ada916641459b6d059985c82d61a197a92bf724e7d5770a0bbcf60b6d6361a3" => :mountain_lion
+    rebuild 1
+    sha256 "750b6ca6224c47f14cafa72bdca8f204348fdffda46289234b6f1e3c7f8b53ce" => :high_sierra
+    sha256 "6319dc4f7e2648f801728e4aaf0aff747ae305ca9f6130181d164f222f40d160" => :sierra
+    sha256 "73def7a0bbe0e297fd6490c0b0fd481265814918ffa42bf83febd5f1e68d7149" => :el_capitan
+    sha256 "4252263a845ca5fc5631c4211eac9a95ad53e20cc07dfa0ea6422ea83ca178e7" => :yosemite
   end
 
   def install
@@ -20,7 +21,7 @@ class Curaengine < Formula
   end
 
   test do
-    (testpath/"t.stl").write <<-EOF.undent
+    (testpath/"t.stl").write <<~EOS
       solid t
         facet normal 0 -1 0
          outer loop
@@ -30,7 +31,7 @@ class Curaengine < Formula
          endloop
         endfacet
       endsolid Star
-    EOF
+    EOS
 
     system "#{bin}/CuraEngine", "#{testpath}/t.stl"
   end

@@ -1,13 +1,15 @@
 class Libsecret < Formula
   desc "Library for storing/retrieving passwords and other secrets"
   homepage "https://wiki.gnome.org/Projects/Libsecret"
-  url "https://download.gnome.org/sources/libsecret/0.18/libsecret-0.18.4.tar.xz"
-  sha256 "0f29b51698198e6999c91f4adce3119c8c457f546b133a85baea5ea9010a19ed"
+  url "https://download.gnome.org/sources/libsecret/0.18/libsecret-0.18.5.tar.xz"
+  sha256 "9ce7bd8dd5831f2786c935d82638ac428fa085057cc6780aba0e39375887ccb3"
+  revision 1
 
   bottle do
-    sha256 "4d726f0a13c77ba0db1be9a8e6a033af5908e0dea0733ac20ec19bbf34d621b2" => :el_capitan
-    sha256 "9888c18e94b2e13588c5ff0d63890e2a9ae2ad3f301e92ca9a430da122d39a1b" => :yosemite
-    sha256 "73af85f9feaf25353d04347b047e9335bcdca4c165a19a001815213e27b68cb3" => :mavericks
+    sha256 "fe0fb636bf96c93bade82da91245ef92a5734dee84a8f2ed6294f0bd9e822806" => :high_sierra
+    sha256 "70dc8c53fe5e90878623f3d78dc31e23894429e5ffac816efaa17ac683d6e80d" => :sierra
+    sha256 "bc8741bca918709da77c0144e985918b720afcd27b6228963f117348994d680c" => :el_capitan
+    sha256 "9abd02a3cc9049c185321f691df43da2b150a2f55ca0463e346632b93a7a7900" => :yosemite
   end
 
   depends_on "pkg-config" => :build
@@ -15,10 +17,10 @@ class Libsecret < Formula
   depends_on "intltool" => :build
   depends_on "gettext" => :build
   depends_on "docbook-xsl" => :build
-  depends_on "vala" => :optional
-  depends_on "gobject-introspection" => :recommended
   depends_on "glib"
   depends_on "libgcrypt"
+  depends_on "gobject-introspection" => :recommended
+  depends_on "vala" => :optional
 
   def install
     ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
@@ -30,7 +32,7 @@ class Libsecret < Formula
       --prefix=#{prefix}
     ]
 
-    args << "--enable-gobject-introspection" if build.with? "gobject-introspection"
+    args << "--enable-introspection" if build.with? "gobject-introspection"
     args << "--enable-vala" if build.with? "vala"
 
     system "./configure", *args
@@ -42,7 +44,7 @@ class Libsecret < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <libsecret/secret.h>
 
       const SecretSchema * example_get_schema (void) G_GNUC_CONST;
@@ -65,6 +67,7 @@ class Libsecret < Formula
       int main()
       {
           example_get_schema();
+          return 0;
       }
     EOS
 

@@ -1,17 +1,18 @@
 class Tmate < Formula
   desc "Instant terminal sharing"
-  homepage "http://tmate.io"
+  homepage "https://tmate.io/"
   url "https://github.com/tmate-io/tmate/archive/2.2.1.tar.gz"
   sha256 "d9c2ac59f42e65aac5f500f0548ea8056fd79c9c5285e5af324d833e2a84c305"
-  revision 1
+  revision 3
 
   head "https://github.com/tmate-io/tmate.git"
 
   bottle do
     cellar :any
-    sha256 "a7ee83971e4cc901b0c81e69fe32f205b7fa94bfb24cda381b9b368ea0a651ad" => :el_capitan
-    sha256 "dc86e6830f0c0f2293769e96613f92c6a6e6d9eedaea9a7534f46ce7518c8b1d" => :yosemite
-    sha256 "180601994c1bb11dbc90ee63fe08d77a9b9304810d444f98e4a5922946d1185a" => :mavericks
+    sha256 "d2c18c43ddcc8ce25d01353d58d9b93f38fe066a2250cdfd99f70b9f4f724c36" => :high_sierra
+    sha256 "6fcea69412c5d4f42017af3912a1d95c8d9c3284784c82fa88b98c679c955e16" => :sierra
+    sha256 "55baab86d5d34769fede15c104f4db817718c2398a7ab03e765c543059f5b049" => :el_capitan
+    sha256 "a1d0188c1829d71c17b6b29c2a71299dfc37ba65d1f05f5cf8e655afbea08a51" => :yosemite
   end
 
   depends_on "pkg-config" => :build

@@ -1,11 +1,13 @@
 class Libxmlxx < Formula
   desc "C++ wrapper for libxml"
-  homepage "http://libxmlplusplus.sourceforge.net"
+  homepage "https://libxmlplusplus.sourceforge.io"
   url "https://download.gnome.org/sources/libxml++/2.40/libxml++-2.40.1.tar.xz"
   sha256 "4ad4abdd3258874f61c2e2a41d08e9930677976d303653cd1670d3e9f35463e9"
 
   bottle do
     cellar :any
+    sha256 "fe685746299e61bd0c20760f3f8ddeb8fb48de99211dc3fde96946620a1e77b6" => :high_sierra
+    sha256 "bb44b6bae21b4c6a0b2edfd675582a570e4ed63b71e6e08252a0dcd57b65834c" => :sierra
     sha256 "9bcaa205d33dbb8d44851e5f6c41ab95b322125cfd56215c55ce3abd0ac0b00e" => :el_capitan
     sha256 "53f18b1f5fe05dc545a8629292a498615ffd0c546c9fab98e5152be284081cbe" => :yosemite
     sha256 "8d120ff026529306553a82ca53c73747ee106b96ceb904d7cca54b807b32c4ff" => :mavericks
@@ -13,8 +15,6 @@ class Libxmlxx < Formula
 
   depends_on "pkg-config" => :build
   depends_on "glibmm"
-  # LibXML++ can't compile agains the version of LibXML shipped with Leopard
-  depends_on "libxml2" if MacOS.version <= :leopard
 
   needs :cxx11
 
@@ -25,7 +25,7 @@ class Libxmlxx < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <libxml++/libxml++.h>
 
       int main(int argc, char *argv[])
@@ -41,8 +41,7 @@ class Libxmlxx < Formula
     glib = Formula["glib"]
     glibmm = Formula["glibmm"]
     libsigcxx = Formula["libsigc++"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{gettext.opt_include}
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include

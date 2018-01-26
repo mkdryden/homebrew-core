@@ -1,33 +1,32 @@
 class Pygobject < Formula
   desc "GLib/GObject/GIO Python bindings for Python 2"
   homepage "https://live.gnome.org/PyGObject"
-  url "https://download.gnome.org/sources/pygobject/2.28/pygobject-2.28.6.tar.bz2"
-  sha256 "e4bfe017fa845940184c82a4d8949db3414cb29dfc84815fb763697dc85bdcee"
+  url "https://download.gnome.org/sources/pygobject/2.28/pygobject-2.28.7.tar.xz"
+  sha256 "bb9d25a3442ca7511385a7c01b057492095c263784ef31231ffe589d83a96a5a"
+  revision 1
 
   bottle do
-    sha256 "2eeb114e8508e6e58a35ac263f39abce53b409f350e3677a0bf49980e4a9920b" => :el_capitan
-    sha256 "f4bbcbe9194e8d36a93575e793cbff1281e28d591175e966a4a5aa1c55cf479c" => :yosemite
-    sha256 "81f190d8f7cf5a97c25041eb17cd3d4540923a7f17926b7b9854a901bea9d7ab" => :mavericks
-    sha256 "0f9ac32001eae1ac15bca6cd81dcf3f27474bf3d16dd3dbcfccdd95e1a676349" => :mountain_lion
+    cellar :any
+    sha256 "44d2fbe065a06b2f874b8d0b770375b0e8628a77f67823a09cf354d4bf1fd3e3" => :high_sierra
+    sha256 "85854484b61200e295a9767b34bb86eb06b33045429f160c19f84cca39abaf17" => :sierra
+    sha256 "47b48d492fad94254508ce966c3e9261b74879049a5fc9a4fb34e3209c0f4ce5" => :el_capitan
   end
-
-  option :universal
 
   depends_on "pkg-config" => :build
   depends_on "glib"
-  depends_on :python
-
-  # https://bugzilla.gnome.org/show_bug.cgi?id=668522
-  patch do
-    url "https://raw.githubusercontent.com/Homebrew/patches/master/pygobject/patch-enum-types.diff"
-    sha256 "99a39c730f9af499db88684e2898a588fdae9cd20eef70675a28c2ddb004cb19"
-  end
+  depends_on "python"
 
   def install
-    ENV.universal_binary if build.universal?
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--disable-introspection"
     system "make", "install"
+    (lib/"python2.7/site-packages/pygtk.pth").append_lines <<~EOS
+      #{HOMEBREW_PREFIX}/lib/python2.7/site-packages/gtk-2.0
+    EOS
+  end
+
+  test do
+    system "python", "-c", "import dsextras"
   end
 end

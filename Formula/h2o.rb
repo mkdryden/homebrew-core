@@ -1,14 +1,13 @@
 class H2o < Formula
   desc "HTTP server with support for HTTP/1.x and HTTP/2"
   homepage "https://github.com/h2o/h2o/"
-  url "https://github.com/h2o/h2o/archive/v1.7.1.tar.gz"
-  sha256 "a9488667f0b73a66d5ef593660f6c0f66311d6eb4bf9378c6b7e74ab7ec9eea2"
-  head "https://github.com/h2o/h2o.git"
+  url "https://github.com/h2o/h2o/archive/v2.2.4.tar.gz"
+  sha256 "ebacf3b15f40958c950e18e79ad5a647f61e989c6dbfdeea858ce943ef5e3cd8"
 
   bottle do
-    sha256 "e508a6fd99c3c239e0c9b68cba0ae0bd7adec39f951667752fe83991318fb291" => :el_capitan
-    sha256 "8eb33197e5bde2ac3518b7fab376f43b6a4a1254a994808e07f1458f41c25c9f" => :yosemite
-    sha256 "6dec3c949e45bf260a214f8163f5de65a23b45859a161118eff233936f5926b8" => :mavericks
+    sha256 "18a5cc03a32ef932ef0ab7da282b493218f552c7d9fb928957dace5ac343119c" => :high_sierra
+    sha256 "2aa8bba21a1ca614e9924a069463710cc48c9a1926300a3e2acd56da0f64974f" => :sierra
+    sha256 "b54f61f4a00bb1a0fe01b8c1525a48ab6a361497d3d8415cc0267d030c53961e" => :el_capitan
   end
 
   option "with-libuv", "Build the H2O library in addition to the executable"
@@ -16,12 +15,15 @@ class H2o < Formula
 
   depends_on "cmake" => :build
   depends_on "pkg-config" => :build
-  depends_on "openssl" => :recommended
-  depends_on "libressl" => :optional
+  depends_on "openssl"
   depends_on "libuv" => :optional
   depends_on "wslay" => :optional
 
   def install
+    # https://github.com/Homebrew/homebrew-core/pull/1046
+    # https://github.com/Homebrew/brew/pull/251
+    ENV.delete("SDKROOT")
+
     args = std_cmake_args
     args << "-DWITH_BUNDLED_SSL=OFF"
     args << "-DWITH_MRUBY=OFF" if build.without? "mruby"
@@ -43,7 +45,7 @@ class H2o < Formula
   end
 
   # This is simplified from examples/h2o/h2o.conf upstream.
-  def conf_example; <<-EOS.undent
+  def conf_example; <<~EOS
     listen: 8080
     hosts:
       "127.0.0.1.xip.io:8080":
@@ -53,7 +55,7 @@ class H2o < Formula
     EOS
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     A basic example configuration file has been placed in #{etc}/h2o.
     You can find fuller, unmodified examples here:
       https://github.com/h2o/h2o/tree/master/examples/h2o
@@ -62,7 +64,7 @@ class H2o < Formula
 
   plist_options :manual => "h2o"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">

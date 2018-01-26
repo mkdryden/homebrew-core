@@ -1,27 +1,23 @@
 class Ace < Formula
   desc "ADAPTIVE Communication Environment: OO network programming in C++"
   homepage "https://www.dre.vanderbilt.edu/~schmidt/ACE.html"
-  url "http://download.dre.vanderbilt.edu/previous_versions/ACE-6.3.3.tar.bz2"
-  sha256 "f362e45f624db3343db529654b601d5df69b5f56fa4597cf453da35d80989888"
+  url "http://download.dre.vanderbilt.edu/previous_versions/ACE-6.4.6.tar.bz2"
+  sha256 "d263b2e0680ea24acd5ba05f8dbfdee0f4ceec18cf78fd5c09461750c4e46d77"
 
   bottle do
     cellar :any
-    revision 1
-    sha256 "18c8fa1ffa10fc33f3c498a60a0e7a741a01dc8982e7e2141161f126baff2ec9" => :el_capitan
-    sha256 "4b3d4e048ee9fe295844be6a2c1461f9391fd89f30e1603e8c2a8af636c1164f" => :yosemite
-    sha256 "40f562e9afb830079075d9ae973ed73e071ac5ef0e610732d523949394aa4c99" => :mavericks
+    sha256 "ed3ef2c7bd2a488b532e818b9af4dd27a84f82ed3176a6512f3264f74f149ab7" => :high_sierra
+    sha256 "96cee7cfac8bf6a32ff2e9791a7d19828fe607813c9c9b7c065d42ae496655ef" => :sierra
+    sha256 "aca5e697853ca50b40397224d80f3eae66a2011f9682b0fd980cbec6d227ebbd" => :el_capitan
   end
 
   def install
-    # Figure out the names of the header and makefile for this version
-    # of OSX and link those files to the standard names.
-    name = MacOS.cat.to_s.delete "_"
-    ln_sf "config-macosx-#{name}.h", "ace/config.h"
-    ln_sf "platform_macosx_#{name}.GNU", "include/makeinclude/platform_macros.GNU"
+    ln_sf "config-macosx.h", "ace/config.h"
+    ln_sf "platform_macosx.GNU", "include/makeinclude/platform_macros.GNU"
 
     # Set up the environment the way ACE expects during build.
     ENV["ACE_ROOT"] = buildpath
-    ENV["DYLD_LIBRARY_PATH"] = "#{buildpath}/ace:#{buildpath}/lib"
+    ENV["DYLD_LIBRARY_PATH"] = "#{buildpath}/lib"
 
     # Done! We go ahead and build.
     system "make", "-C", "ace", "-f", "GNUmakefile.ACE",

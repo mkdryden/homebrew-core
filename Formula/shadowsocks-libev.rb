@@ -1,28 +1,31 @@
 class ShadowsocksLibev < Formula
   desc "Libev port of shadowsocks"
   homepage "https://github.com/shadowsocks/shadowsocks-libev"
-  url "https://github.com/shadowsocks/shadowsocks-libev/archive/v2.4.5.tar.gz"
-  sha256 "08bf7f240ee39fa700aac636ca84b65f2f0cfbcfa63a0783afb05872940067e2"
-  head "https://github.com/shadowsocks/shadowsocks-libev.git"
+  url "https://github.com/shadowsocks/shadowsocks-libev/releases/download/v3.1.3/shadowsocks-libev-3.1.3.tar.gz"
+  sha256 "58fb438d2cfe33cfa6ac8c50e587e2138c50e59a4b943f88d22883bf2e192a96"
 
   bottle do
     cellar :any
-    sha256 "5f1a5d06dedfa3933d06d68e954eb2ed800dc4300b14a8b7292fcbf1f0080e04" => :el_capitan
-    sha256 "1bfb078358f96a492f1047cf57a2a70ed168725aa916d4ffcb30cb82cfc26ff3" => :yosemite
-    sha256 "850d0120fb1db1b0e08450c021bcd88d75e71101d0a73096f870db77637a558d" => :mavericks
+    sha256 "a561f2db79b0e7277e68edadaf21da788be8a07e41dc9d0df3b669057339a2b2" => :high_sierra
+    sha256 "6560332aa51d4e56db51d176423cd00e4e1d6a422c2e71ca102a3007669e485b" => :sierra
+    sha256 "fa6f73d73c0ad1c7d29630e76aa3b302f77c918acc63b29d0e9ba9424b663ccf" => :el_capitan
   end
 
-  depends_on "openssl"
+  depends_on "asciidoc" => :build
+  depends_on "xmlto" => :build
+  depends_on "c-ares"
+  depends_on "libev"
+  depends_on "libsodium"
+  depends_on "mbedtls"
+  depends_on "pcre"
 
   def install
-    args = ["--prefix=#{prefix}"]
+    ENV["XML_CATALOG_FILES"] = etc/"xml/catalog"
 
-    system "./configure", *args
+    system "./configure", "--prefix=#{prefix}"
     system "make"
 
-    bin.install "src/ss-local", "src/ss-tunnel", "src/ss-server", "src/ss-manager"
-
-    (buildpath/"shadowsocks-libev.json").write <<-EOS.undent
+    (buildpath/"shadowsocks-libev.json").write <<~EOS
       {
           "server":"localhost",
           "server_port":8388,
@@ -34,14 +37,38 @@ class ShadowsocksLibev < Formula
     EOS
     etc.install "shadowsocks-libev.json"
 
-    rm "man/ss-redir.1"
     inreplace Dir["man/*"], "/etc/shadowsocks-libev/config.json", "#{etc}/shadowsocks-libev.json"
-    man8.install Dir["man/*.8"]
-    man1.install Dir["man/*.1"]
+
+    system "make", "install"
+  end
+
+  plist_options :manual => "#{HOMEBREW_PREFIX}/opt/shadowsocks-libev/bin/ss-local -c #{HOMEBREW_PREFIX}/etc/shadowsocks-libev.json -u"
+
+  def plist; <<~EOS
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+      <dict>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_bin}/ss-local</string>
+          <string>-c</string>
+          <string>#{etc}/shadowsocks-libev.json</string>
+          <string>-u</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>KeepAlive</key>
+        <true/>
+      </dict>
+    </plist>
+    EOS
   end
 
   test do
-    (testpath/"shadowsocks-libev.json").write <<-EOS.undent
+    (testpath/"shadowsocks-libev.json").write <<~EOS
       {
           "server":"127.0.0.1",
           "server_port":9998,
@@ -49,7 +76,7 @@ class ShadowsocksLibev < Formula
           "local_port":9999,
           "password":"test",
           "timeout":600,
-          "method":"table"
+          "method":null
       }
     EOS
     server = fork { exec bin/"ss-server", "-c", testpath/"shadowsocks-libev.json" }
@@ -63,29 +90,5 @@ class ShadowsocksLibev < Formula
       Process.kill 9, client
       Process.wait client
     end
-  end
-
-  plist_options :manual => "#{HOMEBREW_PREFIX}/opt/shadowsocks-libev/bin/ss-local -c #{HOMEBREW_PREFIX}/etc/shadowsocks-libev.json"
-
-  def plist; <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-      <dict>
-        <key>Label</key>
-        <string>#{plist_name}</string>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{opt_bin}/ss-local</string>
-          <string>-c</string>
-          <string>#{etc}/shadowsocks-libev.json</string>
-        </array>
-        <key>RunAtLoad</key>
-        <true/>
-        <key>KeepAlive</key>
-        <true/>
-      </dict>
-    </plist>
-    EOS
   end
 end

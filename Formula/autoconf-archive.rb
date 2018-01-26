@@ -1,15 +1,15 @@
 class AutoconfArchive < Formula
   desc "Collection of over 500 reusable autoconf macros"
   homepage "https://savannah.gnu.org/projects/autoconf-archive/"
-  url "http://ftpmirror.gnu.org/autoconf-archive/autoconf-archive-2016.03.20.tar.xz"
-  mirror "https://ftp.gnu.org/gnu/autoconf-archive/autoconf-archive-2016.03.20.tar.xz"
-  sha256 "88fb2efff640eddd28a52ae550ff5561bca3bd2bba09e1d7b0580e719875e437"
+  url "https://ftp.gnu.org/gnu/autoconf-archive/autoconf-archive-2017.09.28.tar.xz"
+  mirror "https://ftpmirror.gnu.org/autoconf-archive/autoconf-archive-2017.09.28.tar.xz"
+  sha256 "5c9fb5845b38b28982a3ef12836f76b35f46799ef4a2e46b48e2bd3c6182fa01"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "447b84380eb0b66c000b3dc9f00d33a53e7e956243041fd5069a8239250a533e" => :el_capitan
-    sha256 "fd4d4cefa88eefe1b106a095b17e8330629f0d6a4baf8de7e8b1482b68cdab5a" => :yosemite
-    sha256 "b4cd6a71e0a0b8c6a0ff31cc6584c359ab0c07200ba3d5960e72d54ade9bc2d7" => :mavericks
+    sha256 "296fc393577638f777d8b9eb49660964e0e6a1134cb070c402de0f085c0fb8f4" => :high_sierra
+    sha256 "296fc393577638f777d8b9eb49660964e0e6a1134cb070c402de0f085c0fb8f4" => :sierra
+    sha256 "296fc393577638f777d8b9eb49660964e0e6a1134cb070c402de0f085c0fb8f4" => :el_capitan
   end
 
   # autoconf-archive is useless without autoconf
@@ -21,7 +21,7 @@ class AutoconfArchive < Formula
   end
 
   test do
-    (testpath/"test.m4").write <<-EOS.undent
+    (testpath/"test.m4").write <<~EOS
       AC_INIT(myconfig, version-0.1)
       AC_MSG_NOTICE([Hello, world.])
 

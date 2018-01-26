@@ -1,34 +1,36 @@
 class TheSilverSearcher < Formula
   desc "Code-search similar to ack"
   homepage "https://github.com/ggreer/the_silver_searcher"
-  url "https://github.com/ggreer/the_silver_searcher/archive/0.31.0.tar.gz"
-  sha256 "61bc827f4557d8108e91cdfc9ba31632e2568b26884c92426417f58135b37da8"
+  url "https://github.com/ggreer/the_silver_searcher/archive/2.1.0.tar.gz"
+  sha256 "cb416a0da7fe354a009c482ae709692ed567f8e7d2dad4d242e726dd7ca202f0"
   head "https://github.com/ggreer/the_silver_searcher.git"
 
   bottle do
     cellar :any
-    sha256 "0967f4da9270f64c0dc389044976fa57a5ca77e8ae4b133db774b9b64f86a3f1" => :el_capitan
-    sha256 "90ffccb93ee6a8f4df645b8ac65b2aaf909f17af235fa625e9cad91091f84176" => :yosemite
-    sha256 "647d83eeb4b8372ef42c5565beaeb1282ac2c7e75330768aac642bbdc36cd68d" => :mavericks
-    sha256 "023a995816ae0fe7e04321d7773bbedfe71dbdc52889b96f9867c6c71850c16c" => :mountain_lion
+    sha256 "5d2380526afe423df25d9bd4eea9ea177023918ee3b534d93a72bd6c7c9bd333" => :high_sierra
+    sha256 "252dabfa42a9a4769ddd62cf2265566d57eb1af1e39b8dcd75b6684402becd35" => :sierra
+    sha256 "e731e1c3b4f85267dd4dea5c42ad1ff35c2def78b2c9f83ff8988bf0266f34ae" => :el_capitan
+    sha256 "5e4ba79f17f087e697afb62cf738e321ebd4d6f2b001a4caaaed525a1ce75166" => :yosemite
   end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
-
   depends_on "pkg-config" => :build
   depends_on "pcre"
-  depends_on "xz"
+  depends_on "xz" => :recommended
 
   def install
     # Stable tarball does not include pre-generated configure script
-    system "aclocal", "-I #{HOMEBREW_PREFIX}/share/aclocal"
-    system "autoconf"
-    system "autoheader"
-    system "automake", "--add-missing"
+    system "autoreconf", "-fiv"
 
-    system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}"
+    args = %W[
+      --disable-dependency-tracking
+      --prefix=#{prefix}
+    ]
+
+    args << "--disable-lzma" if build.without?("xz")
+
+    system "./configure", *args
     system "make"
     system "make", "install"
 

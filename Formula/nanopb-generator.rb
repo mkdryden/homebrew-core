@@ -1,22 +1,27 @@
 class NanopbGenerator < Formula
-  desc "ANSI C library for encoding and decoding Protocol Buffer messages"
-  homepage "https://koti.kapsi.fi/jpa/nanopb/docs/index.html"
-  url "https://koti.kapsi.fi/~jpa/nanopb/download/nanopb-0.3.5.tar.gz"
-  sha256 "3dd539671403d578425f15c6b4b6ba7390ee9a20369b969637ef1d18487e150e"
+  desc "C library for encoding and decoding Protocol Buffer messages"
+  homepage "https://jpa.kapsi.fi/nanopb/docs/index.html"
+  url "https://jpa.kapsi.fi/nanopb/download/nanopb-0.3.9.tar.gz"
+  sha256 "f6fe05441150bf158c2adfec29fa8206785bbb6c3dcd4a3ddbafcf8f9ad9f251"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "e48c213f1af09ef52f38a874991dcd5bc6e2fe86e5404a7b272160d4a9cea5cb" => :el_capitan
-    sha256 "1390bb0c55b7b6a278588d3648b1ca6441fd2294d6f62d34e8552405710093eb" => :yosemite
-    sha256 "cf5dabc592b4c8d4b338915dcbc1bddb9a000fe0c087bd03c2f13ff0981c2edd" => :mavericks
+    sha256 "030d054005b5167d327d8cd95df7e04a8bfdc66dd2354890babafa11c197a18e" => :high_sierra
+    sha256 "030d054005b5167d327d8cd95df7e04a8bfdc66dd2354890babafa11c197a18e" => :sierra
+    sha256 "a5f6e9fab63d0ecf3f7f52f1191ff16b7e01d2de063b9163462e4d5a49082b00" => :el_capitan
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python" if MacOS.version <= :snow_leopard
   depends_on "protobuf"
 
   resource "protobuf-python" do
-    url "https://pypi.python.org/packages/source/p/protobuf/protobuf-2.6.0.tar.gz"
-    sha256 "b1556c5e9cca9069143b41312fd45d0d4785ca0cab682b2624195a6bc4ec296f"
+    url "https://files.pythonhosted.org/packages/14/3e/56da1ecfa58f6da0053a523444dff9dfb8a18928c186ad529a24b0e82dec/protobuf-3.0.0.tar.gz"
+    sha256 "ecc40bc30f1183b418fe0ec0c90bc3b53fa1707c4205ee278c6b90479e5b6ff5"
+  end
+
+  resource "six" do
+    url "https://files.pythonhosted.org/packages/b3/b2/238e2590826bfdd113244a40d9d3eb26918bd798fc187e2360a8367068db/six-1.10.0.tar.gz"
+    sha256 "105f8d68616f8248e24bf0e9372ef04d3cc10104f1980f54d57b2ce73a5ad56a"
   end
 
   def install
@@ -36,11 +41,13 @@ class NanopbGenerator < Formula
   end
 
   test do
-    (testpath/"test.proto").write <<-PROTO.undent
+    (testpath/"test.proto").write <<~EOS
+      syntax = "proto2";
+
       message Test {
         required string test_field = 1;
       }
-    PROTO
+    EOS
     system Formula["protobuf"].bin/"protoc",
       "--proto_path=#{testpath}", "--plugin=#{bin}/protoc-gen-nanopb",
       "--nanopb_out=#{testpath}", testpath/"test.proto"

@@ -1,16 +1,22 @@
 class Mftrace < Formula
   desc "Trace TeX bitmap font to PFA, PFB, or TTF font"
   homepage "http://lilypond.org/mftrace/"
-  url "http://lilypond.org/download/sources/mftrace/mftrace-1.2.18.tar.gz"
-  sha256 "0d31065f1d35919e311d9170bbfcdacc58736e3f783311411ed1277aa09d3261"
+  url "http://lilypond.org/downloads/sources/mftrace/mftrace-1.2.19.tar.gz"
+  mirror "https://dl.bintray.com/homebrew/mirror/mftrace-1.2.19.tar.gz"
+  sha256 "778126f4220aa31fc91fa8baafd26aaf8be9c5e8fed5c0e92a61de04d32bbdb5"
   revision 1
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "cd651261149e342340581336a800710c10f0883514f4ba5667d003f1b4fc32f2" => :el_capitan
-    sha256 "10296d78cdc05cb3ea41b80872868d2d4416635e2638c685e6d5a66ec2e7f7e6" => :yosemite
-    sha256 "fe088c63174dfacc5fbc8e8b4a466c080e4622b6b24edc8e214e9c6dfd06dfc2" => :mavericks
-    sha256 "7ced74b4d12ecf0fc13c65dd329ae081a3c53300c6efc4d9783e8f069b4fa442" => :mountain_lion
+    sha256 "d906ee9e9f6eb171539d69895dd562bdcdd471910b44a4dbd6aae1a717934cae" => :high_sierra
+    sha256 "d40276096fa89ede34b52422927a59de191ff28ccc7221185658534591c9714b" => :sierra
+    sha256 "d667c5bfe7ce0e9552ad0aee73089664d9d60ea21db8baeda8a32d0fe7794698" => :el_capitan
+    sha256 "ecaf0915cd7a5917e4f6c095e1f5e031dd8cc26ff637f7c62c65fd2c14fc4f9a" => :yosemite
+  end
+
+  head do
+    url "https://github.com/hanwen/mftrace.git"
+    depends_on "autoconf" => :build
   end
 
   depends_on "potrace"
@@ -18,6 +24,7 @@ class Mftrace < Formula
   depends_on "fontforge" => [:recommended, :run]
 
   def install
+    system "./autogen.sh" if build.head?
     system "./configure", "--prefix=#{prefix}"
     system "make", "install"
   end

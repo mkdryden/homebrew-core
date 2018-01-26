@@ -1,40 +1,33 @@
 class Glib < Formula
   desc "Core application library for C"
   homepage "https://developer.gnome.org/glib/"
-  url "https://download.gnome.org/sources/glib/2.46/glib-2.46.2.tar.xz"
-  sha256 "5031722e37036719c1a09163cc6cf7c326e4c4f1f1e074b433c156862bd733db"
+  url "https://download.gnome.org/sources/glib/2.54/glib-2.54.3.tar.xz"
+  sha256 "963fdc6685dc3da8e5381dfb9f15ca4b5709b28be84d9d05a9bb8e446abac0a8"
 
   bottle do
-    sha256 "7712b8d7682c79d31f8325e4a6a99d43ed480907420193035ba4a874603d720e" => :el_capitan
-    sha256 "8422313233976bdfc64bbfa2e899bdfb97c38015505ccaca02039c44d00426b7" => :yosemite
-    sha256 "b4cdea43b21075a6bb51d263d0e1bd486d32302ca464aa3928fb453dfb95d0cb" => :mavericks
+    sha256 "d0cb36e80d824c93c250df321be899bed94da31e32f39aec5f7710cce372d3f3" => :high_sierra
+    sha256 "a0a54e741506cca840b8eab0c30d72b01bf548f3c7706e815fd60fee6d31178f" => :sierra
+    sha256 "630391d3aa92601c75afe44772ca891ad74ab315628451c069c7d459c8d19097" => :el_capitan
   end
 
-  option :universal
   option "with-test", "Build a debug build and run tests. NOTE: Not all tests succeed yet"
 
   deprecated_option "test" => "with-test"
 
   depends_on "pkg-config" => :build
+  # next three lines can be removed when bug 780271 is fixed and gio.patch is modified accordingly
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "libtool" => :build
   depends_on "gettext"
   depends_on "libffi"
-
-  fails_with :llvm do
-    build 2334
-    cause "Undefined symbol errors while linking"
-  end
-
-  resource "config.h.ed" do
-    url "https://raw.githubusercontent.com/Homebrew/patches/eb51d82/glib/config.h.ed"
-    version "111532"
-    sha256 "9f1e23a084bc879880e589893c17f01a2f561e20835d6a6f08fcc1dad62388f1"
-  end
+  depends_on "pcre"
 
   # https://bugzilla.gnome.org/show_bug.cgi?id=673135 Resolved as wontfix,
   # but needed to fix an assumption about the location of the d-bus machine
   # id file.
   patch do
-    url "https://raw.githubusercontent.com/Homebrew/patches/59e4d32/glib/hardcoded-paths.diff"
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/59e4d32/glib/hardcoded-paths.diff"
     sha256 "a4cb96b5861672ec0750cb30ecebe1d417d38052cac12fbb8a77dbf04a886fcb"
   end
 
@@ -42,40 +35,25 @@ class Glib < Formula
   # to unrelated issues in GCC, but improves the situation.
   # Patch submitted upstream: https://bugzilla.gnome.org/show_bug.cgi?id=672777
   patch do
-    url "https://raw.githubusercontent.com/Homebrew/patches/59e4d32/glib/gio.patch"
-    sha256 "cc3f0f6d561d663dfcdd6154b075150f68a36f5a92f94e5163c1c20529bfdf32"
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/13efbb2/glib/gio.patch"
+    sha256 "628f8ea171a29c67fb06461ce4cfe549846b8fe64d83466e18e225726615b997"
   end
 
-  if build.universal?
-    patch do
-      url "https://raw.githubusercontent.com/Homebrew/patches/59e4d32/glib/universal.patch"
-      sha256 "7e1ad7667c7d89fcd08950c9c32cd66eb9c8e2ee843f023d1fadf09a9ba39fee"
-    end
-  end
-
-  # Reverts GNotification support on OS X.
-  # This only supports OS X 10.9, and the reverted commits removed the
-  # ability to build glib on older versions of OS X.
-  # https://bugzilla.gnome.org/show_bug.cgi?id=747146
-  # Reverts upstream commits 36e093a31a9eb12021e7780b9e322c29763ffa58
-  # and 89058e8a9b769ab223bc75739f5455dab18f7a3d, with equivalent changes
-  # also applied to configure and gio/Makefile.in
-  if MacOS.version < :mavericks
-    patch do
-      url "https://raw.githubusercontent.com/Homebrew/patches/59e4d32/glib/gnotification-mountain.patch"
-      sha256 "723def732304552ca55ae9f5b568ff3e8a59a14d512af72b6c1f0421f8228a68"
-    end
+  # Revert some bad macOS specific commits
+  # https://bugzilla.gnome.org/show_bug.cgi?id=780271
+  patch do
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/73738ca/glib/revert-appinfo-contenttype.patch"
+    sha256 "675369c6d956b5533865178a2a78a6b2dcb921fbcfd81d35e92fc1592323e5e4"
   end
 
   def install
-    ENV.universal_binary if build.universal?
-
     inreplace %w[gio/gdbusprivate.c gio/xdgmime/xdgmime.c glib/gutils.c],
       "@@HOMEBREW_PREFIX@@", HOMEBREW_PREFIX
 
     # renaming is necessary for patches to work
-    mv "gio/gcocoanotificationbackend.c", "gio/gcocoanotificationbackend.m" unless MacOS.version < :mavericks
+    mv "gio/gcocoanotificationbackend.c", "gio/gcocoanotificationbackend.m"
     mv "gio/gnextstepsettingsbackend.c", "gio/gnextstepsettingsbackend.m"
+    rm "gio/gosxappinfo.h"
 
     # Disable dtrace; see https://trac.macports.org/ticket/30413
     args = %W[
@@ -90,14 +68,12 @@ class Glib < Formula
       --with-gio-module-dir=#{HOMEBREW_PREFIX}/lib/gio/modules
     ]
 
+    # next line can be removed when bug 780271 is fixed and gio.patch is modified accordingly
+    system "autoreconf", "-i", "-f"
+
     system "./configure", *args
 
-    if build.universal?
-      buildpath.install resource("config.h.ed")
-      system "ed -s - config.h <config.h.ed"
-    end
-
-    # disable creating directory for GIO_MOUDLE_DIR, we will do this manually in post_install
+    # disable creating directory for GIO_MODULE_DIR, we will do this manually in post_install
     inreplace "gio/Makefile", "$(mkinstalldirs) $(DESTDIR)$(GIO_MODULE_DIR)", ""
 
     system "make"
@@ -123,7 +99,7 @@ class Glib < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <string.h>
       #include <glib.h>
 
@@ -138,8 +114,8 @@ class Glib < Formula
           return (strcmp(str, result_2) == 0) ? 0 : 1;
       }
       EOS
-    flags = ["-I#{include}/glib-2.0", "-I#{lib}/glib-2.0/include", "-lglib-2.0"]
-    system ENV.cc, "-o", "test", "test.c", *(flags + ENV.cflags.to_s.split)
+    system ENV.cc, "-o", "test", "test.c", "-I#{include}/glib-2.0",
+                   "-I#{lib}/glib-2.0/include", "-L#{lib}", "-lglib-2.0"
     system "./test"
   end
 end

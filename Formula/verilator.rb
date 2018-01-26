@@ -1,13 +1,13 @@
 class Verilator < Formula
   desc "Verilog simulator"
-  homepage "http://www.veripool.org/wiki/verilator"
-  url "http://www.veripool.org/ftp/verilator-3.880.tgz"
-  sha256 "2839178cf291ccfcfbadc556bccfe0e7f56a2bfb4ee1f24feb20c52b2632d02f"
+  homepage "https://www.veripool.org/wiki/verilator"
+  url "https://www.veripool.org/ftp/verilator-3.918.tgz"
+  sha256 "377057a2d6ff577e54cacfead6e6ece53decd6cddfd50ec27cd45b93a599685c"
 
   bottle do
-    sha256 "24fac1b570220c9616f00bfc6c52ce75df4bfc6b25f58c8770da8e6690114cbb" => :el_capitan
-    sha256 "cea32dc698d89578e0e08a4e947b2117d12e0aac25561313ee052ab1c4a19a59" => :yosemite
-    sha256 "133e859467db7fe6bd8888467f2be0ce165025f32581236f018642d88f0c1d06" => :mavericks
+    sha256 "a7045ca8a5e19a660636aa0b52c8d5f3333799a068353314570f4d952eace01b" => :high_sierra
+    sha256 "edb227b38ec501c4188cfe809133115f299a6425230e9328a26ad28efb47673d" => :sierra
+    sha256 "443be0517c89747bbc8dc56fdd2f2fbf837b44f4b9ddf01c68ce99be7f51acda" => :el_capitan
   end
 
   head do
@@ -19,7 +19,7 @@ class Verilator < Formula
   skip_clean "bin" # Allows perl scripts to keep their executable flag
 
   # Needs a newer flex on Lion (and presumably below)
-  # http://www.veripool.org/issues/720-Verilator-verilator-not-building-on-Mac-OS-X-Lion-10-7-
+  # https://www.veripool.org/issues/720-Verilator-verilator-not-building-on-Mac-OS-X-Lion-10-7-
   depends_on "flex" if MacOS.version <= :lion
 
   def install
@@ -31,12 +31,12 @@ class Verilator < Formula
   end
 
   test do
-    (testpath/"test.v").write <<-EOS.undent
+    (testpath/"test.v").write <<~EOS
       module test;
          initial begin $display("Hello World"); $finish; end
       endmodule
     EOS
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include "Vtest.h"
       #include "verilated.h"
       int main(int argc, char **argv, char **env) {
@@ -50,7 +50,7 @@ class Verilator < Formula
     system "/usr/bin/perl", bin/"verilator", "-Wall", "--cc", "test.v", "--exe", "test.cpp"
     cd "obj_dir" do
       system "make", "-j", "-f", "Vtest.mk", "Vtest"
-      expected = <<-EOS.undent
+      expected = <<~EOS
         Hello World
         - test.v:2: Verilog $finish
       EOS

@@ -1,15 +1,14 @@
 class Dnsmasq < Formula
   desc "Lightweight DNS forwarder and DHCP server"
   homepage "http://www.thekelleys.org.uk/dnsmasq/doc.html"
-  url "http://www.thekelleys.org.uk/dnsmasq/dnsmasq-2.75.tar.gz"
-  sha256 "f8252c0a0ba162c2cd45f81140c7c17cc40a5fca2b869d1a420835b74acad294"
+  url "http://www.thekelleys.org.uk/dnsmasq/dnsmasq-2.78.tar.gz"
+  sha256 "c92e5d78aa6353354d02aabf74590d08980bb1385d8a00b80ef9bc80430aa1dc"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "80f9f8382c98cc0922883d6a23a6b6de05232bc75baa4b2fe088c57654bf1c4e" => :el_capitan
-    sha256 "f245adcc7718bd0c8167fa0518f286f261755aa7c54b029c1d6e8e26625b7193" => :yosemite
-    sha256 "c3aad8472b1d51d81c14ecfecec69cfa94a43adb07a445c11880ad0c0c9ffc1e" => :mavericks
-    sha256 "08084970fe50a3d7a325ca40c3b7ead00bcf3a67be5415e97c1557857c211323" => :mountain_lion
+    rebuild 1
+    sha256 "29b9a8f0b872785a893a2446098ea979a4172938aac84d4dcbc42e55ffb15e73" => :high_sierra
+    sha256 "8ec8cbc805daeeba93b450ec5c5fea02cdcc7978cf93a4e8032bb836c83c5f03" => :sierra
+    sha256 "84a562c8c0ff1a83cabfaa0bf50c9a05169715ce879c4308efbc132e66302120" => :el_capitan
   end
 
   option "with-libidn", "Compile with IDN support"
@@ -19,46 +18,75 @@ class Dnsmasq < Formula
 
   depends_on "pkg-config" => :build
   depends_on "libidn" => :optional
+  depends_on "gettext" if build.with? "libidn"
   depends_on "nettle" if build.with? "dnssec"
 
   def install
     ENV.deparallelize
 
     # Fix etc location
-    inreplace "src/config.h", "/etc/dnsmasq.conf", "#{etc}/dnsmasq.conf"
+    inreplace %w[dnsmasq.conf.example src/config.h man/dnsmasq.8
+                 man/es/dnsmasq.8 man/fr/dnsmasq.8].each do |s|
+      s.gsub! "/var/lib/misc/dnsmasq.leases",
+              var/"lib/misc/dnsmasq/dnsmasq.leases", false
+      s.gsub! "/etc/dnsmasq.conf", etc/"dnsmasq.conf", false
+      s.gsub! "/var/run/dnsmasq.pid", var/"run/dnsmasq/dnsmasq.pid", false
+      s.gsub! "/etc/dnsmasq.d", etc/"dnsmasq.d", false
+      s.gsub! "/etc/ppp/resolv.conf", etc/"dnsmasq.d/ppp/resolv.conf", false
+      s.gsub! "/etc/dhcpc/resolv.conf", etc/"dnsmasq.d/dhcpc/resolv.conf", false
+      s.gsub! "/usr/sbin/dnsmasq", HOMEBREW_PREFIX/"sbin/dnsmasq", false
+    end
 
     # Optional IDN support
     if build.with? "libidn"
       inreplace "src/config.h", "/* #define HAVE_IDN */", "#define HAVE_IDN"
+      ENV.append_to_cflags "-I#{Formula["gettext"].opt_include}"
+      ENV.append "LDFLAGS", "-L#{Formula["gettext"].opt_lib} -lintl"
     end
 
     # Optional DNSSEC support
     if build.with? "dnssec"
       inreplace "src/config.h", "/* #define HAVE_DNSSEC */", "#define HAVE_DNSSEC"
+      inreplace "dnsmasq.conf.example" do |s|
+        s.gsub! "#conf-file=%%PREFIX%%/share/dnsmasq/trust-anchors.conf",
+                "conf-file=#{opt_pkgshare}/trust-anchors.conf"
+        s.gsub! "#dnssec", "dnssec"
+      end
     end
 
     # Fix compilation on Lion
     ENV.append_to_cflags "-D__APPLE_USE_RFC_3542" if MacOS.version >= :lion
     inreplace "Makefile" do |s|
       s.change_make_var! "CFLAGS", ENV.cflags
+      s.change_make_var! "LDFLAGS", ENV.ldflags
     end
 
-    system "make", "install", "PREFIX=#{prefix}"
+    if build.with? "libidn"
+      system "make", "install-i18n", "PREFIX=#{prefix}"
+    else
+      system "make", "install", "PREFIX=#{prefix}"
+    end
 
-    prefix.install "dnsmasq.conf.example"
+    pkgshare.install "trust-anchors.conf" if build.with? "dnssec"
+    etc.install "dnsmasq.conf.example" => "dnsmasq.conf"
   end
 
-  def caveats; <<-EOS.undent
-    To configure dnsmasq, copy the example configuration to #{etc}/dnsmasq.conf
-    and edit to taste.
+  def post_install
+    (var/"lib/misc/dnsmasq").mkpath
+    (var/"run/dnsmasq").mkpath
+    (etc/"dnsmasq.d/ppp").mkpath
+    (etc/"dnsmasq.d/dhcpc").mkpath
+  end
 
-      cp #{opt_prefix}/dnsmasq.conf.example #{etc}/dnsmasq.conf
+  def caveats; <<~EOS
+    To configure dnsmasq, take the default example configuration at
+      #{etc}/dnsmasq.conf and edit to taste.
     EOS
   end
 
   plist_options :startup => true
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">

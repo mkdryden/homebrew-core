@@ -1,19 +1,23 @@
 class Zimg < Formula
   desc "Scaling, colorspace conversion, and dithering library"
   homepage "https://github.com/sekrit-twc/zimg"
-  url "https://github.com/sekrit-twc/zimg/archive/release-2.0.4.tar.gz"
-  sha256 "e3b1f5b9f8ce750f96b9bc9801ff5d6aa931d35300d67711826e397df43c5245"
+  url "https://github.com/sekrit-twc/zimg/archive/release-2.7.1.tar.gz"
+  sha256 "fa1d59a2a1ba330e4f3e0460e913fe41dfdf9c6ae950ffb7b73b531fe18ead8f"
+  head "https://github.com/sekrit-twc/zimg.git"
 
   bottle do
     cellar :any
-    sha256 "3be1b41723e243ddbe287921f24bc8390281a0d2e642beffd70356ae208db7bf" => :el_capitan
-    sha256 "76d9e9579b6aec4cca6c3d5b5472ae2800389b01f1cc2c90998088c7e9a85f14" => :yosemite
-    sha256 "7768866e683f5e05098f560fbe2ce44779a88d2ab719fd5af49f9d92a05057e8" => :mavericks
+    sha256 "120a1e753e19cc0edc62f1d58bfce944aff7976a486f62694ba8161f68784aee" => :high_sierra
+    sha256 "bf01f2ef0efd732ea9be962681c82c75f99087981a5f2cbb1914008c2dab0022" => :sierra
+    sha256 "f4a8373462f8bbde5114e64cd0c50bf799f22b0013628093548e15e756267a7a" => :el_capitan
   end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
+
+  # Upstream has decided not to fix https://github.com/sekrit-twc/zimg/issues/52
+  depends_on :macos => :el_capitan
 
   def install
     system "./autogen.sh"
@@ -22,7 +26,7 @@ class Zimg < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <assert.h>
       #include <zimg.h>
 

@@ -1,14 +1,15 @@
 class GitOctopus < Formula
-  desc "Extends git-merge with branch naming patterns"
+  desc "The continuous merge workflow"
   homepage "https://github.com/lesfurets/git-octopus"
-  url "https://github.com/lesfurets/git-octopus/archive/v1.2.tar.gz"
-  sha256 "723b2b380f611f41b777cec3689afe441f52482a2fd7dcb73ae2555102bcd1cf"
+  url "https://github.com/lesfurets/git-octopus/archive/v1.4.tar.gz"
+  sha256 "e2800eea829c6fc74da0d3f3fcb3f7d328d1ac8fbb7b2eca8c651c0c903a50c3"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "49b09ecce43923827192367c44f07ecf7c5c395c3369e6adb80852ef6d15fc80" => :el_capitan
-    sha256 "ef168793e40ba5728986c3360fcfe94a4380b397f512c8fc1a059e18a77e654e" => :yosemite
-    sha256 "652cf404f04177114e05e9b7b8d36f2018beed92ba8877d598023e259604e4e9" => :mavericks
+    sha256 "67b8b9950133c0ca6f8a0be544bf192136ebad791eea0070becf47ab99eec270" => :high_sierra
+    sha256 "8d5bd1ae923518cd155c1e1ddf1a31b93d75af241e325087853657adc39eca85" => :sierra
+    sha256 "8d5bd1ae923518cd155c1e1ddf1a31b93d75af241e325087853657adc39eca85" => :el_capitan
+    sha256 "8d5bd1ae923518cd155c1e1ddf1a31b93d75af241e325087853657adc39eca85" => :yosemite
   end
 
   def install
@@ -18,7 +19,7 @@ class GitOctopus < Formula
   end
 
   test do
-    (testpath/".gitconfig").write <<-EOS.undent
+    (testpath/".gitconfig").write <<~EOS
       [user]
         name = Real Person
         email = notacat@hotmail.cat

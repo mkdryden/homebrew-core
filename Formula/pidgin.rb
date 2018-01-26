@@ -1,14 +1,14 @@
 class Pidgin < Formula
   desc "Multi-protocol chat client"
   homepage "https://pidgin.im/"
-  url "https://downloads.sourceforge.net/project/pidgin/Pidgin/2.10.12/pidgin-2.10.12.tar.bz2"
-  sha256 "2c7523f0fefe89749c03b2b738ab9f7bd186da435be4762f1487eee31e77ffdd"
-  revision 1
+  url "https://downloads.sourceforge.net/project/pidgin/Pidgin/2.12.0/pidgin-2.12.0.tar.bz2"
+  sha256 "8c3d3536d6d3c971bd433ff9946678af70a0f6aa4e6969cc2a83bb357015b7f8"
 
   bottle do
-    sha256 "a010b4baeb0d28eb3c22ddb45ce85c0dc73ee1c32e01f1f42d55f52718e8aaf9" => :el_capitan
-    sha256 "48128e5a37ed28e61d616f25b55b85424817a2d4421f8133bd46a1514f2b9ea3" => :yosemite
-    sha256 "f78352ef4891c3d84a1d5ae3a1eae001a526163f8586c7b4ecaf23b3004bd45f" => :mavericks
+    sha256 "28a67f741d2aad6bbccef3759328dbda71f916584cbc25661195e3c96ed3dcc5" => :high_sierra
+    sha256 "b6e4a15391f21644ec05dd182e7c5b54c6f0befd554e28e13e35bfcb87806e9c" => :sierra
+    sha256 "879278d3b019f915f5618cff2f6428d7efe05b2a668ade0694c2e64861ec4bdc" => :el_capitan
+    sha256 "5b47e2398c38fb3fbf5e5340584b16bdf8f87f6ef300799cf8cde821417dd8a9" => :yosemite
   end
 
   option "with-perl", "Build Pidgin with Perl support"
@@ -36,8 +36,8 @@ class Pidgin < Formula
   # Finch has an equal port called purple-otr but it is a NIGHTMARE to compile
   # If you want to fix this and create a PR on Homebrew please do so.
   resource "pidgin-otr" do
-    url "https://otr.cypherpunks.ca/pidgin-otr-4.0.1.tar.gz"
-    sha256 "1b781f48c27bcc9de3136c0674810df23f7d6b44c727dbf4dfb24067909bf30a"
+    url "https://otr.cypherpunks.ca/pidgin-otr-4.0.2.tar.gz"
+    sha256 "f4b59eef4a94b1d29dbe0c106dd00cdc630e47f18619fc754e5afbf5724ebac4"
   end
 
   def install
@@ -61,11 +61,9 @@ class Pidgin < Formula
     args << "--disable-perl" if build.without? "perl"
     args << "--enable-cyrus-sasl" if build.with? "gsasl"
 
-    args << "--with-tclconfig=#{MacOS.sdk_path}/usr/lib"
-    args << "--with-tkconfig=#{MacOS.sdk_path}/usr/lib"
-    if build.without? "gui"
-      args << "--disable-gtkui"
-    end
+    args << "--with-tclconfig=#{MacOS.sdk_path}/System/Library/Frameworks/Tcl.framework"
+    args << "--with-tkconfig=#{MacOS.sdk_path}/System/Library/Frameworks/Tk.framework"
+    args << "--disable-gtkui" if build.without? "gui"
 
     system "./configure", *args
     system "make", "install"

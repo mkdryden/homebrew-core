@@ -1,38 +1,42 @@
 class Asciidoc < Formula
-  desc "Formatter/translator for text files to numerous formats"
+  desc "Formatter/translator for text files to numerous formats. Includes a2x"
   homepage "http://asciidoc.org/"
-  url "https://downloads.sourceforge.net/project/asciidoc/asciidoc/8.6.9/asciidoc-8.6.9.tar.gz"
-  sha256 "78db9d0567c8ab6570a6eff7ffdf84eadd91f2dfc0a92a2d0105d323cab4e1f0"
+  # This release is listed as final on GitHub, but not listed on asciidoc.org.
+  url "https://github.com/asciidoc/asciidoc/archive/8.6.10.tar.gz"
+  sha256 "9e52f8578d891beaef25730a92a6e723596ddbd07bfe0d2a56486fcf63a0b983"
+  revision 1
+  head "https://github.com/asciidoc/asciidoc.git"
 
   bottle do
     cellar :any_skip_relocation
-    revision 1
-    sha256 "345affbf8e5c86ecb679580c5a0e5f8e97fc732557cb75e7b2ba94d8ecfc2a70" => :el_capitan
-    sha256 "6d868af1ee68431d2f17e86cb30839efed396a963c5b7be5df435c0db4ca48c3" => :yosemite
-    sha256 "631dd27e65bb68697bda0b6641b753c0a8b6544c32c061ff15a2026b831eddbb" => :mavericks
-    sha256 "57187b6cdece57060271040ba69ec08cc772a97287ffccbbff3ea089afd4110a" => :mountain_lion
+    sha256 "c82aaf006c1e61742f4b0d01106b34efa0bba4c7b315f31298b6cce1d9616947" => :high_sierra
+    sha256 "c82aaf006c1e61742f4b0d01106b34efa0bba4c7b315f31298b6cce1d9616947" => :sierra
+    sha256 "c82aaf006c1e61742f4b0d01106b34efa0bba4c7b315f31298b6cce1d9616947" => :el_capitan
   end
 
-  head do
-    url "https://github.com/asciidoc/asciidoc.git"
-    depends_on "autoconf" => :build
-  end
-
-  option "with-docbook-xsl", "Install DTDs to generate manpages"
-
+  depends_on "autoconf" => :build
+  depends_on "docbook-xsl" => :build
   depends_on "docbook"
-  depends_on "docbook-xsl" => :optional
 
   def install
-    system "autoconf" if build.head?
+    ENV["XML_CATALOG_FILES"] = etc/"xml/catalog"
+
+    system "autoconf"
     system "./configure", "--prefix=#{prefix}"
 
-    # otherwise OS X's xmllint bails out
+    inreplace %w[a2x.py asciidoc.py filters/code/code-filter.py
+                 filters/graphviz/graphviz2png.py filters/latex/latex2img.py
+                 filters/music/music2png.py filters/unwraplatex.py],
+      "#!/usr/bin/env python2", "#!/usr/bin/python"
+
+    # otherwise macOS's xmllint bails out
     inreplace "Makefile", "-f manpage", "-f manpage -L"
     system "make", "install"
+    system "make", "docs"
   end
 
-  def caveats; <<-EOS.undent
+  def caveats
+    <<~EOS
       If you intend to process AsciiDoc files through an XML stage
       (such as a2x for manpage generation) you need to add something
       like:

@@ -1,14 +1,15 @@
 class Libnfs < Formula
   desc "C client library for NFS"
   homepage "https://github.com/sahlberg/libnfs"
-  url "https://github.com/sahlberg/libnfs/archive/libnfs-1.9.7.tar.gz"
-  sha256 "7c2e088f5fd85b791ab644a5221b717894208bc5fb8b8a5a49633802ecaa0990"
+  url "https://github.com/sahlberg/libnfs/archive/libnfs-2.0.0.tar.gz"
+  sha256 "7ea6cd8fa6c461d01091e584d424d28e137d23ff4b65b95d01a3fd0ef95d120e"
 
   bottle do
     cellar :any
-    sha256 "fc7c09992eed1189ee5aadd9ea76e2805c7cba9ed910dd572526d80c1d108412" => :el_capitan
-    sha256 "5e5b0bef16c703596a928b0ff474264745f2b33a86041af948a2736f41713a5e" => :yosemite
-    sha256 "7e89a3a33331387578ae4ef53037960c689e19c2f4a788f7763841d3036e8e0d" => :mavericks
+    sha256 "fc0e19d4911047e263cd695f056bc38e50517558ac4dec663a9cee4326705989" => :high_sierra
+    sha256 "fad6dded94a8ad815f99ce5df0116c30798ed30f3dd67272742c61183a15f6f1" => :sierra
+    sha256 "507e2c7199d82a3c057f95f4ccb9210f04e00e43881b5807186d9641edfc9bd3" => :el_capitan
+    sha256 "e83eac3ac327b5e4da5e6d7aa39668ce7067ee0fa8cab04023f268339977ee1e" => :yosemite
   end
 
   depends_on "libtool" => :build
@@ -25,7 +26,7 @@ class Libnfs < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <nfsc/libnfs.h>
 
       int main(void)
@@ -42,7 +43,7 @@ class Libnfs < Formula
         return result;
       }
     EOS
-    system ENV.cc, "test.c", "-lnfs", "-o", "test"
+    system ENV.cc, "test.c", "-L#{lib}", "-lnfs", "-o", "test"
     system "./test"
   end
 end

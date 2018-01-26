@@ -1,38 +1,30 @@
-require "language/go"
-
 class Ironcli < Formula
-  desc "CLI for Iron.io services"
+  desc "Go version of the Iron.io command-line tools"
   homepage "https://github.com/iron-io/ironcli"
-  url "https://github.com/iron-io/ironcli/archive/0.0.22.tar.gz"
-  sha256 "af179a2be5d78844f166f09a21c0387bf22ad87b696b31632e1bc81d002a4779"
-
-  head "https://github.com/iron-io/ironcli.git"
+  url "https://github.com/iron-io/ironcli/archive/0.1.6.tar.gz"
+  sha256 "2b9e65c36e4f57ccb47449d55adc220d1c8d1c0ad7316b6afaf87c8d393caae6"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "e6c39cc1dddd6acd8ce735836bb103cea0e90ce14b49453a1bc95515ccd77229" => :el_capitan
-    sha256 "9db4f01a3e5910906cdea17bc724a8839eb277e7ce26e4d8b739dbe0917a17c1" => :yosemite
-    sha256 "e354874cfff38921a6ef25bcf911637318f89ccf8fd1f07074e55ff393152acf" => :mavericks
+    sha256 "c4f4ad82734f93b32a2f64e1adaaf493fa38b4e34cbc9298fbbdc02851003343" => :high_sierra
+    sha256 "14d4bcd4ac89e89fb09b27994ba372d1e25690724c99b7ffbfb0231466c01bca" => :sierra
+    sha256 "62bed7f56cf23a148407527ff2b1234638ae0b365806ccc79c602ee081eed1dc" => :el_capitan
   end
 
+  depends_on "dep" => :build
   depends_on "go" => :build
 
   def install
-    contents = Dir["{*,.git,.gitignore}"]
-    gopath = buildpath/"gopath"
-    (gopath/"src/github.com/iron-io/ironcli").install contents
-
-    ENV["GOPATH"] = gopath
-    ENV.prepend_create_path "PATH", gopath/"bin"
-
-    cd gopath/"src/github.com/iron-io/ironcli" do
-      system "go", "build", "-o", "iron"
-      bin.install "iron"
+    ENV["GOPATH"] = buildpath
+    (buildpath/"src/github.com/iron-io/ironcli").install buildpath.children
+    cd "src/github.com/iron-io/ironcli" do
+      system "dep", "ensure"
+      system "go", "build", "-o", bin/"iron"
+      prefix.install_metafiles
     end
   end
 
   test do
-    output = shell_output(bin/"iron --version")
-    assert_match version.to_s, output
+    system bin/"iron", "-help"
   end
 end

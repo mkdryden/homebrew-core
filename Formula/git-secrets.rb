@@ -1,16 +1,17 @@
 class GitSecrets < Formula
   desc "Prevents you from committing sensitive information to a git repo"
   homepage "https://github.com/awslabs/git-secrets"
-  url "https://github.com/awslabs/git-secrets/archive/1.0.1.tar.gz"
-  sha256 "887cf60afb886a969af87ef807a32eca56c84869a002ef617efd7961af3b8f77"
-
+  url "https://github.com/awslabs/git-secrets/archive/1.2.1.tar.gz"
+  sha256 "9899907609b227e495725af7cf094cf9e09a8d732945db24ef5558fd0d6ad5ef"
   head "https://github.com/awslabs/git-secrets.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "b6abde5153f03906e0b055a356813aea27e358ac7d4f504af6af2a39433001f6" => :el_capitan
-    sha256 "f7c7f71e359fce6ee76ff734f88e6520f3d09f13aa5ba40ff76c80c3e72f98af" => :yosemite
-    sha256 "c482df635611c73d9962a4bd85b9575a0d49223e26f678c66b5b4a00810fbec8" => :mavericks
+    sha256 "77439a0901cb4fd611a627f2c484f10a0e11676755d055807d441d6a674b7d91" => :high_sierra
+    sha256 "19f150d26c9b84cbecfc64b6659b35cac4cb331ed1b22d43937e466657c5b4e0" => :sierra
+    sha256 "6a6f3422972f01a5372517fb4a904ace978f1887613c9e453e51b5add7842d22" => :el_capitan
+    sha256 "ce6027006ba7006afc654a793a79efaeba33ea1b858e062fff5993249ac89d6c" => :yosemite
+    sha256 "aa6f20339c958f734ef7b9dd6a19e6972ba256561fb34992353111ea3f8a0b45" => :mavericks
   end
 
   def install

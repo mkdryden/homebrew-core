@@ -1,13 +1,13 @@
 class Librest < Formula
   desc "Library to access RESTful web services"
   homepage "https://wiki.gnome.org/Projects/Librest"
-  url "https://download.gnome.org/sources/rest/0.7/rest-0.7.93.tar.xz"
-  sha256 "c710644455340a44ddc005c645c466f05c0d779993138ea21a62c6082108b216"
+  url "https://download.gnome.org/sources/rest/0.8/rest-0.8.1.tar.xz"
+  sha256 "0513aad38e5d3cedd4ae3c551634e3be1b9baaa79775e53b2dba9456f15b01c9"
 
   bottle do
-    sha256 "9a85440762ae254d1dca4442499cef96777539cb6266e70a4b8dd72496ed1d25" => :el_capitan
-    sha256 "31ffb12406788d8352991ce2342a1c971db18033bd140a19bfd7486664cd8235" => :yosemite
-    sha256 "5350da99c8645c1b2f3ca7d00b5c9e11e25c7b8c9802dc697721a2f8bea7f2c0" => :mavericks
+    sha256 "9051b6736cc74cc7cf4869d80be7573b13361f33464f89eb88bccae86d22c1e9" => :high_sierra
+    sha256 "a799cab80624c9a4ad497725f13889608fee9f22030a85add84bd246a79a1693" => :sierra
+    sha256 "a2499387aa86673e5c7a04c88df26ca47f7b3498687c40b32dbcf14619084899" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
@@ -26,7 +26,7 @@ class Librest < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <stdlib.h>
       #include <rest/rest-proxy.h>
 
@@ -40,8 +40,7 @@ class Librest < Formula
     EOS
     glib = Formula["glib"]
     libsoup = Formula["libsoup"]
-    flags = (ENV.cflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{libsoup.opt_include}/libsoup-2.4
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include

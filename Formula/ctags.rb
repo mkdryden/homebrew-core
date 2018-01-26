@@ -1,13 +1,13 @@
 class Ctags < Formula
   desc "Reimplementation of ctags(1)"
-  homepage "http://ctags.sourceforge.net/"
+  homepage "https://ctags.sourceforge.io/"
   revision 1
 
   stable do
     url "https://downloads.sourceforge.net/ctags/ctags-5.8.tar.gz"
     sha256 "0e44b45dcabe969e0bbbb11e30c246f81abe5d32012db37395eb57d66e9e99c7"
 
-    # also fixes http://sourceforge.net/tracker/?func=detail&aid=3247256&group_id=6556&atid=106556
+    # also fixes https://sourceforge.net/p/ctags/bugs/312/
     # merged upstream but not yet in stable
     patch :p2 do
       url "https://gist.githubusercontent.com/naegelejd/9a0f3af61954ae5a77e7/raw/16d981a3d99628994ef0f73848b6beffc70b5db8/Ctags%20r782"
@@ -16,11 +16,10 @@ class Ctags < Formula
   end
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "e1582f148434de71bfa2516f6fad0598b41115f21164ad59c847e3282d550586" => :el_capitan
-    sha256 "1ba38746fe55be78781dcf313977b60f242ed42d412bbaf96627daf24d9fd168" => :yosemite
-    sha256 "9904dcc6f32a8f52d900339ff11ba4c9cb3e67374e558bb2abcc777fe56d49b5" => :mavericks
-    sha256 "b3619b0231eb952ee7c768dbb82e2301ece1060f8c713e781767cc700f02b2f2" => :mountain_lion
+    rebuild 1
+    sha256 "497e0220e354a9ec7e0735d3ba68a27892f1f69973d6992e36667ea197a236bc" => :high_sierra
+    sha256 "56bc233d09bc3591ad1f3a9c5282f9f9cf0729b0d5a0ee001d4ea6f68f2b0ab7" => :sierra
+    sha256 "a17ee0cd08909484aeeca9177b356e14655d5f75ecaa4b36a3bd2e2248d8ac91" => :el_capitan
   end
 
   head do
@@ -28,7 +27,7 @@ class Ctags < Formula
     depends_on "autoconf" => :build
   end
 
-  # fixes http://sourceforge.net/tracker/?func=detail&aid=3247256&group_id=6556&atid=106556
+  # fixes https://sourceforge.net/p/ctags/bugs/312/
   patch :p2, :DATA
 
   def install
@@ -44,7 +43,7 @@ class Ctags < Formula
   end
 
   def caveats
-    <<-EOS.undent
+    <<~EOS
       Under some circumstances, emacs and ctags can conflict. By default,
       emacs provides an executable `ctags` that would conflict with the
       executable of the same name that ctags provides. To prevent this,
@@ -58,7 +57,7 @@ class Ctags < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <stdio.h>
       #include <stdlib.h>
 

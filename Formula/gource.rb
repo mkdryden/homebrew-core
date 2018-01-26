@@ -1,14 +1,14 @@
 class Gource < Formula
   desc "Version Control Visualization Tool"
   homepage "https://github.com/acaudwell/Gource"
-  url "https://github.com/acaudwell/Gource/releases/download/gource-0.43/gource-0.43.tar.gz"
-  sha256 "85a40ac8e4f5c277764216465c248d6b76589ceac012541c4cc03883a24abde4"
-  revision 3
+  url "https://github.com/acaudwell/Gource/releases/download/gource-0.47/gource-0.47.tar.gz"
+  sha256 "f2b16083a01b897b6c062b363793028fb9e01cd6f888d91772ee06e56ce398d2"
 
   bottle do
-    sha256 "cb581cb4c8afafd98dc4fd96f3c87a26ad57519d5ab65267de14b3da5790934a" => :el_capitan
-    sha256 "d47030c8dc55a2721257b26cfa2de90f2efa5b3e7d0f3d9ae92c0a1a183846af" => :yosemite
-    sha256 "f65a495853061d4515445d1a07d2931a06ce0bb9e6782743d63763d00c2dd878" => :mavericks
+    sha256 "d42a81092141197cd74f4bbec4e0265c1cbb81a7d00f150dc6cea18319e5b6d2" => :high_sierra
+    sha256 "4620f83a4698992da638c4c0b1b02c81ee1e5aecf1e6280a1568043d4af12a2e" => :sierra
+    sha256 "bca74b4a29161250c85c39edcb41930fc284abc06024955c759b9c74932a8990" => :el_capitan
+    sha256 "8fd44f73f13254c88e52da1c891ebe7d425d426b056764a3142d628519ecff2e" => :yosemite
   end
 
   head do
@@ -23,21 +23,13 @@ class Gource < Formula
 
   depends_on "pkg-config" => :build
   depends_on "glm" => :build
+  depends_on "boost"
   depends_on "freetype"
   depends_on "glew"
-  depends_on "jpeg"
+  depends_on "libpng"
   depends_on "pcre"
   depends_on "sdl2"
   depends_on "sdl2_image"
-
-  # boost failing on lion
-  depends_on :macos => :mountain_lion
-
-  if MacOS.version < :mavericks
-    depends_on "boost" => "c++11"
-  else
-    depends_on "boost"
-  end
 
   needs :cxx11
 

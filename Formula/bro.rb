@@ -1,23 +1,20 @@
 class Bro < Formula
   desc "Network security monitor"
   homepage "https://www.bro.org"
-  url "https://www.bro.org/downloads/release/bro-2.4.1.tar.gz"
-  sha256 "d8b99673a5024630f6bae820c4f8c3ca9029f1167f9e5729c914c66e1fc7c8f6"
+  url "https://www.bro.org/downloads/bro-2.5.2.tar.gz"
+  sha256 "ab95b1bc376282919e5fa6b25b5ef8864e2e7bd5efe842db35d4a223b8f5b970"
   head "https://github.com/bro/bro.git"
 
   bottle do
-    revision 1
-    sha256 "a48cb079b41fe45aad9e4acf3f9d6ef774569cfa14b970a9e205c40882147848" => :el_capitan
-    sha256 "fb0a8b536d58745f837a3e5731e6c34c09dd4542ca33c523860c3c9aea6dea84" => :yosemite
-    sha256 "e0aab7ebf5af8aea92fadc1df19f2ad6d65a2a1a91f62ecd4a2c2146466b989c" => :mavericks
+    sha256 "8f3c784b66fb018db6606e27cb02099c792a4e531678fc2b4f29f8614f15a660" => :high_sierra
+    sha256 "3c5756e18c683ab3898e849b5e94f4cac25c487de6a9f2a89c7fd20751e58825" => :sierra
+    sha256 "b71f2ab1666612dda2ba7706177781a15087151b89a15df055c5978e4746959e" => :el_capitan
   end
 
   depends_on "cmake" => :build
   depends_on "swig" => :build
   depends_on "openssl"
   depends_on "geoip" => :recommended
-
-  conflicts_with "brotli", :because => "Both install a `bro` binary"
 
   def install
     system "./configure", "--prefix=#{prefix}",

@@ -1,18 +1,19 @@
 class Pegtl < Formula
   desc "Parsing Expression Grammar Template Library"
-  homepage "https://github.com/ColinH/PEGTL"
-  url "https://github.com/ColinH/PEGTL/archive/1.1.0.tar.gz"
-  sha256 "7131df800d4647610c68cb120c58fb34ede9adfad741c502785cdfe8aab698db"
+  homepage "https://github.com/taocpp/PEGTL"
+  url "https://github.com/taocpp/PEGTL/archive/2.3.3.tar.gz"
+  sha256 "a734e4e7a913e1243bc066a50a8448c241b036e017a26c6d00d366c11ac7dd05"
 
   bottle :unneeded
 
   def install
-    include.install "pegtl.hh", "pegtl"
-    pkgshare.install "examples"
+    prefix.install "include"
+    rm "src/example/pegtl/CMakeLists.txt"
+    (pkgshare/"examples").install (buildpath/"src/example/pegtl").children
   end
 
   test do
-    system ENV.cxx, pkgshare/"examples/hello_world.cc", "-std=c++11", "-stdlib=libc++", "-lc++", "-o", "helloworld"
+    system ENV.cxx, pkgshare/"examples/hello_world.cpp", "-std=c++11", "-o", "helloworld"
     assert_equal "Good bye, homebrew!\n", shell_output("./helloworld 'Hello, homebrew!'")
   end
 end

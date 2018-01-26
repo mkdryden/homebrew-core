@@ -1,13 +1,14 @@
 class Cask < Formula
   desc "Emacs dependency management"
   homepage "https://cask.readthedocs.org/"
-  url "https://github.com/cask/cask/archive/v0.7.4.tar.gz"
-  sha256 "b183ea1c50fc215c9040f402b758ecc335901fbc2c3afd4a7302386c888d437d"
+  url "https://github.com/cask/cask/archive/v0.8.1.tar.gz"
+  sha256 "8739ba608f23c79b3426faa8b068d5d1bc096c7305ce30b1163babd354be821c"
+  revision 1
   head "https://github.com/cask/cask.git"
 
   bottle :unneeded
 
-  depends_on :emacs => ["24", :run]
+  depends_on "emacs"
 
   def install
     bin.install "bin/cask"
@@ -22,7 +23,7 @@ class Cask < Formula
   end
 
   test do
-    (testpath/"Cask").write <<-EOS.undent
+    (testpath/"Cask").write <<~EOS
       (source gnu)
       (depends-on "chess")
     EOS

@@ -1,8 +1,9 @@
 class I2p < Formula
-  desc "I2P is an anonymous overlay network - a network within a network"
+  desc "Anonymous overlay network - a network within a network"
   homepage "https://geti2p.net"
-  url "https://download.i2p2.de/releases/0.9.21/i2pinstall_0.9.21.jar"
-  sha256 "0238ffc6ea44099ef4fe6c20913cb4eec675c2760aea07dfe7d499addcc89cf2"
+  url "https://download.i2p2.de/releases/0.9.32/i2pinstall_0.9.32.jar"
+  mirror "https://launchpad.net/i2p/trunk/0.9.32/+download/i2pinstall_0.9.32.jar"
+  sha256 "2ff82498c5491a138e42991658d0d747f13579392d0d065c65fbe9a94ae18fdf"
 
   bottle :unneeded
 
@@ -20,21 +21,6 @@ class I2p < Formula
   end
 
   test do
-    wrapper_pid = fork do
-      exec "#{bin}/i2prouter console"
-    end
-    router_pid = 0
-    sleep 5
-
-    begin
-      status = shell_output("#{bin}/i2prouter status")
-      assert_match(/I2P Service is running/, status)
-      /PID:(\d+)/ =~ status
-      router_pid = Regexp.last_match(1)
-    ensure
-      Process.kill("SIGINT", router_pid.to_i) unless router_pid.nil?
-      Process.kill("SIGINT", wrapper_pid)
-      Process.wait(wrapper_pid)
-    end
+    assert_match "I2P Service is not running.", shell_output("#{bin}/i2prouter status", 1)
   end
 end

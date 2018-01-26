@@ -1,25 +1,32 @@
 class Bazel < Formula
   desc "Google's own build tool"
-  homepage "http://bazel.io/"
-  url "https://github.com/bazelbuild/bazel/archive/0.2.1.tar.gz"
-  sha256 "be964f98480ed258f249fc44c467a293e3a143aa750149b970da3d6719ba6ff1"
+  homepage "https://bazel.build/"
+  url "https://github.com/bazelbuild/bazel/releases/download/0.9.0/bazel-0.9.0-dist.zip"
+  sha256 "efb28fed4ffcfaee653e0657f6500fc4cbac61e32104f4208da385676e76312a"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "33e512a0e8f97f6fa95e3134317cd385f3447ab83b90fc09e31db52b0c646d05" => :el_capitan
-    sha256 "7b5e0bd6824200bbbb0943205c6c5021b5448476f7923b9aaf6e3542ab937206" => :yosemite
+    sha256 "fb9e071f36bd5024e3781d227f98639bc2632cb0cc88cb39ac5dcf1d13d2a5ed" => :high_sierra
+    sha256 "ce9c9e7c7f98078284505abc234e2b102f8a7293f4c91e4880de020fc5a2162b" => :sierra
+    sha256 "45c055a9a7dfaaa3104de980ef749a5c4c2267ba87dc532e85e995fb09b0d31f" => :el_capitan
   end
 
-  depends_on :java => "1.8+"
+  depends_on :java => "1.8"
   depends_on :macos => :yosemite
 
   def install
     ENV["EMBED_LABEL"] = "#{version}-homebrew"
+    # Force Bazel ./compile.sh to put its temporary files in the buildpath
+    ENV["BAZEL_WRKDIR"] = buildpath/"work"
 
     system "./compile.sh"
-    system "./output/bazel", "build", "scripts:bash_completion"
+    system "./output/bazel", "--output_user_root", buildpath/"output_user_root",
+           "build", "scripts:bash_completion"
 
-    bin.install "output/bazel" => "bazel"
+    bin.install "scripts/packages/bazel.sh" => "bazel"
+    bin.install "output/bazel" => "bazel-real"
+    bin.env_script_all_files(libexec/"bin", Language::Java.java_home_env("1.8"))
+
     bash_completion.install "bazel-bin/scripts/bazel-complete.bash"
     zsh_completion.install "scripts/zsh_completion/_bazel"
   end
@@ -27,7 +34,7 @@ class Bazel < Formula
   test do
     touch testpath/"WORKSPACE"
 
-    (testpath/"ProjectRunner.java").write <<-EOS.undent
+    (testpath/"ProjectRunner.java").write <<~EOS
       public class ProjectRunner {
         public static void main(String args[]) {
           System.out.println("Hi!");
@@ -35,7 +42,7 @@ class Bazel < Formula
       }
     EOS
 
-    (testpath/"BUILD").write <<-EOS.undent
+    (testpath/"BUILD").write <<~EOS
       java_binary(
         name = "bazel-test",
         srcs = glob(["*.java"]),
@@ -43,7 +50,7 @@ class Bazel < Formula
       )
     EOS
 
-    system "#{bin}/bazel", "build", "//:bazel-test"
+    system bin/"bazel", "build", "//:bazel-test"
     system "bazel-bin/bazel-test"
   end
 end

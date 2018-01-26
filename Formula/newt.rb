@@ -1,32 +1,23 @@
 class Newt < Formula
   desc "Library for color text mode, widget based user interfaces"
-  homepage "https://fedorahosted.org/newt/"
-  url "https://fedorahosted.org/releases/n/e/newt/newt-0.52.18.tar.gz"
-  sha256 "771b0e634ede56ae6a6acd910728bb5832ac13ddb0d1d27919d2498dab70c91e"
+  homepage "https://pagure.io/newt"
+  url "https://pagure.io/releases/newt/newt-0.52.20.tar.gz"
+  sha256 "8d66ba6beffc3f786d4ccfee9d2b43d93484680ef8db9397a4fb70b5adbb6dbc"
 
   bottle do
     cellar :any
-    sha256 "0e47676dc127c77710bf3ed146edb3f7a22d96c113cc9b7322779dc94987eccc" => :el_capitan
-    sha256 "33403d77594cecec7efb68b21a3a55b0c2510cd3c97d8aa5f252015632c5962b" => :yosemite
-    sha256 "d1a3b95da1718bae9461c958cc05b739f94ee4ec0e5d08f7a8001cd29aa82dc8" => :mavericks
-    sha256 "ace3c7f7beacda4039b3d147687214a01f6006a6d53eadbb245825a2cea402ad" => :mountain_lion
+    sha256 "092e8f0a4603c337cd7e51d26d3721bd450a3a9ebf6eb0f55bf703f1a3c34cfa" => :high_sierra
+    sha256 "eb0b10566d3852909e6f11ad02dd09382cb494d05f1ea4a2371c15abda8cda1c" => :sierra
+    sha256 "1a3b16bafddded8ae06bcb5b261c50142b7b7752d4e4cf08d65709a2506edf82" => :el_capitan
+    sha256 "78f895d8ee19c343c5846a29699fd8be1f552f8d5c335081df353f8069cd9fa0" => :yosemite
   end
 
   depends_on "gettext"
   depends_on "popt"
   depends_on "s-lang"
-  depends_on :python => :optional
-
-  # build dylibs with -dynamiclib; version libraries
-  # Patch via MacPorts
-  patch :p0 do
-    url "https://raw.githubusercontent.com/Homebrew/patches/0eb53878/newt/patch-Makefile.in.diff"
-    sha256 "6672c253b42696fdacd23424ae0e07af6d86313718e06cd44e40e532a892db16"
-  end
 
   def install
     args = ["--prefix=#{prefix}", "--without-tcl"]
-    args << "--without-python" if build.without? "python"
 
     inreplace "Makefile.in" do |s|
       # name libraries correctly
@@ -43,5 +34,19 @@ class Newt < Formula
 
     system "./configure", *args
     system "make", "install"
+  end
+
+  test do
+    ENV["TERM"] = "xterm"
+    system "python", "-c", "import snack"
+    (testpath/"test.c").write <<~EOS
+      #import <newt.h>
+      int main() {
+        newtInit();
+        newtFinished();
+      }
+    EOS
+    system ENV.cc, "test.c", "-o", "test", "-L#{lib}", "-lnewt"
+    system "./test"
   end
 end

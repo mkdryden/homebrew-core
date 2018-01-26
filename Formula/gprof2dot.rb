@@ -1,21 +1,20 @@
 class Gprof2dot < Formula
-  desc "Convert the output from many profilers into a Graphviz dot graph."
+  desc "Convert the output from many profilers into a Graphviz dot graph"
   homepage "https://github.com/jrfonseca/gprof2dot"
-  url "https://pypi.python.org/packages/source/g/gprof2dot/gprof2dot-2015.02.03.tar.gz"
-  sha256 "9bdebb71a7c3daba1430de4486ef620e418a43bb051b30875d02f657f9c69d65"
+  url "https://files.pythonhosted.org/packages/9d/36/f977122502979f3dfb50704979c9ed70e6b620787942b089bf1af15f5aba/gprof2dot-2017.9.19.tar.gz"
+  sha256 "cebc7aa2782fd813ead415ea1fae3409524343485eadc7fb60ef5bd1e810309e"
 
   head "https://github.com/jrfonseca/gprof2dot.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "1f720ca7e666ea048e478974a9e379ac87be85c94b2fa7f9484c65918ebf2b6a" => :el_capitan
-    sha256 "4fcdce24b6951b0132fdad5a698c610d14081ab0d394829b14e529ef8de43361" => :yosemite
-    sha256 "ca2c8c0f777d7becb5ed0e6531195fc7ac307f8d0230b651e881f15c0ed9d23d" => :mavericks
-    sha256 "706d128a70af48176f06c6cef54be2b733db9ff172e9e20410903c05f86a0e61" => :mountain_lion
+    sha256 "b557363c9161ff1cd9de06cfb116eac29886c31f655c57d031ef2c6641fe876c" => :high_sierra
+    sha256 "4cbf98d1320170ed6287d0b58bc7c810e29529de2ea5d5c4c2545443c6f5e3e2" => :sierra
+    sha256 "2fe7080ddad320a9f73638f8d1ad072e97d6ba80825221414bae015019672852" => :el_capitan
   end
 
   depends_on "graphviz" => :recommended
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python" if MacOS.version <= :snow_leopard
 
   def install
     ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python2.7/site-packages"
@@ -26,7 +25,7 @@ class Gprof2dot < Formula
   end
 
   test do
-    (testpath/"gprof.output").write <<-EOS.undent
+    (testpath/"gprof.output").write <<~EOS
       Flat profile:
 
       Each sample counts as 0.01 seconds.
@@ -66,7 +65,7 @@ class Gprof2dot < Formula
              the function in the gprof listing. If the index is
              in parenthesis it shows where it would appear in
              the gprof listing if it were to be printed.
-
+      
                    Call graph (explanation follows)
 
 
@@ -183,6 +182,6 @@ class Gprof2dot < Formula
          [4] project1                [2] worker1
     EOS
     system bin/"gprof2dot", testpath/"gprof.output", "-o", testpath/"call_graph.dot"
-    assert File.exist?(testpath/"call_graph.dot")
+    assert_predicate testpath/"call_graph.dot", :exist?
   end
 end

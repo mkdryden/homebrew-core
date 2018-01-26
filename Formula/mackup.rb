@@ -1,19 +1,20 @@
 class Mackup < Formula
   desc "Keep your Mac's application settings in sync"
   homepage "https://github.com/lra/mackup"
-  url "https://github.com/lra/mackup/archive/0.8.13.tar.gz"
-  sha256 "b42e7ccec9bf270b154b9bae1e1608b1068a6b3ca289991c755c915dd6e18f43"
+  url "https://github.com/lra/mackup/archive/0.8.16.tar.gz"
+  sha256 "d50a19be1c6a5b6a777ddfb4abbc6c76a361b3edce266f1618947ad38a100331"
 
   head "https://github.com/lra/mackup.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "ff46c818bece2cdde93c6ddfa0af859a51e46c0d9e02874fa721666a717063d6" => :el_capitan
-    sha256 "1a543ab4bd7e3a093dbf3447f9f9f265088313669d18d1a574646bd5a9fd18e3" => :yosemite
-    sha256 "dfdfecbb9af08dc72e5beab5d88ac49d9ab7bc1438b96a0837b7ec76553c5337" => :mavericks
+    sha256 "6d1cc4fb525c44c885f69c02d49f314e95d1a0c439e00266b5f514e8a5233c4d" => :high_sierra
+    sha256 "c441d37b9dd7aa951287d0300fe8905340b909d6858ae90dd8e8618b189eefd5" => :sierra
+    sha256 "6e40fe830045c93763c5e9eeede0581629f5ae20b09870f0ea280f847da289aa" => :el_capitan
+    sha256 "bb4a930f0d5dc90cfc028219f78078a461eba4c1b2092af266d7c4acecbcae24" => :yosemite
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python" if MacOS.version <= :snow_leopard
 
   resource "docopt" do
     url "https://pypi.python.org/packages/source/d/docopt/docopt-0.6.2.tar.gz"

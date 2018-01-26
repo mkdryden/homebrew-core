@@ -1,32 +1,51 @@
 class Watch < Formula
   desc "Executes a program periodically, showing output fullscreen"
   homepage "https://gitlab.com/procps-ng/procps"
-  url "https://download.sourceforge.net/project/procps-ng/Production/procps-ng-3.3.10.tar.xz"
-  sha256 "a02e6f98974dfceab79884df902ca3df30b0e9bad6d76aee0fb5dce17f267f04"
+  head "https://gitlab.com/procps-ng/procps.git"
+
+  stable do
+    url "https://gitlab.com/procps-ng/procps.git",
+      :tag => "v3.3.12",
+      :revision => "e0784ddaed30d095bb1d9a8ad6b5a23d10a212c4"
+
+    # Upstream commit, which fixes missing HOST_NAME_MAX on BSD-y systems.
+    # Commit subject is "watch: define HOST_NAME_MAX"
+    patch do
+      url "https://gitlab.com/procps-ng/procps/commit/e564ddcb01c3c11537432faa9c7a7a6badb05930.diff"
+      sha256 "3a4664e154f324e93b2a8e453a12575b94aac9eb9d86831649731d0f1a7f869e"
+    end
+  end
 
   bottle do
-    cellar :any_skip_relocation
-    revision 1
-    sha256 "96f5eb357252388cfe7051ffcec7c568681257e6965a58276ed53164b69e85cd" => :el_capitan
-    sha256 "a8a2e64c291503ed386c06703a6a224b83d9d418dc28e7e118844707fdd1ef6f" => :yosemite
-    sha256 "7240e4583b401d6931b75f35be341bd3805435409bf8ff1dee004b9a2db5534e" => :mavericks
+    sha256 "289a466b89e14630d18b963265976835f3f505630f72cd824a1d267a6acf9522" => :high_sierra
+    sha256 "98cf549c8b1c06199e9f8baccdc1dcc3fc3c1f9a5195a1869de991598774d806" => :sierra
+    sha256 "926d0be8053cf015dc06cf8fb4e6107902c2015acc8b69f1a77100034e078cfd" => :el_capitan
+    sha256 "31b517c67875cbb8ca8bd8126af66561a8df0f61bee955ffdeac3eeb6021ec12" => :yosemite
+    sha256 "fdedabfbc86a57b936be2ca1377c8749a6bce801baf74ef4444e7c75b9b6e0f0" => :mavericks
   end
+
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "libtool" => :build
+  depends_on "pkg-config" => :build
+
+  depends_on "gettext"
 
   conflicts_with "visionmedia-watch"
 
   def install
-    system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
+    # Prevents undefined symbol errors for _libintl_gettext, etc.
+    # Reported 22 Jun 2016: https://gitlab.com/procps-ng/procps/issues/35
+    ENV.append "LDFLAGS", "-lintl"
 
-    # AM_LDFLAGS contains a non-existing library './proc/libprocps.la' that
-    # breaks the linking process. Upstream developers have been informed (see
-    # https://github.com/Homebrew/homebrew/pull/34852/files#r21796727).
-    system "make", "watch", "AM_LDFLAGS="
+    system "autoreconf", "-fiv"
+    system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
+    system "make", "watch"
     bin.install "watch"
     man1.install "watch.1"
   end
 
   test do
-    ENV["TERM"] = "xterm"
-    system "#{bin}/watch", "--errexit", "--chgexit", "--interval", "1", "date"
+    system bin/"watch", "--errexit", "--chgexit", "--interval", "1", "date"
   end
 end

@@ -1,43 +1,48 @@
 class GnomeBuilder < Formula
   desc "IDE for GNOME"
   homepage "https://wiki.gnome.org/Apps/Builder"
-  url "https://download.gnome.org/sources/gnome-builder/3.18/gnome-builder-3.18.1.tar.xz"
-  mirror "https://launchpad.net/ubuntu/+archive/primary/+files/gnome-builder_3.18.1.orig.tar.xz"
-  sha256 "501c95220dcf8ca44a5748e863492377fe2c3aee78a95973d6819b1836e5407c"
+  url "https://download.gnome.org/sources/gnome-builder/3.24/gnome-builder-3.24.2.tar.xz"
+  sha256 "84843a9f4af2e1ee1ebfac44441a2affa2d409df9066e7d11bf1d232ae0c535a"
+  revision 5
 
   bottle do
-    sha256 "f7d422a29b7c9b98c20bdce9e8a56b14265fad5d9ce174d77c686adb26d752ad" => :el_capitan
-    sha256 "294e0df51b9781d53996761965bde4a300485e92af2f39f79965cbee5203f4e5" => :yosemite
-    sha256 "0a7a3ea11c1db7a79faeb78240631b0ea55d59cc2b053a4f89e95769d1f1c26c" => :mavericks
+    sha256 "11cd6ef17936e5cb9f7acc11d2ba8d1b441722b2cb871389001a51e87d0ee084" => :high_sierra
+    sha256 "2aa5d57a1f79f0f834545a848b36dd3294a673b7e68a47a42983e68e1ded7663" => :sierra
+    sha256 "f711d35258d5dd969bd3dbc4213a91f86a4a21eed1b6ecb5dc19128ab0d51e44" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
   depends_on "intltool" => :build
+  depends_on "itstool" => :build
+  depends_on "coreutils" => :build
+  depends_on "libgit2"
   depends_on "libgit2-glib"
   depends_on "gtk+3"
   depends_on "libpeas"
   depends_on "gtksourceview3"
   depends_on "hicolor-icon-theme"
-  depends_on "gnome-icon-theme"
+  depends_on "adwaita-icon-theme"
+  depends_on "desktop-file-utils"
   depends_on "pcre"
+  depends_on "json-glib"
+  depends_on "libsoup"
+  depends_on "gspell"
+  depends_on "enchant"
   depends_on "gjs" => :recommended
   depends_on "vala" => :recommended
-  depends_on "devhelp" => :recommended
   depends_on "ctags" => :recommended
-  depends_on :python3 => :optional
+  depends_on "meson" => :recommended
+  depends_on "python3" => :optional
   depends_on "pygobject3" if build.with? "python3"
 
   needs :cxx11
 
   def install
-    ENV.cxx11
+    # Bugreport opened at https://bugzilla.gnome.org/show_bug.cgi?id=780293
+    ENV.append "LIBS", `pkg-config --libs enchant`.chomp
+    inreplace "doc/Makefile.in", "cp -R", "gcp -R"
 
-    # Fix build failure on case-sensitive volumes for libgit2-glib without vala.
-    # Reported 7th Mar 2016 to https://bugzilla.gnome.org/show_bug.cgi?id=763208
-    unless File.exist?(Formula["libgit2-glib"].share/"vala/vapi/ggit-1.0.vapi")
-      inreplace Dir["libide/{Makefile.am,Makefile.in,libide-1.0.deps}"],
-        "ggit-1.0", "Ggit-1.0"
-    end
+    ENV.cxx11
 
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
@@ -53,6 +58,6 @@ class GnomeBuilder < Formula
   end
 
   test do
-    system "#{bin}/gnome-builder", "--version"
+    assert_match version.to_s, shell_output("#{bin}/gnome-builder --version")
   end
 end

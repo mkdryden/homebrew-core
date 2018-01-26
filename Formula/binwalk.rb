@@ -1,32 +1,26 @@
 class Binwalk < Formula
   desc "Searches a binary image for embedded files and executable code"
-  homepage "http://binwalk.org/"
+  homepage "https://github.com/devttys0/binwalk"
   url "https://github.com/devttys0/binwalk/archive/v2.1.1.tar.gz"
   sha256 "1b70a5b03489d29f60fef18008a2164974234874faab48a4f47ec53d461d284a"
+  revision 4
+
   head "https://github.com/devttys0/binwalk.git"
 
   bottle do
-    sha256 "7c45d823c2fc4eae924ebda88a59fa1ea793bbc43346816a48da9f87931a13ec" => :el_capitan
-    sha256 "764a4275eb3ffa1317cdb9d38a9af75490717fb5eb0efd84b3968a11443a1a1e" => :yosemite
-    sha256 "8b5210a335b36d32040061b611ad122828877a7df8138dc544c566b16542fcee" => :mavericks
+    sha256 "8c5c20fa4f9744e2461882c2c7a77b8532885583e10c0f943d3a92c1299450b1" => :high_sierra
+    sha256 "eb564bd84ee2d904ccc6e054e66c3d3f2d9f40f62845fbe84c426536ba8b71f8" => :sierra
+    sha256 "551c2949f58da9f864e19a088f421785792bb51bbebecc3b457155846a2dd69f" => :el_capitan
   end
 
-  option "with-matplotlib", "Check for presence of matplotlib, which is required for entropy graphing support"
   option "with-capstone", "Enable disasm options via capstone"
 
   depends_on "swig" => :build
-  depends_on :fortran
-  depends_on "matplotlib" => :python if build.with? "matplotlib"
-  depends_on "pyside"
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "gcc" # for gfortran
   depends_on "p7zip"
+  depends_on "python" if MacOS.version <= :snow_leopard
   depends_on "ssdeep"
   depends_on "xz"
-
-  resource "pyqtgraph" do
-    url "http://www.pyqtgraph.org/downloads/pyqtgraph-0.9.10.tar.gz"
-    sha256 "4c0589774e3c8b0c374931397cf6356b9cc99a790215d1917bb7f015c6f0729a"
-  end
 
   resource "numpy" do
     url "https://pypi.python.org/packages/source/n/numpy/numpy-1.10.2.tar.gz"
@@ -39,13 +33,13 @@ class Binwalk < Formula
   end
 
   resource "capstone" do
-    url "https://pypi.python.org/packages/source/c/capstone/capstone-3.0.4.tar.gz"
-    sha256 "945d3b8c3646a1c3914824c416439e2cf2df8969dd722c8979cdcc23b40ad225"
+    url "https://files.pythonhosted.org/packages/44/3f/2ae09118f1c890b98e7b87ff1ce3d3a36e8e72ddac74ddcf0bbe8f005210/capstone-3.0.5rc2.tar.gz"
+    sha256 "c67a4e14d04b29126f6ae2a4aeb773acf96cc6705e1fa7bd9af1798fa928022a"
   end
 
   def install
     ENV.prepend_create_path "PYTHONPATH", libexec/"vendor/lib/python2.7/site-packages"
-    res = %w[numpy scipy pyqtgraph]
+    res = %w[numpy scipy]
     res += %w[capstone] if build.with? "capstone"
     res.each do |r|
       resource(r).stage do

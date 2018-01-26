@@ -1,13 +1,14 @@
 class BibTool < Formula
   desc "Manipulates BibTeX databases"
-  homepage "http://www.gerd-neugebauer.de/software/TeX/BibTool/index.en.html"
-  url "https://github.com/ge-ne/bibtool/archive/BibTool_2_63.tar.gz"
-  sha256 "8834505834366bf2a1e23daea9d6aec786b893c40b7270291be78b2e4d0d1bb7"
+  homepage "http://www.gerd-neugebauer.de/software/TeX/BibTool/en/"
+  url "https://github.com/ge-ne/bibtool/releases/download/BibTool_2_67/BibTool-2.67.tar.gz"
+  sha256 "5b6c4160975a926356e8e59d0e5c01ac2a7be337ecace2494918fc2a46d9d784"
 
   bottle do
-    sha256 "a2e9214289b1d13514bdbe88531e270056c698aa0f9cb391fd0b1f64880104ca" => :el_capitan
-    sha256 "cd5727fee0530b7e67c252e83a9d184025ed45980088da89700146eadd2c5154" => :yosemite
-    sha256 "f96f81ee186c5f9cf5c827c52951d5f40b2f1458bcf1995fd551c8093f6070cc" => :mavericks
+    sha256 "dfd0882e8a92f9d883d838261ced3085f843b6faa439df00fa8988fc719c6946" => :high_sierra
+    sha256 "9611f8ab9db1f0ae2918bf22d3169a80eeacd0a4e457437b4b131c36e7687d41" => :sierra
+    sha256 "5f7813e70bfaa668da0b3f438237e0fef7628808c3b5cc56c26012e2cf54f09d" => :el_capitan
+    sha256 "39956f91c1332b2518841436655eeb828dd7562683e5bc1f55bc7a5e7c308c80" => :yosemite
   end
 
   def install
@@ -17,7 +18,7 @@ class BibTool < Formula
   end
 
   test do
-    (testpath/"test.bib").write <<-EOS.undent
+    (testpath/"test.bib").write <<~EOS
       @article{Homebrew,
           title   = {Something},
           author  = {Someone},

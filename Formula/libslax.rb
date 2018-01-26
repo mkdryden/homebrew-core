@@ -1,15 +1,14 @@
 class Libslax < Formula
   desc "Implementation of the SLAX language (an XSLT alternative)"
   homepage "http://www.libslax.org/"
-  url "https://github.com/Juniper/libslax/releases/download/0.19.0/libslax-0.19.0.tar.gz"
-  sha256 "a80e88709459791a3193ee665d7272109c61aa3e717c68bc95a29e6718ae2191"
+  url "https://github.com/Juniper/libslax/releases/download/0.22.0/libslax-0.22.0.tar.gz"
+  sha256 "a32fb437a160666d88d9a9ae04ee6a880ea75f1f0e1e9a5a01ce1c8fbded6dfe"
 
   bottle do
-    revision 1
-    sha256 "d93e089b6a8f9332a0faad4292e55c32db5122bd6b1d14f9d110bae0596c05c7" => :el_capitan
-    sha256 "9faa71033a275aeb2b232543ad61ef09fe069ece4794cc28d2c03b8cd83dc9b5" => :yosemite
-    sha256 "5108fa8d5db98f2a8441bb90c860ea01302afe935089be162f6a5164aa56fedd" => :mavericks
-    sha256 "a29d332d5fd18e9903e891018ed8c3f527efc7fe95029e219b3d5e1e4e4a5c47" => :mountain_lion
+    sha256 "119f8062107d0621d36b62a87a7b2af4e7aff1b5b18bec2ddba32d1570eb0d4c" => :high_sierra
+    sha256 "7b8f9a2b5da09d32b9d0f45458a0059ebecddf7e40e49f667ad9c6c5f2a75d84" => :sierra
+    sha256 "6c74666ce37951d72d6589914d203362195431324d89aeb7702c4d5574ebe17e" => :el_capitan
+    sha256 "ac6582a698eae9f96d92d29b9e0ea1fb25b74c969e52cc1a97a1830ac6bb0544" => :yosemite
   end
 
   head do
@@ -19,21 +18,37 @@ class Libslax < Formula
     depends_on "automake" => :build
   end
 
-  depends_on "libtool"  => :build
-
   if MacOS.version <= :mountain_lion
     depends_on "libxml2"
     depends_on "libxslt"
+    depends_on "sqlite" # Needs 3.7.13, which shipped on 10.9.
   end
 
+  depends_on "libtool" => :build
   depends_on "curl" if MacOS.version <= :lion
+  depends_on "openssl"
 
   def install
-    system "sh", "./bin/setup.sh" if build.head?
+    # configure remembers "-lcrypto" but not the link path.
+    ENV.append "LDFLAGS", "-L#{Formula["openssl"].opt_lib}"
 
+    system "sh", "./bin/setup.sh" if build.head?
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--enable-libedit"
     system "make", "install"
+  end
+
+  test do
+    (testpath/"hello.slax").write <<~EOS
+      version 1.0;
+
+      match / {
+          expr "Hello World!";
+      }
+    EOS
+    system "#{bin}/slaxproc", "--slax-to-xslt", "hello.slax", "hello.xslt"
+    assert_predicate testpath/"hello.xslt", :exist?
+    assert_match "<xsl:text>Hello World!</xsl:text>", File.read("hello.xslt")
   end
 end

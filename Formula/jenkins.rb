@@ -1,14 +1,8 @@
 class Jenkins < Formula
   desc "Extendable open source continuous integration server"
-  homepage "https://jenkins-ci.org"
-  url "http://mirrors.jenkins-ci.org/war/1.655/jenkins.war"
-  sha256 "0cee889af697c115961ce50229cc5e39d1b798c0a0a689687b745c0a938c8547"
-
-  devel do
-    url "http://mirrors.jenkins-ci.org/war-rc/2.0/jenkins.war"
-    version "2.0-rc"
-    sha256 "7ff7759e1d7a097e018c8001db5f4248db04d0bf39f9b0f06934c124a936cfa2"
-  end
+  homepage "https://jenkins.io/"
+  url "http://mirrors.jenkins.io/war/2.103/jenkins.war"
+  sha256 "0ad2e6b785f853380994f88f0a60ffba8a0f8d1c5f76039b3f514ad9090ee7b4"
 
   head do
     url "https://github.com/jenkinsci/jenkins.git"
@@ -17,11 +11,10 @@ class Jenkins < Formula
 
   bottle :unneeded
 
-  depends_on :java => "1.7+"
+  depends_on :java => "1.8"
 
   def install
     if build.head?
-      ENV.java_cache
       system "mvn", "clean", "install", "-pl", "war", "-am", "-DskipTests"
     else
       system "jar", "xvf", "jenkins.war"
@@ -31,9 +24,14 @@ class Jenkins < Formula
     bin.write_jar_script libexec/"jenkins-cli.jar", "jenkins-cli"
   end
 
+  def caveats; <<~EOS
+    Note: When using launchctl the port will be 8080.
+  EOS
+  end
+
   plist_options :manual => "jenkins"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -42,7 +40,11 @@ class Jenkins < Formula
         <string>#{plist_name}</string>
         <key>ProgramArguments</key>
         <array>
-          <string>/usr/bin/java</string>
+          <string>/usr/libexec/java_home</string>
+          <string>-v</string>
+          <string>1.8</string>
+          <string>--exec</string>
+          <string>java</string>
           <string>-Dmail.smtp.starttls.enable=true</string>
           <string>-jar</string>
           <string>#{opt_libexec}/jenkins.war</string>
@@ -56,14 +58,9 @@ class Jenkins < Formula
   EOS
   end
 
-  def caveats; <<-EOS.undent
-    Note: When using launchctl the port will be 8080.
-  EOS
-  end
-
   test do
     ENV["JENKINS_HOME"] = testpath
-    ENV["_JAVA_OPTIONS"] = "-Djava.io.tmpdir=#{testpath}"
+    ENV.prepend "_JAVA_OPTIONS", "-Djava.io.tmpdir=#{testpath}"
     pid = fork do
       exec "#{bin}/jenkins"
     end

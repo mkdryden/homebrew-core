@@ -1,29 +1,30 @@
 class Zurl < Formula
   desc "HTTP and WebSocket client worker with ZeroMQ interface"
   homepage "https://github.com/fanout/zurl"
-  url "https://dl.bintray.com/fanout/source/zurl-1.5.1.tar.bz2"
-  sha256 "945fccc160ea655249e7dd3706a5db096bab6d1d08fc6e290e53a9635f07c7d4"
+  url "https://dl.bintray.com/fanout/source/zurl-1.9.1.tar.bz2"
+  sha256 "b57385d768c9df62dd225a462d0e35998f95fdbd34ea628bf3d6a38b012dba41"
 
   bottle do
     cellar :any
-    sha256 "c9d48e5eff5ff9cc57cd99eecadea25047216c9bc3510f813bd5324525f0b866" => :el_capitan
-    sha256 "9d5b6ce92eb76bde188915070d383a98812274140f20c9315b89f7af7f737f69" => :yosemite
-    sha256 "a2bb8f6471dbc757b8a46e0a60e743a7a3e43f5b8ca4f3128eb8c6902922e243" => :mavericks
+    sha256 "f94e3fbd570a122222ad66c0013b9b3425c5d49ca8f0e082e0377b1b7e6a538c" => :high_sierra
+    sha256 "9ebde17a2751ce4b04a0215fe90ffebe880b4e07ab822897b5b8f7e44f4f273e" => :sierra
+    sha256 "9deb04a87b09d9805a2fdfd443744fca5e61bcd00c79ecd067dc67c6319ef88f" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
   depends_on "curl" if MacOS.version < :lion
-  depends_on "qt5"
+  depends_on "qt"
   depends_on "zeromq"
 
   resource "pyzmq" do
-    url "https://pypi.python.org/packages/source/p/pyzmq/pyzmq-15.2.0.tar.gz"
-    sha256 "2dafa322670a94e20283aba2a44b92134d425bd326419b68ad4db8d0831a26ec"
+    url "https://files.pythonhosted.org/packages/1e/f9/d0675409c11d11e549e3da000901cfaabd848da117390ee00030e14bfdb6/pyzmq-16.0.3.tar.gz"
+    sha256 "8a883824147523c0fe76d247dd58994c1c28ef07f1cc5dde595a4fd1c28f2580"
   end
 
   def install
     system "./configure", "--prefix=#{prefix}", "--extraconf=QMAKE_MACOSX_DEPLOYMENT_TARGET=#{MacOS.version}"
     system "make"
+    system "make", "check"
     system "make", "install"
   end
 
@@ -34,7 +35,7 @@ class Zurl < Formula
 
     resource("pyzmq").stage { system "python", *Language::Python.setup_install_args(testpath/"vendor") }
 
-    conffile.write(<<-EOS.undent
+    conffile.write(<<~EOS
       [General]
       in_req_spec=ipc://#{ipcfile}
       defpolicy=allow
@@ -42,7 +43,7 @@ class Zurl < Formula
       EOS
                   )
 
-    runfile.write(<<-EOS.undent
+    runfile.write(<<~EOS
       import json
       import threading
       from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer

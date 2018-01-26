@@ -1,43 +1,42 @@
 class Nghttp2 < Formula
   desc "HTTP/2 C Library"
   homepage "https://nghttp2.org/"
-  url "https://github.com/nghttp2/nghttp2/releases/download/v1.9.2/nghttp2-1.9.2.tar.xz"
-  sha256 "3d600ef8bfd151769559bc23806877b8b4eaf3d66776e6c1427b9c04cce8e853"
+  url "https://github.com/nghttp2/nghttp2/releases/download/v1.29.0/nghttp2-1.29.0.tar.xz"
+  sha256 "a7a1b18be57be6a53a7739988ea27d6ec9209e7b0e8372b8483cd911d7838739"
 
   bottle do
-    sha256 "ec38f560b8477ec6f5fdf2d73ddc028964ae1db6bd0512698bbcc85ceb12352c" => :el_capitan
-    sha256 "34ab8d855e11aaf9ee4c240bf698d609d0574e0532d7ad1c11a749dbb6b4e0ff" => :yosemite
-    sha256 "d98b1baa78f3ef7d9b225afc209c3237e261d82f10bfcb2f8605f53941795bae" => :mavericks
+    sha256 "113580a4da9ead2037675ffb797d7650430f9db00ef7ef32176ed579a25a9355" => :high_sierra
+    sha256 "f48ac4ed9ecfd676eafe40ef8207116522643086499f338a6cea3f4013b36aed" => :sierra
+    sha256 "5ce979de1d8de1e385eafcc05fba27aa7d1b0496a76b9e672cfcc8a2f7d52090" => :el_capitan
   end
 
   head do
-    url "https://github.com/tatsuhiro-t/nghttp2.git"
+    url "https://github.com/nghttp2/nghttp2.git"
 
     depends_on "automake" => :build
     depends_on "autoconf" => :build
     depends_on "libtool" => :build
-    depends_on "libxml2" # Needs xml .m4 available
   end
 
   option "with-examples", "Compile and install example programs"
-  option "without-docs", "Don't build man pages"
   option "with-python3", "Build python3 bindings"
 
-  depends_on :python3 => :optional
-  depends_on "sphinx-doc" => :build if build.with? "docs"
+  depends_on "python3" => :optional
+  depends_on "sphinx-doc" => :build
   depends_on "libxml2" if MacOS.version <= :lion
   depends_on "pkg-config" => :build
   depends_on "cunit" => :build
+  depends_on "c-ares"
   depends_on "libev"
   depends_on "openssl"
   depends_on "libevent"
   depends_on "jansson"
   depends_on "boost"
-  depends_on "spdylay" => :recommended
+  depends_on "jemalloc" => :recommended
 
   resource "Cython" do
-    url "https://pypi.python.org/packages/source/C/Cython/Cython-0.23.1.tar.gz"
-    sha256 "bdfd12d6a2a2e34b9a1bbc1af5a772cabdeedc3851703d249a52dcda8378018a"
+    url "https://files.pythonhosted.org/packages/ee/2a/c4d2cdd19c84c32d978d18e9355d1ba9982a383de87d0fcb5928553d37f4/Cython-0.27.3.tar.gz"
+    sha256 "6a00512de1f2e3ce66ba35c5420babaef1fe2d9c43a8faab4080b0dbcc26bc64"
   end
 
   # https://github.com/tatsuhiro-t/nghttp2/issues/125
@@ -54,11 +53,12 @@ class Nghttp2 < Formula
       --enable-app
       --with-boost=#{Formula["boost"].opt_prefix}
       --enable-asio-lib
+      --disable-python-bindings
     ]
 
     args << "--enable-examples" if build.with? "examples"
-    args << "--with-spdylay" if build.with? "spdylay"
-    args << "--disable-python-bindings"
+    args << "--with-xml-prefix=/usr" if MacOS.version > :lion
+    args << "--without-jemalloc" if build.without? "jemalloc"
 
     system "autoreconf", "-ivf" if build.head?
     system "./configure", *args

@@ -1,65 +1,70 @@
 class Khard < Formula
-  desc "Console carddav client."
+  include Language::Python::Virtualenv
+
+  desc "Console carddav client"
   homepage "https://github.com/scheibler/khard/"
-  url "https://pypi.python.org/packages/source/k/khard/khard-0.9.0.tar.gz"
-  sha256 "3a4c8778f314a2d1d2bb550caad7befbfbf141be92d440d682e00847a2cc0379"
+  url "https://files.pythonhosted.org/packages/19/91/6309d5b0477582b9b663cd65f1346cec6ed5f44e734bac722e1ca2ddc1e3/khard-0.12.2.tar.gz"
+  sha256 "9193d2d07cdb69cc6e35a0732111efb92bbfba854a1dd42b4f9c91a52a16c507"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "5e396cc9605c21ab5f16ba8cae16bedfc9429a3cac35d102df29e9e791d72d86" => :el_capitan
-    sha256 "ef65ef172494f85ba5a042226081118fe3256c2a909b4c965bac7362ab84f512" => :yosemite
-    sha256 "1be62406c146d9568e6738f3ca9421f8701719656c326bbe1705d9a265cb569c" => :mavericks
+    sha256 "9c124b8848836d9d97dc6a89a4fe7b3e324df4d20b8458f9d91c54a1008cf8e4" => :high_sierra
+    sha256 "0d24f1e0efff80249759470e6b540e0a79b1d4dcad25eb786f3c81c8234684e2" => :sierra
+    sha256 "c18c0b9e6c4b3a9e0f0a09e9585cc788d303b261ca36812508a8555ac25c034d" => :el_capitan
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python3"
 
   resource "atomicwrites" do
-    url "https://pypi.python.org/packages/source/a/atomicwrites/atomicwrites-0.1.9.tar.gz"
-    sha256 "7cdfcee8c064bc0ba30b0444ba0919ebafccf5b0b1916c8cde07e410042c4023"
+    url "https://files.pythonhosted.org/packages/a1/e1/2d9bc76838e6e6667fde5814aa25d7feb93d6fa471bf6816daac2596e8b2/atomicwrites-1.1.5.tar.gz"
+    sha256 "240831ea22da9ab882b551b31d4225591e5e447a68c5e188db5b89ca1d487585"
   end
 
   resource "configobj" do
-    url "https://pypi.python.org/packages/source/c/configobj/configobj-5.0.6.tar.gz"
+    url "https://files.pythonhosted.org/packages/64/61/079eb60459c44929e684fa7d9e2fdca403f67d64dd9dbac27296be2e0fab/configobj-5.0.6.tar.gz"
     sha256 "a2f5650770e1c87fb335af19a9b7eb73fc05ccf22144eb68db7d00cd2bcb0902"
   end
 
   resource "python-dateutil" do
-    url "https://pypi.python.org/packages/source/p/python-dateutil/python-dateutil-2.5.0.tar.gz"
-    sha256 "c1f7a66b0021bd7b206cc60dd47ecc91b931cdc5258972dc56b25186fa9a96a5"
+    url "https://files.pythonhosted.org/packages/54/bb/f1db86504f7a49e1d9b9301531181b00a1c7325dc85a29160ee3eaa73a54/python-dateutil-2.6.1.tar.gz"
+    sha256 "891c38b2a02f5bb1be3e4793866c8df49c7d19baabf9c1bad62547e0b4866aca"
   end
 
   resource "PyYAML" do
-    url "https://pypi.python.org/packages/source/P/PyYAML/PyYAML-3.11.tar.gz"
-    sha256 "c36c938a872e5ff494938b33b14aaa156cb439ec67548fcab3535bb78b0846e8"
+    url "https://files.pythonhosted.org/packages/4a/85/db5a2df477072b2902b0eb892feb37d88ac635d36245a72a6a69b23b383a/PyYAML-3.12.tar.gz"
+    sha256 "592766c6303207a20efc445587778322d7f73b161bd994f227adaa341ba212ab"
+  end
+
+  resource "ruamel.yaml" do
+    url "https://files.pythonhosted.org/packages/8f/39/77c555d68d317457a10a30f4a92ae4a315a4ee0e05e9af7c0ac5c301df10/ruamel.yaml-0.15.35.tar.gz"
+    sha256 "8dc74821e4bb6b21fb1ab35964e159391d99ee44981d07d57bf96e2395f3ef75"
   end
 
   resource "six" do
-    url "https://pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz"
-    sha256 "105f8d68616f8248e24bf0e9372ef04d3cc10104f1980f54d57b2ce73a5ad56a"
+    url "https://files.pythonhosted.org/packages/16/d8/bc6316cf98419719bd59c91742194c111b6f2e85abac88e496adefaf7afe/six-1.11.0.tar.gz"
+    sha256 "70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9"
+  end
+
+  resource "Unidecode" do
+    url "https://files.pythonhosted.org/packages/9d/36/49d0ee152b6a1631f03a541532c6201942430060aa97fe011cf01a2cce64/Unidecode-1.0.22.tar.gz"
+    sha256 "8c33dd588e0c9bc22a76eaa0c715a5434851f726131bd44a6c26471746efabf5"
   end
 
   resource "vobject" do
-    url "https://pypi.python.org/packages/source/v/vobject/vobject-0.9.1.tar.gz"
-    sha256 "ff25fd924227c4ef9369cfd731e486ccae988a9bc32d1e4417cfa7dcb2959fb3"
+    url "https://files.pythonhosted.org/packages/8d/8b/2c6107d0132fd2309ee870eaee8501808e4e9d950e729a3dfcbd9dfd5b81/vobject-0.9.5.tar.gz"
+    sha256 "0f56cae196303d875682b9648b4bb43ffc769d2f0f800958e0a506af867b1243"
   end
 
   def install
-    ENV.prepend_create_path "PYTHONPATH", libexec/"vendor/lib/python2.7/site-packages"
-    %w[atomicwrites configobj python-dateutil PyYAML six vobject].each do |r|
-      resource(r).stage do
-        system "python", *Language::Python.setup_install_args(libexec/"vendor")
-      end
-    end
-
-    ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python2.7/site-packages"
-    system "python", *Language::Python.setup_install_args(libexec)
-
-    bin.install Dir[libexec/"bin/*"]
-    bin.env_script_all_files(libexec/"bin", :PYTHONPATH => ENV["PYTHONPATH"])
+    virtualenv_create(libexec, "python3")
+    virtualenv_install_with_resources
+    (etc/"khard").install "misc/khard/khard.conf.example"
+    zsh_completion.install "misc/zsh/_khard"
+    pkgshare.install (buildpath/"misc").children - [buildpath/"misc/zsh"]
   end
 
   test do
-    (testpath/".config/khard/khard.conf").write <<-EOS.undent
+    (testpath/".config/khard/khard.conf").write <<~EOS
       [addressbooks]
       [[default]]
       path = ~/.contacts/
@@ -70,7 +75,7 @@ class Khard < Formula
       default_action = list
       show_nicknames = yes
     EOS
-    (testpath/".contacts/dummy.vcf").write <<-EOS.undent
+    (testpath/".contacts/dummy.vcf").write <<~EOS
       BEGIN:VCARD
       VERSION:3.0
       EMAIL;TYPE=work:username@example.org

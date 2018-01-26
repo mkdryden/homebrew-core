@@ -1,15 +1,16 @@
 class Upscaledb < Formula
   desc "Database for embedded devices"
-  homepage "http://upscaledb.com/"
-  url "http://files.upscaledb.com/dl/upscaledb-2.1.12.tar.gz"
-  sha256 "f68c7e7b8f5aaf41ab47d60e351db35506f96ebf8be2ad695a0d8a12035001df"
-  revision 1
+  homepage "https://upscaledb.com/"
+  url "http://files.upscaledb.com/dl/upscaledb-2.2.0.tar.gz"
+  mirror "https://dl.bintray.com/homebrew/mirror/upscaledb-2.2.0.tar.gz"
+  sha256 "7d0d1ace47847a0f95a9138637fcaaf78b897ef682053e405e2c0865ecfd253e"
+  revision 7
 
   bottle do
     cellar :any
-    sha256 "8bc4b570a3f180c30d34cba9b0068cc1772bd063f333e2441e40a41f1fc58b0c" => :el_capitan
-    sha256 "0eb354e3472e86f8a37b921331b9971bd7a0be790d93aeeec8e219cf50876f4c" => :yosemite
-    sha256 "917d73902d02e6a970dec78b63d1a6bd165aa77cbb77838cf5711773be29ebf0" => :mavericks
+    sha256 "26d334d0ad7a36582834575895ee1dd04aeb9db13db52442cb60a2188807c268" => :high_sierra
+    sha256 "4d438ae443c577725d03b7dfceb1d6d078bc2037d4fa28799e662ed997326fbe" => :sierra
+    sha256 "0db006a03d8fc4e4952484d56fb4d59afffe4b7b225669effcb407f5cb12a6c4" => :el_capitan
   end
 
   head do
@@ -21,29 +22,33 @@ class Upscaledb < Formula
   end
 
   option "without-java", "Do not build the Java wrapper"
-  option "without-remote", "Disable access to remote databases"
+  option "without-protobuf", "Disable access to remote databases"
+
+  deprecated_option "without-remote" => "without-protobuf"
 
   depends_on "boost"
   depends_on "gnutls"
   depends_on "openssl"
   depends_on :java => :recommended
-  depends_on "protobuf" if build.with? "remote"
+  depends_on "protobuf" => :recommended
 
   resource "libuv" do
-    url "https://github.com/libuv/libuv/archive/v0.10.36.tar.gz"
-    sha256 "421087044cab642f038c190f180d96d6a1157be89adb4630881930495b8f5228"
+    url "https://github.com/libuv/libuv/archive/v0.10.37.tar.gz"
+    sha256 "4c12bed4936dc16a20117adfc5bc18889fa73be8b6b083993862628469a1e931"
   end
 
   fails_with :clang do
     build 503
     cause "error: member access into incomplete type 'const std::type_info"
   end
-  fails_with :llvm do
-    build 2336
-    cause "error: forward declaration of 'const struct std::type_info'"
-  end
 
   def install
+    # Fix collision with isset() in <sys/params.h>
+    # See https://github.com/Homebrew/homebrew-core/pull/4145
+    inreplace "./src/5upscaledb/upscaledb.cc",
+      "#  include \"2protobuf/protocol.h\"",
+      "#  include \"2protobuf/protocol.h\"\n#define isset(f, b)       (((f) & (b)) == (b))"
+
     system "./bootstrap.sh" if build.head?
 
     args = %W[
@@ -58,7 +63,7 @@ class Upscaledb < Formula
       args << "--disable-java"
     end
 
-    if build.with? "remote"
+    if build.with? "protobuf"
       resource("libuv").stage do
         system "make", "libuv.dylib", "SO_LDFLAGS=-Wl,-install_name,#{libexec}/libuv/lib/libuv.dylib"
         (libexec/"libuv/lib").install "libuv.dylib"
@@ -74,15 +79,13 @@ class Upscaledb < Formula
 
     system "./configure", *args
     system "make", "install"
-    # https://github.com/cruppstahl/upscaledb/commit/b435cc4fdfd8750aa3e717321608ef0c059d15ca
-    mv include/"ham", include/"ups" if build.stable?
 
-    share.install "samples"
+    pkgshare.install "samples"
   end
 
   test do
     system ENV.cc, "-I#{include}", "-L#{lib}", "-lupscaledb",
-           share/"samples/db1.c", "-o", "test"
+           pkgshare/"samples/db1.c", "-o", "test"
     system "./test"
   end
 end

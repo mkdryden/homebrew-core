@@ -1,27 +1,40 @@
 class Ufraw < Formula
   desc "Unidentified Flying RAW: RAW image processing utility"
-  homepage "http://ufraw.sourceforge.net"
+  homepage "https://ufraw.sourceforge.io"
   url "https://downloads.sourceforge.net/project/ufraw/ufraw/ufraw-0.22/ufraw-0.22.tar.gz"
   sha256 "f7abd28ce587db2a74b4c54149bd8a2523a7ddc09bedf4f923246ff0ae09a25e"
+  revision 2
 
   bottle do
-    sha256 "5462d1df3236f497fbae4171b743e598107224abce9ba274ef8c783153c3e41d" => :el_capitan
-    sha256 "21f29f6ffe796c76d3d47ba11923f61c9cc69980bb7175ad24ea9d38e88a95a7" => :yosemite
-    sha256 "caf38b978cd614b51eb038f2bdac1cf6c5dfb8697adcae71f7cefceb9a4a2f07" => :mavericks
-    sha256 "549b1471b35978a9695f4ea75044f233e782d32628fe0b86e389583e977f7219" => :mountain_lion
+    sha256 "73a19c1aa3644f1b53174226a8ee2853ad6354315859ac90b59739e884e4544b" => :high_sierra
+    sha256 "74d32fc9213f4f8f9aa16249e17f5c23d6cb92c706bfe85a51f36ee5d05bd3a1" => :sierra
+    sha256 "7f60c27241d80fbd9b2a2aa1ed5a8635de6a7326850321a7dcafd819fb7aa564" => :el_capitan
+    sha256 "e894048c08cb563ebda3be58de6d89667f1c7ae6337738b03792ebe7306ce74d" => :yosemite
   end
 
   depends_on "pkg-config" => :build
   depends_on "libpng"
   depends_on "dcraw"
+  depends_on "gettext"
   depends_on "glib"
+  depends_on "jasper"
   depends_on "jpeg"
   depends_on "libtiff"
-  depends_on "little-cms"
+  depends_on "little-cms2"
   depends_on "exiv2" => :optional
 
-  fails_with :llvm do
-    cause "Segfault while linking"
+  # jpeg 9 compatibility
+  patch do
+    url "https://raw.githubusercontent.com/Homebrew/formula-patches/b8ed064/ufraw/jpeg9.patch"
+    sha256 "45de293a9b132eb675302ba8870f5b6216c51da8247cd096b24a5ab60ffbd7f9"
+  end
+
+  # Fix compilation with Xcode 9, see https://sourceforge.net/p/ufraw/bugs/419/
+  if MacOS.version >= :high_sierra
+    patch do
+      url "https://raw.githubusercontent.com/Homebrew/formula-patches/d5bf686c74/ufraw/high_sierra.patch"
+      sha256 "60c67978cc84b5a118855bcaa552d5c5c3772b407046f1b9db9b74076a938f6e"
+    end
   end
 
   def install
@@ -30,7 +43,7 @@ class Ufraw < Formula
                           "--without-gtk",
                           "--without-gimp"
     system "make", "install"
-    (share+"pixmaps").rmtree
+    (share/"pixmaps").rmtree
   end
 
   test do

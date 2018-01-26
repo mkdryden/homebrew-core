@@ -1,17 +1,16 @@
 class Agedu < Formula
   desc "Unix utility for tracking down wasted disk space"
-  homepage "http://www.chiark.greenend.org.uk/~sgtatham/agedu/"
-  url "http://www.chiark.greenend.org.uk/~sgtatham/agedu/agedu-20160302.a05fca7.tar.gz"
-  version "20160302"
-  sha256 "2de59dab2c79d119faefb0c34fad26ec07e209d739538f2eaac96ed0f5473c5a"
-
-  head "git://git.tartarus.org/simon/agedu.git"
+  homepage "https://www.chiark.greenend.org.uk/~sgtatham/agedu/"
+  url "https://www.chiark.greenend.org.uk/~sgtatham/agedu/agedu-20171202.8a8299e.tar.gz"
+  version "20171202"
+  sha256 "802727910f94d70306951f817772e873d1f83376aae05d16df3a120e384d043e"
+  head "https://git.tartarus.org/simon/agedu.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "cb9bb1e8c51a69f1ce4d857db94407b4b18fe1030009b53ee780a2af1cebf593" => :el_capitan
-    sha256 "66cfeff80d76e872869e51c49dbd2d73ffcf9a3b84b8c89797d19ba139294399" => :yosemite
-    sha256 "fd35fb9e4eccd3c34074c59b8352353d955339a5eb5e992632f7c4c122ada290" => :mavericks
+    sha256 "ffc34134229c14b1fe7d65fa01c90724715228738aecfef82cdb8f79be1550ef" => :high_sierra
+    sha256 "05d4afaee3fa14b005a7a4bab7c1c13b6d704b834fdd2f0ff63bb22721f1cb24" => :sierra
+    sha256 "ccba7a5902c861069e5bc82e565c34857cffaf98c408145d2b3917d23319bc61" => :el_capitan
   end
 
   depends_on "autoconf" => :build
@@ -20,13 +19,12 @@ class Agedu < Formula
 
   def install
     system "./mkauto.sh"
-    system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}"
+    system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
     system "make", "install"
   end
 
   test do
-    system "#{bin}/agedu", "-s", "."
-    assert (testpath/"agedu.dat").exist?
+    system bin/"agedu", "-s", "."
+    assert_predicate testpath/"agedu.dat", :exist?
   end
 end

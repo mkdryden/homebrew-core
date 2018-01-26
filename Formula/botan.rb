@@ -1,24 +1,14 @@
 class Botan < Formula
   desc "Cryptographic algorithms and formats library in C++"
-  homepage "http://botan.randombit.net/"
-
-  stable do
-    url "http://botan.randombit.net/releases/Botan-1.10.12.tgz"
-    sha256 "affc3a79919577943f896e64d3e4a4dcc4970c5bf80cc98c7f3a3144745eac27"
-    # upstream ticket: https://bugs.randombit.net/show_bug.cgi?id=267
-    patch :DATA
-  end
+  homepage "https://botan.randombit.net/"
+  url "https://botan.randombit.net/releases/Botan-2.4.0.tgz"
+  sha256 "ed9464e2a5cfee4cd3d9bd7a8f80673b45c8a0718db2181a73f5465a606608a5"
+  head "https://github.com/randombit/botan.git"
 
   bottle do
-    cellar :any
-    sha256 "b7d45a848fead326d2e0a1dfbcacfd3c73bf0ad4b2ab62611cf78912db4053a7" => :el_capitan
-    sha256 "8dad1bfd83f841d095102056e3b4b769041b4abcb7bd126528f75259cd24f5ff" => :yosemite
-    sha256 "521e1f6578e799f5738c28bfd635cba3f210d777d019a240092bbf912ef83699" => :mavericks
-  end
-
-  devel do
-    url "http://botan.randombit.net/releases/Botan-1.11.28.tgz"
-    sha256 "a414c96f45b2707d4750d299ca03ec3fce5ada62ada1ba5cd012a9ace61f5932"
+    sha256 "6df2a98208e2495e3bdf95ac62f49e0686f0dc3421507fc0310246c8bbdb4279" => :high_sierra
+    sha256 "abcc8559813b0974792f4d9d2d314e7616f0a561896cf670b1ff11be03e894e6" => :sierra
+    sha256 "377172cd6cf1b00af94b2c82dd91dd26335060d11231a5b8cbae1951a9b8986f" => :el_capitan
   end
 
   option "with-debug", "Enable debug build of Botan"
@@ -28,10 +18,10 @@ class Botan < Formula
   depends_on "pkg-config" => :build
   depends_on "openssl"
 
-  needs :cxx11 if build.devel?
+  needs :cxx11
 
   def install
-    ENV.cxx11 if build.devel?
+    ENV.cxx11
 
     args = %W[
       --prefix=#{prefix}
@@ -47,32 +37,12 @@ class Botan < Formula
     args << "--enable-debug" if build.with? "debug"
 
     system "./configure.py", *args
-    # A hack to force them use our CFLAGS. MACH_OPT is empty in the Makefile
-    # but used for each call to cc/ld.
-    system "make", "install", "MACH_OPT=#{ENV.cflags}"
+    system "make", "install"
   end
 
   test do
-    # stable version doesn't have `botan` executable
-    if !File.exist? bin/"botan"
-      assert_match "lcrypto", shell_output("#{bin}/botan-config-1.10 --libs")
-    else
-      assert_match /\A-----BEGIN PRIVATE KEY-----/,
-       shell_output("#{bin}/botan keygen")
-    end
+    (testpath/"test.txt").write "Homebrew"
+    (testpath/"testout.txt").write Utils.popen_read("#{bin}/botan base64_enc test.txt")
+    assert_match "Homebrew", shell_output("#{bin}/botan base64_dec testout.txt")
   end
 end
-
-__END__
---- a/src/build-data/makefile/unix_shr.in
-+++ b/src/build-data/makefile/unix_shr.in
-@@ -57,8 +57,8 @@
- LIBNAME       = %{lib_prefix}libbotan
- STATIC_LIB    = $(LIBNAME)-$(SERIES).a
-
--SONAME        = $(LIBNAME)-$(SERIES).%{so_suffix}.%{so_abi_rev}
--SHARED_LIB    = $(SONAME).%{version_patch}
-+SONAME        = $(LIBNAME)-$(SERIES).%{so_abi_rev}.%{so_suffix}
-+SHARED_LIB    = $(LIBNAME)-$(SERIES).%{so_abi_rev}.%{version_patch}.%{so_suffix}
-
- SYMLINK       = $(LIBNAME)-$(SERIES).%{so_suffix}

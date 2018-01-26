@@ -1,21 +1,36 @@
 class BoostBuild < Formula
   desc "C++ build system"
-  homepage "http://boost.org/boost-build2/"
-  url "https://github.com/boostorg/build/archive/2014.10.tar.gz"
-  sha256 "d143297d61e7c628fc40c6117d0df41cb40b33845376c331d7574f9a79b72b9f"
-
+  homepage "https://www.boost.org/build/"
+  url "https://github.com/boostorg/build/archive/boost-1.66.0.tar.gz"
+  sha256 "f5ae37542edf1fba10356532d9a1e7615db370d717405557d6d01d2ff5903433"
+  version_scheme 1
   head "https://github.com/boostorg/build.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "54e173a7e91aef66bfdb5c497156915518d69dd9a062552ab48e62d443adaa04" => :el_capitan
-    sha256 "a61eaa58a94a1f236d1dc6e652f7cb57e241e0dd5664bb5cadc258b73ce34887" => :yosemite
-    sha256 "dd11acd551a6c26f216743eeb938d704f92bc5349c79b5f8e853176e311b7990" => :mavericks
-    sha256 "03d989cecd3251825466d725f6a00212979b2d41fce344380606b482eaab9b80" => :mountain_lion
+    sha256 "ff218f5b2fbfd2113fbd100716c09277ff03d56a78a3833fbbc1e8d503fe47a0" => :high_sierra
+    sha256 "c630ecdbdfb4c903271744915f000f47bfa75f8cbe3c1d0699c2b599721f6fec" => :sierra
+    sha256 "254744bad5670b902b2a63d04e76cfb355c5ea8e75d5084f833c5f1ca28271e0" => :el_capitan
   end
+
+  conflicts_with "b2-tools", :because => "both install `b2` binaries"
 
   def install
     system "./bootstrap.sh"
     system "./b2", "--prefix=#{prefix}", "install"
+  end
+
+  test do
+    (testpath/"hello.cpp").write <<~EOS
+      #include <iostream>
+      int main (void) { std::cout << "Hello world"; }
+    EOS
+    (testpath/"Jamroot.jam").write("exe hello : hello.cpp ;")
+
+    system bin/"b2", "release"
+    out = Dir["bin/darwin-*/release/hello"]
+    assert out.length == 1
+    assert_predicate testpath/out[0], :exist?
+    assert_equal "Hello world", shell_output(out[0])
   end
 end

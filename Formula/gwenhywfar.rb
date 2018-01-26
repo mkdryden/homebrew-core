@@ -1,16 +1,14 @@
 class Gwenhywfar < Formula
   desc "Utility library required by aqbanking and related software"
   homepage "http://www.aqbanking.de/"
-  url "http://www2.aquamaniac.de/sites/download/download.php?package=01&release=01&file=01&dummy=gwenhywfar-4.14.0.tar.gz"
-  sha256 "7e0ec2f1cab7d22a5ae0066e0ef827d4affec59470b1bdbc42132b58a903dd03"
-  revision 1
-
-  head "http://git.aqbanking.de/git/gwenhywfar.git"
+  url "https://www.aquamaniac.de/sites/download/download.php?package=01&release=206&file=01&dummy=gwenhywfar-4.18.0.tar.gz"
+  sha256 "6915bba42d8b7f0213cee186a944296e5e5e97cdbde5b539a924261af03086ca"
 
   bottle do
-    sha256 "a862274810765ea8012c59b3277b4f2ac82981aa8817070f885872c7074784f4" => :el_capitan
-    sha256 "fc2fe0818ae3bb051544dd9587473529d2c4f17af60052ce349076650263b916" => :yosemite
-    sha256 "6066462c7dc97f8ccb8f4f89f5cc149faf11404a7f6c57a5a24c28d0034d5e3f" => :mavericks
+    sha256 "3a20a0d8d35bcc1fd39a1def1da4caa00a6ab57724b796cd7a45ddb5b6c9bc33" => :high_sierra
+    sha256 "7eaedffb5b5dcee09131803d95d461f6cc87220ae3aa7294bc861da92d6870bd" => :sierra
+    sha256 "e5510dc740fe9f2cf1f191c23d09ce413c7163d5ff9486b34b49d28d14f60bf0" => :el_capitan
+    sha256 "534810125470167a96b204c418c170b4313fe653902a92908e5f1b619565e47e" => :yosemite
   end
 
   option "without-cocoa", "Build without cocoa support"
@@ -24,17 +22,13 @@ class Gwenhywfar < Formula
   depends_on "openssl"
   depends_on "libgcrypt"
   depends_on "gtk+" => :optional
-  depends_on "qt" => :optional
 
   def install
     guis = []
     guis << "gtk2" if build.with? "gtk+"
-    guis << "qt4" if build.with? "qt"
     guis << "cocoa" if build.with? "cocoa"
 
-    # https://devel.aqbanking.de/trac/aqbanking/ticket/247
-    # http://www.gnutls.org/manual/html_node/Priority-Strings.html
-    inreplace "src/sio/syncio_tls.c", "gnutls_protocol_set_priority", "gnutls_priority_set"
+    system "autoreconf", "-fiv" if build.head?
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
@@ -44,7 +38,7 @@ class Gwenhywfar < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gwenhywfar/gwenhywfar.h>
 
       int main()

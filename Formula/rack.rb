@@ -2,15 +2,17 @@ class Rack < Formula
   desc "CLI for Rackspace"
   homepage "https://github.com/rackspace/rack"
   url "https://github.com/rackspace/rack.git",
-      :tag => "1.0.1",
-      :revision => "71a8d7c80b3652b4dd39e683bc423b8a542b0167"
+      :tag => "1.2",
+      :revision => "09c14b061f4a115c8f1ff07ae6be96d9b11e08df"
   head "https://github.com/rackspace/rack.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "20b5623a5d690e48337504081504e75dc841a7cef3b4f1f7430e0c41e85562e4" => :el_capitan
-    sha256 "e514e03dfb4c556b161c9fa2d2be4c2953549c5c060c11d274f8a1eacaa75fa5" => :yosemite
-    sha256 "10c96e3863e45ac0761df401f28fc905c8c40532d4693e9be4bcc47c5b2a3615" => :mavericks
+    rebuild 1
+    sha256 "f5b447e509b01c080e73d8a275a60591e0a9b91d09d9aeff9aafe91b67538486" => :high_sierra
+    sha256 "9e77b25dce5ebddece476a84fa04b32d3c904f4a825db343b128a8b3b4a4f4fd" => :sierra
+    sha256 "7a17ae415465e10b0b5674218d5fb127c03782b5f49e741d8a84f94cde7c658a" => :el_capitan
+    sha256 "d49a8f87439a1584e1662a570c7a40611d6cf13064e37f3a66cb7e1feaaa5719" => :yosemite
   end
 
   depends_on "go" => :build
@@ -23,8 +25,16 @@ class Rack < Formula
     rackpath.install Dir["{*,.??*}"]
 
     cd rackpath do
+      # This is a slightly grim hack to handle the weird logic around
+      # deciding whether to add a = or not on the ldflags, as mandated
+      # by Go 1.7+.
+      # https://github.com/rackspace/rack/issues/446
+      inreplace "script/build", "go1.5", Utils.popen_read("go version")[/go1\.\d/]
+
+      ln_s "internal", "vendor"
       system "script/build", "rack"
       bin.install "rack"
+      prefix.install_metafiles
     end
   end
 

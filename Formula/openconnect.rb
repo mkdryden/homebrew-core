@@ -1,14 +1,15 @@
 class Openconnect < Formula
   desc "Open client for Cisco AnyConnect VPN"
   homepage "http://www.infradead.org/openconnect.html"
-  url "ftp://ftp.infradead.org/pub/openconnect/openconnect-7.06.tar.gz"
-  sha256 "facf695368dc4537a6a30e2147be90b1d77ee3cb2d269eaef070b6d9ddab70f2"
+  url "ftp://ftp.infradead.org/pub/openconnect/openconnect-7.08.tar.gz"
+  sha256 "1c44ec1f37a6a025d1ca726b9555649417f1d31a46f747922b84099ace628a03"
   revision 1
 
   bottle do
-    sha256 "2ef2b744defa276e570e26670f0b68e4fa5082930120f72e2fc7df53ab0e8c21" => :el_capitan
-    sha256 "de85876d8ab21f85179117585c273d7fffa471532fea24f2b7080998175f3840" => :yosemite
-    sha256 "eeabad2f02c28d233fef47235e9518a293bc93eb911594936976fbd5181a5305" => :mavericks
+    sha256 "ebc3bc520522b80f49ad28fb9055242a93f4e9ee1abf49a8be9858c4f2c13b92" => :high_sierra
+    sha256 "82f6f4b72fba93ee972a8455ebd6f9d9dfb607cd4bdd06c4b0bf068c5dbc4547" => :sierra
+    sha256 "41230a870a365a76eebd77a6a2255aa4e8f93eedc56c42546cd493967221f7c2" => :el_capitan
+    sha256 "207b75663d9f34b99a0cb2f7c4b7eccd665a98f88b7e9d736928dd4b65b658ca" => :yosemite
   end
 
   head do
@@ -18,9 +19,6 @@ class Openconnect < Formula
     depends_on "libtool" => :build
   end
 
-  # No longer compiles against OpenSSL 1.0.2 - It chooses the system OpenSSL instead.
-  # http://lists.infradead.org/pipermail/openconnect-devel/2015-February/002757.html
-
   depends_on "pkg-config" => :build
   depends_on "gettext"
   depends_on "gnutls"
@@ -28,8 +26,8 @@ class Openconnect < Formula
   depends_on "stoken" => :optional
 
   resource "vpnc-script" do
-    url "http://git.infradead.org/users/dwmw2/vpnc-scripts.git/blob_plain/a64e23b1b6602095f73c4ff7fdb34cccf7149fd5:/vpnc-script"
-    sha256 "cc30b74788ca76928f23cc7bc6532425df8ea3701ace1454d38174ca87d4b9c5"
+    url "http://git.infradead.org/users/dwmw2/vpnc-scripts.git/blob_plain/6e04e0bbb66c0bf0ae055c0f4e58bea81dbb5c3c:/vpnc-script"
+    sha256 "48b1673e1bfaacbfa4e766c41e15dd8458726cca8f3e07991d078d0d5b7c55e9"
   end
 
   def install
@@ -53,6 +51,6 @@ class Openconnect < Formula
   end
 
   test do
-    assert_match /AnyConnect VPN/, pipe_output("#{bin}/openconnect 2>&1")
+    assert_match "AnyConnect VPN", pipe_output("#{bin}/openconnect 2>&1")
   end
 end

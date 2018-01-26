@@ -2,12 +2,13 @@ class Zorba < Formula
   desc "NoSQL query processor"
   homepage "http://www.zorba.io/"
   url "https://github.com/28msec/zorba/archive/3.1.tar.gz"
-  sha256 "a27e8160aca5d3aa5a6525b930da7edde44f8824dd4fba39aaef3b9af2717b74"
+  sha256 "05eed935c0ff3626934a5a70724a42410fd93bc96aba1fa4821736210c7f1dd8"
+  revision 6
 
   bottle do
-    sha256 "d5c6bc104cb0e199f0fb9e42ec63429106d03d2361a445569991014bb1e30404" => :el_capitan
-    sha256 "8e7ca99bc9c625ed596d47b4130532045f82a64c6430633092daf1b00f8fc37d" => :yosemite
-    sha256 "8866796808b7328b118f65d8edb112cf65296b63bda55b07dbd1225cfb4291fc" => :mavericks
+    sha256 "f144539eb1107b00dbc7577439559bd18a80d5cc3f7679bba85ca272fa8e4234" => :high_sierra
+    sha256 "6cf0d3096e50121a1412582d6e30e80dfd01cae1a4502f50cc875c8363ebb9bc" => :sierra
+    sha256 "3cecf172b1c5ab6cd90fb83117de92715862424f7436166b2ad5abbcbfa2b168" => :el_capitan
   end
 
   option "with-big-integer", "Use 64 bit precision instead of arbitrary precision for performance"
@@ -29,6 +30,12 @@ class Zorba < Formula
     args = std_cmake_args
     args << "-DZORBA_VERIFY_PEER_SSL_CERTIFICATE=ON" if build.with? "ssl-verification"
     args << "-DZORBA_WITH_BIG_INTEGER=ON" if build.with? "big-integer"
+
+    # dyld: lazy symbol binding failed: Symbol not found: _clock_gettime
+    # usual superenv fix doesn't work since zorba doesn't use HAVE_CLOCK_GETTIME
+    if MacOS.version == :el_capitan && MacOS::Xcode.installed? && MacOS::Xcode.version >= "8.0"
+      args << "-DZORBA_HAVE_CLOCKGETTIME=OFF"
+    end
 
     mkdir "build" do
       system "cmake", "..", *args

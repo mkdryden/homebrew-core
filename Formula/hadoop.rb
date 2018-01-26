@@ -1,13 +1,15 @@
 class Hadoop < Formula
   desc "Framework for distributed processing of large data sets"
   homepage "https://hadoop.apache.org/"
-  url "https://www.apache.org/dyn/closer.cgi?path=hadoop/common/hadoop-2.7.2/hadoop-2.7.2.tar.gz"
-  mirror "https://archive.apache.org/dist/hadoop/common/hadoop-2.7.2/hadoop-2.7.2.tar.gz"
-  sha256 "49ad740f85d27fa39e744eb9e3b1d9442ae63d62720f0aabdae7aa9a718b03f7"
+  url "https://www.apache.org/dyn/closer.cgi?path=hadoop/common/hadoop-2.8.2/hadoop-2.8.2.tar.gz"
+  mirror "https://archive.apache.org/dist/hadoop/common/hadoop-2.8.2/hadoop-2.8.2.tar.gz"
+  sha256 "aea99c7ce8441749d81202bdea431f1024f17ee6e0efb3144226883207cc6292"
 
   bottle :unneeded
 
   depends_on :java => "1.7+"
+
+  conflicts_with "yarn", :because => "both install `yarn` binaries"
 
   def install
     rm_f Dir["bin/*.cmd", "sbin/*.cmd", "libexec/*.cmd", "etc/hadoop/*.cmd"]
@@ -28,7 +30,7 @@ class Hadoop < Formula
       "export JAVA_HOME=\"$(/usr/libexec/java_home)\""
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     In Hadoop's config file:
       #{libexec}/etc/hadoop/hadoop-env.sh,
       #{libexec}/etc/hadoop/mapred-env.sh and

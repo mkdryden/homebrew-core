@@ -1,27 +1,26 @@
 class LibgpgError < Formula
   desc "Common error values for all GnuPG components"
   homepage "https://www.gnupg.org/related_software/libgpg-error/"
-  url "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.21.tar.bz2"
-  mirror "https://www.mirrorservice.org/sites/ftp.gnupg.org/gcrypt/libgpg-error/libgpg-error-1.21.tar.bz2"
-  sha256 "b7dbdb3cad63a740e9f0c632a1da32d4afdb694ec86c8625c98ea0691713b84d"
+  url "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.27.tar.bz2"
+  mirror "https://mirrors.ocf.berkeley.edu/debian/pool/main/libg/libgpg-error/libgpg-error_1.27.orig.tar.bz2"
+  sha256 "4f93aac6fecb7da2b92871bb9ee33032be6a87b174f54abf8ddf0911a22d29d2"
 
   bottle do
-    cellar :any
-    sha256 "6073da3448cb87c72a9c8db2cda4b9051296ad1a4bee076cd5994eefaf96e874" => :el_capitan
-    sha256 "1d608bacb312bf3a3bb32ac55f41d9b5479e1e07711f631141f7db446c7cb99f" => :yosemite
-    sha256 "eb0ed3990eb7a231078a99c69d53b72c83d54d1e3bf17fff78cac69804cc9fbe" => :mavericks
+    sha256 "2b6f050bcd7b8c08f774aa491c2731aec585b0f1f14f972e9e485654314508f6" => :high_sierra
+    sha256 "7ffa1c12c9a452f2292cb6a171b4e88136c631cee4da67d71143529bf3352a93" => :sierra
+    sha256 "a81e55fecb35b921df543e8cf83729a8695d745fa778f716d4c96f989aceb6b4" => :el_capitan
+    sha256 "06669414f7aba892558875994c411dc2a0723aa19f5d854b435987b3c8b9f19a" => :yosemite
   end
 
-  option :universal
-
   def install
-    ENV.universal_binary if build.universal?
-
     system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--prefix=#{prefix}",
                           "--enable-static"
     system "make", "install"
+
+    # avoid triggering mandatory rebuilds of software that hard-codes this path
+    inreplace bin/"gpg-error-config", prefix, opt_prefix
   end
 
   test do

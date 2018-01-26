@@ -1,8 +1,8 @@
 class Ffind < Formula
   desc "Friendlier find"
   homepage "https://github.com/sjl/friendly-find"
-  url "https://github.com/sjl/friendly-find/archive/v0.3.2.tar.gz"
-  sha256 "4fe9b5fb4d64cc3a006b1496cf0a825a2494706c413778b77bbcf0fb9cfbbf80"
+  url "https://github.com/sjl/friendly-find/archive/v1.0.1.tar.gz"
+  sha256 "cf30e09365750a197f7e041ec9bbdd40daf1301e566cd0b1a423bf71582aad8d"
 
   bottle :unneeded
 

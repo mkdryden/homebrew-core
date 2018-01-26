@@ -1,21 +1,45 @@
 class GitLfs < Formula
   desc "Git extension for versioning large files"
-  homepage "https://github.com/github/git-lfs"
-  url "https://github.com/github/git-lfs/archive/v1.1.2.tar.gz"
-  sha256 "da395753249a5c33969ca30028484d76ae9fb28749cc9b8f53e0585c9457908f"
+  homepage "https://github.com/git-lfs/git-lfs"
+  url "https://github.com/git-lfs/git-lfs/archive/v2.3.4.tar.gz"
+  sha256 "2594fe7bd8cc29d71effd087623b78cadab04a74e506ceeb4971a4ed9a7fbb94"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "bbb8aaf0e97563f364881b35fd83417dd4c9a4392a6bfbc6c5dccf7c829c364e" => :el_capitan
-    sha256 "c0aee57b582b6847b4f1c5d9f9733e65131287a7e3d5a6570336ae7e98dbd452" => :yosemite
-    sha256 "2094c00904df94816268e0d0ffac4952ff599c40888ba529ad9184e22f9d5396" => :mavericks
+    sha256 "d7c2b6887938ad68e914106ba3e7d61c1828b2a5478b60c57fd6940cb9e67c6d" => :high_sierra
+    sha256 "a8bed726486ae5a74ea788cfe649f43b1462664d45b8c00c308f9d1bed9f9e99" => :sierra
+    sha256 "0af771189963edc8c59f05a77de9be3a7a3b4f901b1f0cde60c7307e78afcbcc" => :el_capitan
   end
 
   depends_on "go" => :build
 
   def install
+    begin
+      deleted = ENV.delete "SDKROOT"
+      ENV["GEM_HOME"] = buildpath/"gem_home"
+      system "gem", "install", "ronn"
+      ENV.prepend_path "PATH", buildpath/"gem_home/bin"
+    ensure
+      ENV["SDKROOT"] = deleted
+    end
+
     system "./script/bootstrap"
+    system "./script/man"
+
     bin.install "bin/git-lfs"
+    man1.install Dir["man/*.1"]
+    doc.install Dir["man/*.html"]
+  end
+
+  def caveats; <<~EOS
+    Update your git config to finish installation:
+
+      # Update global git config
+      $ git lfs install
+
+      # Update system git config
+      $ git lfs install --system
+    EOS
   end
 
   test do

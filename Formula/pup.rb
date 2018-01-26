@@ -1,90 +1,37 @@
-require "language/go"
-
 class Pup < Formula
   desc "Parse HTML at the command-line"
   homepage "https://github.com/EricChiang/pup"
-  url "https://github.com/ericchiang/pup/archive/v0.3.9.tar.gz"
-  sha256 "5e59805edf84d73b2b4c58fe5aeb9a12fc70c028b4aaf58ded6b91ff418b0dda"
-
+  url "https://github.com/ericchiang/pup/archive/v0.4.0.tar.gz"
+  sha256 "0d546ab78588e07e1601007772d83795495aa329b19bd1c3cde589ddb1c538b0"
   head "https://github.com/EricChiang/pup.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "e3766f1c194ece7e6eea245627c6ca2ae83d7a7cd33dfaf61da53ad85577dfd6" => :el_capitan
-    sha256 "0c3f2f89d57313b4d5d90a73c39e5187470e7dd9f35a0d8b030d518f69b21766" => :yosemite
-    sha256 "5bc9ab2b8ecb14048115c876bf77a7490139715d3250407785159aa2b72faf8f" => :mavericks
-    sha256 "da53aea34a10ecba854eb3f65b451e99fa4dbe5134261ef2deadff8266ff49e2" => :mountain_lion
+    rebuild 1
+    sha256 "f470de75187b994ef9612c5404dc7622a356c8ee6af21f6b2549b5d7c5d88d32" => :high_sierra
+    sha256 "4ba84cffa7cfd01bd252223055abdf5fd8b6cfc27474131cf313e688ea8eeecf" => :sierra
+    sha256 "a1aa49640871c127c76f4aea6db65487db964a055e2aa4d86ee2d8b7f5dcb561" => :el_capitan
   end
 
   depends_on "go" => :build
-
-  # required by gox
-  go_resource "github.com/mitchellh/iochan" do
-    url "https://github.com/mitchellh/iochan.git",
-        :revision => "b584a329b193e206025682ae6c10cdbe03b0cd77"
-  end
-
-  go_resource "github.com/mitchellh/gox" do
-    url "https://github.com/mitchellh/gox.git",
-    :tag => "v0.3.0", :revision => "54b619477e8932bbb6314644c867e7e6db7a9c71"
-  end
-
-  # discovered via
-  # find . -name "*.go" -exec head -20 "{}" ";" | grep ".*\..*/" | sort | uniq
-  go_resource "github.com/fatih/color" do
-    url "https://github.com/fatih/color.git",
-        :revision => "b8f08a5598ffe40b0e3f45d483d3cfe3c1dc4964"
-  end
-  go_resource "github.com/shiena/ansicolor" do
-    url "https://github.com/shiena/ansicolor.git",
-        :revision => "8368d3b31cf6f2c2464c7a91675342c9a0ac6658"
-  end
-  go_resource "github.com/mattn/go-colorable" do
-    url "https://github.com/mattn/go-colorable.git",
-        :revision => "d67e0b7d1797975196499f79bcc322c08b9f218b"
-  end
-  go_resource "golang.org/x/net" do
-    url "https://go.googlesource.com/net.git",
-        :revision => "a8c61998a557a37435f719980da368469c10bfed"
-  end
-  go_resource "golang.org/x/text" do
-    url "https://go.googlesource.com/text.git",
-      :revision => "cee5b80e82c1d078cfdbe853beb9c8318c593677"
-  end
+  depends_on "gox" => :build
 
   def install
-    # For the gox buildtool
-    ENV.append_path "PATH", buildpath
-
-    # fake our install so gox will see it
-    repo_dir = homepage.downcase.gsub /^https:../, ""
-    my_pkg = buildpath / "src/#{repo_dir}"
-    prefix.install "LICENSE"
-    my_pkg.install Dir["*"]
-
-    Language::Go.stage_deps resources, buildpath/"src"
-
     ENV["GOPATH"] = buildpath
-    cd "src/github.com/mitchellh/gox" do
-      system "go", "build"
-      buildpath.install "gox"
+    dir = buildpath/"src/github.com/ericchiang/pup"
+    dir.install buildpath.children
+
+    cd dir do
+      arch = MacOS.prefer_64_bit? ? "amd64" : "386"
+      system "gox", "-arch", arch, "-os", "darwin", "./..."
+      bin.install "pup_darwin_#{arch}" => "pup"
     end
 
-    cd my_pkg do
-      mkdir "bin"
-      arch = MacOS.prefer_64_bit? ? "amd64" : "386"
-      system "gox", "-arch", arch,
-        "-os", "darwin",
-        "-output", "bin/pup-{{.Dir}}",
-        "./..."
-      bin.install "bin/pup-pup" => "pup"
-      # regrettably, there is no manual :-(
-    end
+    prefix.install_metafiles dir
   end
 
   test do
-    expected = "Hello"
-    actual = pipe_output("pup p \"text{}\"", "<body><p>Hello</p></body>").strip
-    assert_equal expected, actual
+    output = pipe_output("#{bin}/pup p text{}", "<body><p>Hello</p></body>", 0)
+    assert_equal "Hello", output.chomp
   end
 end

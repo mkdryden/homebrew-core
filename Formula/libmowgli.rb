@@ -1,19 +1,15 @@
 class Libmowgli < Formula
   desc "Core framework for Atheme applications"
   homepage "https://github.com/atheme/libmowgli-2"
-  url "https://github.com/atheme/libmowgli-2/archive/libmowgli-2.0.0.tar.gz"
-  sha256 "fd48e74f1f706b436e0f25c3d3d63753e9c066ef88e662cd34303ccd3b780798"
-  revision 1
-
+  url "https://github.com/atheme/libmowgli-2/archive/v2.1.3.tar.gz"
+  sha256 "b7faab2fb9f46366a52b51443054a2ed4ecdd04774c65754bf807c5e9bdda477"
   head "https://github.com/atheme/libmowgli-2.git"
 
   bottle do
     cellar :any
-    revision 3
-    sha256 "6576cf998b59cc3deb45d7072930296eaad347e3993a9243bea4ca984d5d06c2" => :el_capitan
-    sha256 "e32cc8c528e1cb58775f1fd4fb2e491649bbc1d50fe6c7767d8502fa183d1cab" => :yosemite
-    sha256 "687b05dd17d208907b854c245be8ee1c2eae759aab0db7e2b620173cd6fd06f1" => :mavericks
-    sha256 "c7bb30b3ec74cbeb74a9092504b336c5e1ec155c6702830ae6d6f548b65d74e0" => :mountain_lion
+    sha256 "1fcb475b2d5fbf9bbd86efcfd324a91eb45f81929d9ede4acedbb92bef720f49" => :high_sierra
+    sha256 "d656a2546b58d5549621770dec4a02132e4d2b1d28a879f653129c5db6f8749a" => :sierra
+    sha256 "12835d9124733d3308ef989381a22fcc36b19862fccda3433877d96b3d9ff087" => :el_capitan
   end
 
   depends_on "openssl"
@@ -26,7 +22,7 @@ class Libmowgli < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <mowgli.h>
 
       int main(int argc, char *argv[]) {
@@ -40,7 +36,7 @@ class Libmowgli < Formula
         return EXIT_SUCCESS;
       }
     EOS
-    system ENV.cc, "-I#{include}/libmowgli-2", "-o", "test", "test.c", "-lmowgli-2"
+    system ENV.cc, "-I#{include}/libmowgli-2", "-o", "test", "test.c", "-L#{lib}", "-lmowgli-2"
     system "./test"
   end
 end

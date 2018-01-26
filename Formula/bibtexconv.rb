@@ -1,16 +1,14 @@
 class Bibtexconv < Formula
   desc "BibTeX file converter"
   homepage "https://www.uni-due.de/~be0001/bibtexconv/"
-  url "https://www.uni-due.de/~be0001/bibtexconv/download/bibtexconv-1.1.3.tar.gz"
-  sha256 "f7fd69ff99cd48a77e53aed4219defaf1f45485a07978faec01c2b9074886e03"
-  revision 1
+  url "https://www.uni-due.de/~be0001/bibtexconv/download/bibtexconv-1.1.11.tar.gz"
+  sha256 "1240c3011718d9ba95c165dbf908eab871153530b70bca0ef74dc2b9664e83f1"
 
   bottle do
     cellar :any
-    sha256 "389803456de5b80f8406cc2ed15e65acf503298a80b517b0993fda5a82304c08" => :el_capitan
-    sha256 "1bd6912245b0f2b9dfaa69729633e20b6843bf24141f6f7d03a437ec8593df7d" => :yosemite
-    sha256 "93e1e693a5688ef09514412752ade4272d04f918810b6e4b76e7a7060f783b9a" => :mavericks
-    sha256 "a571ad33e62649abf68d26a569de9f7ba013202022883d684f243144feeffcdb" => :mountain_lion
+    sha256 "2b44b8dd4bf60b443c9318e056fdcffaed9218e75d7d907dd6ae5c4679a135e9" => :high_sierra
+    sha256 "81c4daa41ddb6837d40b66a883aceeb3470ca03148fcc6fd19386ff623776dd8" => :sierra
+    sha256 "397edcb9360918833774139e8cf9d11bcb53fc7c763e487a7bec325861b73cd6" => :el_capitan
   end
 
   head do
@@ -32,7 +30,7 @@ class Bibtexconv < Formula
                           "--disable-silent-rules",
                           "--prefix=#{prefix}"
     system "make"
-    ENV.j1 # serialize folder creation
+    ENV.deparallelize # serialize folder creation
     system "make", "install"
   end
 

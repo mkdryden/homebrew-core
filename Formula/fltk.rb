@@ -1,50 +1,23 @@
 class Fltk < Formula
   desc "Cross-platform C++ GUI toolkit"
   homepage "http://www.fltk.org/"
-
-  stable do
-    url "https://fossies.org/linux/misc/fltk-1.3.3-source.tar.gz"
-    sha256 "f8398d98d7221d40e77bc7b19e761adaf2f1ef8bb0c30eceb7beb4f2273d0d97"
-
-    # Fltk 1.3.4 include support for El Capitan. Remove on update.
-    depends_on MaximumMacOSRequirement => :yosemite
-
-    # Fixes issue with -lpng not found.
-    # Based on: https://trac.macports.org/browser/trunk/dports/aqua/fltk/files/patch-src-Makefile.diff
-    patch :DATA
-  end
+  url "http://fltk.org/pub/fltk/1.3.4/fltk-1.3.4-source.tar.gz"
+  mirror "https://ftp.osuosl.org/pub/blfs/conglomeration/fltk/fltk-1.3.4-source.tar.gz"
+  mirror "https://fossies.org/linux/misc/fltk-1.3.4-source.tar.gz"
+  sha256 "c8ab01c4e860d53e11d40dc28f98d2fe9c85aaf6dbb5af50fd6e66afec3dc58f"
+  revision 1
 
   bottle do
-    revision 2
-    sha256 "11f078c852e0a7b8038575440d9efb7edeca727f6f740b5e24f08aaa92033ddf" => :mavericks
+    sha256 "7561987fff4639d07a28407b8d4f511fffe4579fb452a0aaa9dad2f0a0bde48d" => :high_sierra
+    sha256 "1fbd79e3f5c36f70cc5f2d0256520fd8c6ee969990412cb9080eacfe9e75e4a1" => :sierra
+    sha256 "fca842e5e25fc0a0566d64b3d34226e667f072f82cd51f009180a09db218666b" => :el_capitan
+    sha256 "bb481cbaefe696696c3bf527b4902b8251de3ee7c75619f89fd554a6e73b1b40" => :yosemite
   end
-
-  devel do
-    url "http://fltk.org/pub/fltk/snapshots/fltk-1.3.x-r11419.tar.gz"
-    sha256 "fd5a445634b799c031d78e7c046cb083779fd2dc79fab072cd512cfb0fc48262"
-    version "1.3.3-r11419" # convince brew that this is newer than stable
-
-    depends_on "autoconf" => :build
-    depends_on "autogen" => :build
-  end
-
-  option :universal
 
   depends_on "libpng"
   depends_on "jpeg"
 
-  fails_with :clang do
-    build 318
-    cause "https://llvm.org/bugs/show_bug.cgi?id=10338"
-  end
-
   def install
-    ENV.universal_binary if build.universal?
-
-    if build.devel?
-      ENV["NOCONFIGURE"] = "1"
-      system "./autogen.sh"
-    end
     system "./configure", "--prefix=#{prefix}",
                           "--enable-threads",
                           "--enable-shared"
@@ -52,7 +25,7 @@ class Fltk < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <FL/Fl.H>
       #include <FL/Fl_Window.H>
       #include <FL/Fl_Box.H>
@@ -71,17 +44,3 @@ class Fltk < Formula
     system "./test"
   end
 end
-
-__END__
-diff --git a/src/Makefile b/src/Makefile
-index fcad5f0..5a5a850 100644
---- a/src/Makefile
-+++ b/src/Makefile
-@@ -360,7 +360,7 @@ libfltk_images.1.3.dylib: $(IMGOBJECTS) libfltk.1.3.dylib
- 		-install_name $(libdir)/$@ \
- 		-current_version 1.3.1 \
- 		-compatibility_version 1.3.0 \
--		$(IMGOBJECTS)  -L. $(LDLIBS) $(IMAGELIBS) -lfltk
-+		$(IMGOBJECTS)  -L. $(LDLIBS) $(IMAGELIBS) -lfltk $(LDFLAGS)
- 	$(RM) libfltk_images.dylib
- 	$(LN) libfltk_images.1.3.dylib libfltk_images.dylib

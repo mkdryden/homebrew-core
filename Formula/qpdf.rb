@@ -1,22 +1,28 @@
 class Qpdf < Formula
   desc "Tools for and transforming and inspecting PDF files"
-  homepage "http://qpdf.sourceforge.net/"
-  url "https://downloads.sourceforge.net/project/qpdf/qpdf/6.0.0/qpdf-6.0.0.tar.gz"
-  sha256 "a9fdc7e94d38fcd3831f37b6e0fe36492bf79aa6d54f8f66062cf7f9c4155233"
+  homepage "https://qpdf.sourceforge.io/"
+  url "https://downloads.sourceforge.net/project/qpdf/qpdf/7.1.0/qpdf-7.1.0.tar.gz"
+  sha256 "27054bfb83a4f4f70053c6d4c2de5e18ddf60c9a8edbce219ac1bdcf03f16a2e"
 
   bottle do
     cellar :any
-    sha256 "de523886e15f79209dbe270043dc252ebd2856649ac94f98141f37c3436ed20e" => :el_capitan
-    sha256 "d352cf417a9ee038157343f138ff3f341e5aa5d9e91757c3ce88950b4509aba3" => :yosemite
-    sha256 "f7059fb9d944230b06ad8ddb34528e4090161ee0a3ddee7068a86046c61d4b04" => :mavericks
+    sha256 "80ef145668f4d20d4ed2c7ec435b5fb8391eeccb17dffc68bc365eea6631207f" => :high_sierra
+    sha256 "882940253157307d4eba516a59c4d29a9ca4150ee11ef882346c4a54afc647da" => :sierra
+    sha256 "64a7352582e9c2376e988b8610d80dd8c49f32a36604b38620114bee16133cd2" => :el_capitan
   end
 
-  depends_on "pcre"
+  depends_on "jpeg"
+
+  # Fix "error: no member named 'abs' in namespace 'std'"
+  # Upstream PR from 14 Jan 2018 "Fix build with libc++"
+  if MacOS.version <= :el_capitan
+    patch do
+      url "https://github.com/qpdf/qpdf/pull/172.patch?full_index=1"
+      sha256 "7a85837cce1de8ba8e3abfcd7f5c7a35e70da93ea84ffdcf4ba34196dd60a0a4"
+    end
+  end
 
   def install
-    # find Homebrew's libpcre
-    ENV.append "LDFLAGS", "-L#{Formula["pcre"].opt_lib}"
-
     system "./configure", "--prefix=#{prefix}"
     system "make"
     system "make", "install"

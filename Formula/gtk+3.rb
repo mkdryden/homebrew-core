@@ -1,43 +1,31 @@
 class Gtkx3 < Formula
   desc "Toolkit for creating graphical user interfaces"
-  homepage "http://gtk.org/"
-  url "https://download.gnome.org/sources/gtk+/3.18/gtk+-3.18.9.tar.xz"
-  sha256 "783d7f8b00f9b4224cc94d7da885a67598e711c2d6d79c9c873c6b203e83acbd"
+  homepage "https://gtk.org/"
+  url "https://download.gnome.org/sources/gtk+/3.22/gtk+-3.22.26.tar.xz"
+  sha256 "61eef0d320e541976e2dfe445729f12b5ade53050ee9de6184235cb60cd4b967"
 
   bottle do
-    sha256 "57613440207555041ff48bc234c33b0bd6c15b3548712ea3d2e080952f57d7c5" => :el_capitan
-    sha256 "9193f6b6cc486ca82a8ef1486805b581b648a8e1b0f13c28da3b9e3c938df580" => :yosemite
-    sha256 "ae1835f5c57fd1b6db897abff079e43e1fc2a3d34d6e8926a2861d6952206522" => :mavericks
+    sha256 "2c3dc61e844ad559a517579285babab8ea01ca4e6346f4688360e89a0d27a15c" => :high_sierra
+    sha256 "b95e13c01b37aa3ed7ed41bc95a25a70525151e549c003e22d5d5a4f76890b77" => :sierra
+    sha256 "fc654db7a0c82221301c7334c540edda503087f866af5bdcc173a0e5576b7014" => :el_capitan
   end
 
-  option :universal
   option "with-quartz-relocation", "Build with quartz relocation support"
 
   depends_on "pkg-config" => :build
   depends_on "gdk-pixbuf"
-  depends_on "jasper" => :optional
   depends_on "atk"
   depends_on "gobject-introspection"
   depends_on "libepoxy"
-  depends_on "gsettings-desktop-schemas" => :recommended
   depends_on "pango"
   depends_on "glib"
   depends_on "hicolor-icon-theme"
-
-  # Replace a keyword not supported by Snow Leopard's Objective-C compiler.
-  # https://bugzilla.gnome.org/show_bug.cgi?id=756770
-  if MacOS.version <= :snow_leopard
-    patch do
-      url "https://bugzilla.gnome.org/attachment.cgi?id=313599&format=raw"
-      sha256 "a090b19d3c15364914917d9893be292225e8b8a016f2833a5b8354f079475a73"
-    end
-  end
+  depends_on "gsettings-desktop-schemas" => :recommended
+  depends_on "jasper" => :optional
 
   def install
-    ENV.universal_binary if build.universal?
-
     args = %W[
-      --disable-debug
+      --enable-debug=minimal
       --disable-dependency-tracking
       --prefix=#{prefix}
       --disable-glibtest
@@ -52,7 +40,7 @@ class Gtkx3 < Formula
     system "./configure", *args
     # necessary to avoid gtk-update-icon-cache not being found during make install
     bin.mkpath
-    ENV.prepend_path "PATH", "#{bin}"
+    ENV.prepend_path "PATH", bin
     system "make", "install"
     # Prevent a conflict between this and Gtk+2
     mv bin/"gtk-update-icon-cache", bin/"gtk3-update-icon-cache"
@@ -63,7 +51,7 @@ class Gtkx3 < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <gtk/gtk.h>
 
       int main(int argc, char *argv[]) {
@@ -82,8 +70,7 @@ class Gtkx3 < Formula
     libpng = Formula["libpng"]
     pango = Formula["pango"]
     pixman = Formula["pixman"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{atk.opt_include}/atk-1.0
       -I#{cairo.opt_include}/cairo
       -I#{fontconfig.opt_include}

@@ -1,23 +1,25 @@
 class Nfdump < Formula
-  desc "Tools to collect and process netflow data on the command line"
-  homepage "http://nfdump.sourceforge.net"
-  url "https://downloads.sourceforge.net/project/nfdump/stable/nfdump-1.6.13/nfdump-1.6.13.tar.gz"
-  sha256 "251533c316c9fe595312f477cdb051e9c667517f49fb7ac5b432495730e45693"
+  desc "Tools to collect and process netflow data on the command-line"
+  homepage "https://nfdump.sourceforge.io"
+  url "https://github.com/phaag/nfdump/archive/v1.6.16.tar.gz"
+  sha256 "b18479215c51a98fbdf973ef548464780e7a9d9f7fe73e4fab9ab7ec8a3bdc8f"
 
   bottle do
-    cellar :any_skip_relocation
-    revision 1
-    sha256 "e6218ff15aa6e43f140d91a38f8162ba663a115fcdb843c3a22de5fcda30653e" => :el_capitan
-    sha256 "a56146c191cf705b83cdd0e0143ce9fc87f086386d9965ff54a259c085130697" => :yosemite
-    sha256 "09a51a71d30f8045075f11f8511a4ec0d6bfd6f9d3cbc3bbb2927c911fce1ce1" => :mavericks
+    cellar :any
+    sha256 "8d6bf64877ed6b75bb1cf07e58d3474aba7dba982e3cd5c76c5adf646f1e6782" => :high_sierra
+    sha256 "a387e4ffa2c5da2aa4a44fe411fefc9434f888d7f8310e110d10c566f2e61160" => :sierra
+    sha256 "8007ce2f9c414dc027fd156a3ef2b2023b16a8c51e3b76ee37a82cca3a96d769" => :el_capitan
   end
+
+  depends_on "automake" => :build
 
   def install
     system "./configure", "--prefix=#{prefix}", "--enable-readpcap"
-    system "make", "install"
+    # https://github.com/phaag/nfdump/issues/32
+    ENV.deparallelize { system "make", "install" }
   end
 
   test do
-    system "#{bin}/nfdump", "-Z 'host 8.8.8.8'"
+    system bin/"nfdump", "-Z 'host 8.8.8.8'"
   end
 end

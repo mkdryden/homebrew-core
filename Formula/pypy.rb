@@ -1,14 +1,19 @@
 class Pypy < Formula
   desc "Highly performant implementation of Python 2 in Python"
-  homepage "http://pypy.org/"
-  url "https://bitbucket.org/pypy/pypy/downloads/pypy-5.0.1-src.tar.bz2"
-  sha256 "1573c9284d3ec236c8e6ef3b954753932dff29462c54b5885b761d1ee68b6e05"
+  homepage "https://pypy.org/"
+  revision 1
+  head "https://bitbucket.org/pypy/pypy", :using => :hg
+
+  stable do
+    url "https://bitbucket.org/pypy/pypy/downloads/pypy2-v5.10.0-src.tar.bz2"
+    sha256 "1209f2db718e6afda17528baa5138177a14a0938588a7d3e1b7c722c483079a8"
+  end
 
   bottle do
     cellar :any
-    sha256 "6cba73759073f9e94969eef79e220ef41b7a94001b6d73f7aff4b3ce0b231098" => :el_capitan
-    sha256 "cf6103bb1fb5f2c2302d08e103b2f2182e2642a22366fcdc026922be7280ef88" => :yosemite
-    sha256 "199e09036f4598cfbc639ffe7fac9a9891b2d05af0422baa165a7a71f49c8a58" => :mavericks
+    sha256 "afb3d4ba718ea37af6fdff404bf27f87437cceb963afac6d38b1b9c59b7c2ead" => :high_sierra
+    sha256 "624137c95059bcad5b68ddd9d266b85b298d1348ba1ac62ea3dba32034b1e2b2" => :sierra
+    sha256 "5aec5e3da199c01067fae60e67c9363b7e4d9e7d242850a4b2b74ad5cad8788a" => :el_capitan
   end
 
   option "without-bootstrap", "Translate Pypy with system Python instead of " \
@@ -28,13 +33,13 @@ class Pypy < Formula
   end
 
   resource "setuptools" do
-    url "https://pypi.python.org/packages/source/s/setuptools/setuptools-20.2.2.tar.gz"
-    sha256 "24fcfc15364a9fe09a220f37d2dcedc849795e3de3e4b393ee988e66a9cbd85a"
+    url "https://files.pythonhosted.org/packages/a4/c8/9a7a47f683d54d83f648d37c3e180317f80dc126a304c45dc6663246233a/setuptools-36.5.0.zip"
+    sha256 "ce2007c1cea3359870b80657d634253a0765b0c7dc5a988d77ba803fc86f2c64"
   end
 
   resource "pip" do
-    url "https://pypi.python.org/packages/source/p/pip/pip-8.1.0.tar.gz"
-    sha256 "d8faa75dd7d0737b16d50cd0a56dc91a631c79ecfd8d38b80f6ee929ec82043e"
+    url "https://files.pythonhosted.org/packages/11/b6/abcb525026a4be042b486df43905d6893fb04f05aac21c32c638e939e447/pip-9.0.1.tar.gz"
+    sha256 "09f243e1a7b461f654c26a725fa373211bb7ff17a9300058b205c61658ca940d"
   end
 
   # https://bugs.launchpad.net/ubuntu/+source/gcc-4.2/+bug/187391
@@ -48,7 +53,7 @@ class Pypy < Formula
     ENV["PYPY_USESSION_DIR"] = buildpath
 
     python = "python"
-    if build.with?("bootstrap") && OS.mac? && MacOS.preferred_arch == :x86_64
+    if build.with?("bootstrap") && MacOS.prefer_64_bit?
       resource("bootstrap").stage buildpath/"bootstrap"
       python = buildpath/"bootstrap/bin/pypy"
     end
@@ -61,14 +66,16 @@ class Pypy < Formula
 
     libexec.mkpath
     cd "pypy/tool/release" do
-      package_args = %w[--archive-name pypy --targetdir . --nostrip]
+      package_args = %w[--archive-name pypy --targetdir .]
       package_args << "--without-gdbm" if build.without? "gdbm"
       system python, "package.py", *package_args
-      system *%W[tar -C #{libexec} --strip-components 1 -xzf pypy.tar.bz2]
+      system "tar", "-C", libexec.to_s, "--strip-components", "1", "-xzf", "pypy.tar.bz2"
     end
 
     (libexec/"lib").install libexec/"bin/libpypy-c.dylib"
-    system *%W[install_name_tool -change @rpath/libpypy-c.dylib #{libexec}/lib/libpypy-c.dylib #{libexec}/bin/pypy]
+    MachO::Tools.change_install_name("#{libexec}/bin/pypy",
+                                     "@rpath/libpypy-c.dylib",
+                                     "#{libexec}/lib/libpypy-c.dylib")
 
     # The PyPy binary install instructions suggest installing somewhere
     # (like /opt) and symlinking in binaries as needed. Specifically,
@@ -97,10 +104,10 @@ class Pypy < Formula
 
     # Tell distutils-based installers where to put scripts
     scripts_folder.mkpath
-    (distutils+"distutils.cfg").atomic_write <<-EOF.undent
+    (distutils+"distutils.cfg").atomic_write <<~EOS
       [install]
       install-scripts=#{scripts_folder}
-    EOF
+    EOS
 
     %w[setuptools pip].each do |pkg|
       resource(pkg).stage do
@@ -117,7 +124,7 @@ class Pypy < Formula
     %w[easy_install_pypy pip_pypy].each { |e| (HOMEBREW_PREFIX/"bin").install_symlink bin/e }
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     A "distutils.cfg" has been written to:
       #{distutils}
     specifying the install-scripts folder as:
@@ -133,7 +140,7 @@ class Pypy < Formula
     To update setuptools and pip between pypy releases, run:
         pip_pypy install --upgrade pip setuptools
 
-    See: https://github.com/Homebrew/brew/blob/master/share/doc/homebrew/Homebrew-and-Python.md
+    See: https://docs.brew.sh/Homebrew-and-Python.html
     EOS
   end
 
@@ -154,6 +161,7 @@ class Pypy < Formula
 
   test do
     system bin/"pypy", "-c", "print('Hello, world!')"
+    system bin/"pypy", "-c", "import time; time.clock()"
     system scripts_folder/"pip", "list"
   end
 end

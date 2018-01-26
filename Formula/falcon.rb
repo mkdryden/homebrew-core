@@ -7,7 +7,9 @@ class Falcon < Formula
   head "http://git.falconpl.org/falcon.git"
 
   bottle do
-    revision 1
+    rebuild 1
+    sha256 "6349ea1828c7474157a6bac4131c4ac952aba1330014ffd92efeaecc6ebe486f" => :high_sierra
+    sha256 "560217a0114fb31f303271eb925da7959d8e02fb8e3d118c0ea449f34ddd3e7b" => :sierra
     sha256 "48f3fc7a4ee3f479b0dafae18262cb900d64f43f5a3f2fa32727b65f6836f81e" => :el_capitan
     sha256 "e5dc11f9529c43c216dc304df212eab022ce654fc551ad244a291a6b861931b8" => :yosemite
     sha256 "bf2a677c2d6777b577bffc22d3c75a65525700bef6478035dececa002e5e11ec" => :mavericks
@@ -32,7 +34,8 @@ class Falcon < Formula
       -DFALCON_LIB_DIR=#{lib}
       -DFALCON_MAN_DIR=#{man1}
       -DFALCON_WITH_INTERNAL_PCRE=OFF
-      -DFALCON_WITH_MANPAGES=ON]
+      -DFALCON_WITH_MANPAGES=ON
+    ]
 
     if build.with? "editline"
       args << "-DFALCON_WITH_EDITLINE=ON"
@@ -52,7 +55,7 @@ class Falcon < Formula
   end
 
   test do
-    (testpath/"test").write <<-EOS.undent
+    (testpath/"test").write <<~EOS
       looper = .[brigade
          .[{ val, text => oob( [val+1, "Changed"] ) }
            { val, text => val < 10 ? oob(1): "Homebrew" }]]

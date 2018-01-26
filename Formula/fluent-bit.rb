@@ -1,21 +1,21 @@
 class FluentBit < Formula
   desc "Data Collector for IoT"
   homepage "https://github.com/fluent/fluent-bit"
-  url "https://github.com/fluent/fluent-bit/archive/v0.6.0.tar.gz"
-  sha256 "0de74eebeb629b12ce342b671f12558a6339579887c7b8c87634be4d99ac8d52"
-
+  url "https://github.com/fluent/fluent-bit/archive/v0.12.11.tar.gz"
+  sha256 "6fc29dadfba240a6bf1d201753ba71861113480d344a9b78728d680c1f7bbc86"
   head "https://github.com/fluent/fluent-bit.git"
 
   bottle do
     cellar :any
-    sha256 "a0c0cc54dab665bca9b16c816c94699aa68a25d3c1a8783de4bde059137cf32a" => :el_capitan
-    sha256 "c39c6ef2586f864b30d11948781dc21f3f6922e0346cff5efaae77d62213404a" => :yosemite
-    sha256 "a2fc6f2d797b1d773ee32a410a6c40b752783ac6c280af583455e0ddd54e4982" => :mavericks
+    sha256 "afa9beae12cd485c76cb6da96c02fbc8a10de89b256f061c3d0479caba7c4b58" => :high_sierra
+    sha256 "1559c972b7dc136dd73054e434224e274dc93afc28fdb5712f482bd4ebf0f892" => :sierra
+    sha256 "2920c0d7d8540ff1964387199d3ce652850129d13df7efda344dbc81a8fb741b" => :el_capitan
   end
 
   depends_on "cmake" => :build
 
   conflicts_with "mbedtls", :because => "fluent-bit includes mbedtls libraries."
+  conflicts_with "msgpack", :because => "fluent-bit includes msgpack libraries."
 
   def install
     system "cmake", ".", "-DWITH_IN_MEM=OFF", *std_cmake_args
@@ -23,10 +23,7 @@ class FluentBit < Formula
   end
 
   test do
-    io = IO.popen("#{bin}/fluent-bit --input stdin --output stdout --daemon")
-    sleep 1
-    Process.kill("SIGINT", io.pid)
-    Process.wait(io.pid)
-    assert_match(/Fluent-Bit v#{version}/, io.read)
+    output = shell_output("#{bin}/fluent-bit -V").chomp
+    assert_equal "Fluent Bit v#{version}", output
   end
 end

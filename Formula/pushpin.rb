@@ -1,72 +1,27 @@
 class Pushpin < Formula
   desc "Reverse proxy for realtime web services"
   homepage "http://pushpin.org"
-  url "https://dl.bintray.com/fanout/source/pushpin-1.8.0.tar.bz2"
-  sha256 "3559a3f0cfd993156948f575dca21be5819808e4338254ab95fb6876391958b5"
-
+  url "https://dl.bintray.com/fanout/source/pushpin-1.17.2.tar.bz2"
+  sha256 "f30c12b147d39c52617403b40f11737a14020dc93f223faa7214d73db8af1d77"
   head "https://github.com/fanout/pushpin.git"
 
   bottle do
-    sha256 "ac371d4b91b3311c0004ac76dfbb2a9b4c3c74637a1b4d47288284d1547da937" => :el_capitan
-    sha256 "c1b569409a4e23a1f930f2a51d690b071dd5ef82073d55b029a0a613c2c40371" => :yosemite
-    sha256 "84ae03dce3b9760ebe4251021fdd176f8b27684332b99da7e88da63541d14186" => :mavericks
+    sha256 "33219cdbd31298f00209282e5ff588187245f7a5a5652c39263717a372e9b290" => :high_sierra
+    sha256 "2233ed69e470f3cf507ff933bb8eb78783b5e8523673fa9b8ad09418b6426a72" => :sierra
+    sha256 "2ee66b7f78d4b25641651f34151adbd1a07b89441a5e1930796e6337fc56807b" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
-  depends_on "qt5"
+  depends_on "qt"
   depends_on "zeromq"
   depends_on "mongrel2"
   depends_on "zurl"
 
-  # MacOS versions prior to Yosemite need the latest setuptools in order to compile dependencies
-  resource "setuptools" do
-    url "https://pypi.python.org/packages/source/s/setuptools/setuptools-19.4.tar.gz"
-    sha256 "214bf29933f47cf25e6faa569f710731728a07a19cae91ea64f826051f68a8cf"
-  end
-
-  resource "MarkupSafe" do
-    url "https://pypi.python.org/packages/source/M/MarkupSafe/MarkupSafe-0.23.tar.gz"
-    sha256 "a4ec1aff59b95a14b45eb2e23761a0179e98319da5a7eb76b56ea8cdc7b871c3"
-  end
-
-  resource "Jinja2" do
-    url "https://pypi.python.org/packages/source/J/Jinja2/Jinja2-2.8.tar.gz"
-    sha256 "bc1ff2ff88dbfacefde4ddde471d1417d3b304e8df103a7a9437d47269201bf4"
-  end
-
-  resource "setproctitle" do
-    url "https://pypi.python.org/packages/source/s/setproctitle/setproctitle-1.1.9.tar.gz"
-    sha256 "1c3414d18f9cacdab78b0ffd8e886d56ad45f22e55001a72aaa0b2aeb56a0ad7"
-  end
-
-  resource "pyzmq" do
-    url "https://pypi.python.org/packages/source/p/pyzmq/pyzmq-15.2.0.tar.gz"
-    sha256 "2dafa322670a94e20283aba2a44b92134d425bd326419b68ad4db8d0831a26ec"
-  end
-
-  resource "tnetstring" do
-    url "https://pypi.python.org/packages/source/t/tnetstring/tnetstring-0.2.1.tar.gz"
-    sha256 "55715a5d758214034db179005def47ed842da36c4c48e9e7ae59bcaffed7ca9b"
-  end
-
   def install
-    ENV.prepend_create_path "PYTHONPATH", libexec/"vendor/lib/python2.7/site-packages"
-
-    %w[setuptools MarkupSafe Jinja2 setproctitle].each do |r|
-      resource(r).stage do
-        system "python", *Language::Python.setup_install_args(libexec/"vendor")
-      end
-    end
-
     system "./configure", "--prefix=#{prefix}", "--configdir=#{etc}", "--rundir=#{var}/run", "--logdir=#{var}/log", "--extraconf=QMAKE_MACOSX_DEPLOYMENT_TARGET=#{MacOS.version}"
     system "make"
+    system "make", "check"
     system "make", "install"
-
-    pyenv = { :PYTHONPATH => ENV["PYTHONPATH"] }
-    %w[pushpin].each do |f|
-      (libexec/"bin").install bin/f
-      (bin/f).write_env_script libexec/"bin/#{f}", pyenv
-    end
   end
 
   test do
@@ -75,21 +30,17 @@ class Pushpin < Formula
     runfile = testpath/"test.py"
 
     cp HOMEBREW_PREFIX/"etc/pushpin/pushpin.conf", conffile
-    cp HOMEBREW_PREFIX/"etc/pushpin/routes", routesfile
-
-    %w[pyzmq tnetstring].each do |r|
-      resource(r).stage do
-        system "python", *Language::Python.setup_install_args(testpath/"vendor")
-      end
-    end
 
     inreplace conffile do |s|
       s.gsub! "rundir=#{HOMEBREW_PREFIX}/var/run/pushpin", "rundir=#{testpath}/var/run/pushpin"
       s.gsub! "logdir=#{HOMEBREW_PREFIX}/var/log/pushpin", "logdir=#{testpath}/var/log/pushpin"
     end
-    inreplace routesfile, "localhost:80", "localhost:10080"
 
-    runfile.write <<-EOS.undent
+    routesfile.write <<~EOS
+      * localhost:10080
+    EOS
+
+    runfile.write <<~EOS
       import urllib2
       import threading
       from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
@@ -127,8 +78,6 @@ class Pushpin < Formula
 
     begin
       sleep 3 # make sure pushpin processes have started
-      ENV.prepend_create_path "PYTHONPATH", libexec/"vendor/lib/python2.7/site-packages"
-      ENV.prepend_create_path "PYTHONPATH", testpath/"vendor/lib/python2.7/site-packages"
       system "python", runfile
     ensure
       Process.kill("TERM", pid)

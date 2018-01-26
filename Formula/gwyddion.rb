@@ -1,13 +1,14 @@
 class Gwyddion < Formula
   desc "Scanning Probe Microscopy visualization and analysis tool"
   homepage "http://gwyddion.net/"
-  url "http://gwyddion.net/download/2.44/gwyddion-2.44.tar.gz"
-  sha256 "8e4ea25b1e3cd22ef64ee282d81da62a6a1a40e193edbe5d38c39f76b777424f"
+  url "http://gwyddion.net/download/2.49/gwyddion-2.49.tar.gz"
+  sha256 "48446bc2c6680d61c16b3f637e57e09f4de631c6b80bc2b20f424f66cc896c1c"
 
   bottle do
-    sha256 "5a9aeb6f403d608775e0d6d3dabf9708b533d2cbb20a4b602a3e132e659a132a" => :el_capitan
-    sha256 "7ec16a6aee0511a9e83e204b43c468cc25c62e03d9078408e46b51a2abca11c7" => :yosemite
-    sha256 "8b4cdf207b30a3654e9aa29011a1c56f849ac35fc487b1303d2d6474477e85d7" => :mavericks
+    sha256 "54219b3018cb2ae1491e894097de93fd4793a2ced553f1ed5c374d563bdd163d" => :high_sierra
+    sha256 "54947cfef227f47304cfcd026eab9e8f870c6e4fc9caad0cc4b2d026b77d4713" => :sierra
+    sha256 "44f3afedf022ae6928247c87f433f360775cbc8e025f164a0d9d909fe847040b" => :el_capitan
+    sha256 "2f01f30e749a596a3d7c13daa7961bd209e58a818b997960554fd72df4383335" => :yosemite
   end
 
   depends_on "pkg-config" => :build
@@ -18,13 +19,14 @@ class Gwyddion < Formula
   depends_on "libxml2"
   depends_on "minizip"
 
-  depends_on :python => :optional
+  depends_on "python" => :optional
   depends_on "pygtk" if build.with? "python"
   depends_on "gtksourceview" if build.with? "python"
 
   def install
     system "./configure", "--disable-dependency-tracking",
                           "--disable-desktop-file-update",
+                          "--enable-module-bundling=no",
                           "--prefix=#{prefix}",
                           "--with-html-dir=#{doc}"
     system "make", "install"
@@ -32,7 +34,7 @@ class Gwyddion < Formula
 
   test do
     system "#{bin}/gwyddion", "--version"
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <libgwyddion/gwyddion.h>
 
       int main(int argc, char *argv[]) {
@@ -54,8 +56,7 @@ class Gwyddion < Formula
     libpng = Formula["libpng"]
     pango = Formula["pango"]
     pixman = Formula["pixman"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{atk.opt_include}/atk-1.0
       -I#{cairo.opt_include}/cairo
       -I#{fftw.opt_include}

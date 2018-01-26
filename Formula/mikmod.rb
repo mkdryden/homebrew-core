@@ -1,25 +1,26 @@
 class Mikmod < Formula
   desc "Portable tracked music player"
   homepage "http://mikmod.raphnet.net/"
-  url "https://downloads.sourceforge.net/project/mikmod/mikmod/3.2.6/mikmod-3.2.6.tar.gz"
-  sha256 "04544e0edb36a19fab61233dff97430969cff378a98f5989a1378320550e2673"
+  url "https://downloads.sourceforge.net/project/mikmod/mikmod/3.2.8/mikmod-3.2.8.tar.gz"
+  sha256 "dbb01bc36797ce25ffcab2b3bf625537b85b42534344e1808236ca612fbaa4cc"
 
   bottle do
-    sha256 "759d6d16ac5743599942b67695b3aca27996f40b96e61210905f0bfdfc4c48a7" => :mavericks
-    sha256 "377735f1553d44e6f02a6dc92742a0c0c84546a7085c3a1839488ae26a9f280a" => :mountain_lion
-    sha256 "ab3e1ab1d55c3f2197db079a0f05570ac95602ebbde179ca43be83b65d51a3aa" => :lion
+    sha256 "5907f92b40ddc0ba15cddd60269a9f9a8e9fcf6295a099df4145818536431427" => :high_sierra
+    sha256 "a9586a9306006e8fd451aecb6c3259fc57cb0bb328a2b0ce8c064e5518f943bc" => :sierra
+    sha256 "ae0b4480b6b34327b9c99601d7e2cbc9648ece54344bd4bda3582ef048e1f1de" => :el_capitan
+    sha256 "7d52131b792e01d3037dac4be52811744dfad23c2a11f4ee3d1985a8fb8f0331" => :yosemite
   end
 
   depends_on "libmikmod"
 
   def install
-    system "./configure", "--disable-debug", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}",
-                          "--mandir=#{man}"
+    system "./configure", "--disable-debug",
+                          "--disable-dependency-tracking",
+                          "--prefix=#{prefix}"
     system "make", "install"
   end
 
   test do
-    system "#{bin}/mikmod", "-V"
+    assert_match version.to_s, shell_output("#{bin}/mikmod -V")
   end
 end

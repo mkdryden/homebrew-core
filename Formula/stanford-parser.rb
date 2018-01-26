@@ -1,9 +1,9 @@
 class StanfordParser < Formula
   desc "Statistical NLP parser"
-  homepage "http://nlp.stanford.edu/software/lex-parser.shtml"
-  url "http://nlp.stanford.edu/software/stanford-parser-full-2015-04-20.zip"
-  version "3.5.2"
-  sha256 "05bd11e500219bbbffa4bae004619560bc03f1481f9516c4bb51863e265333b8"
+  homepage "https://nlp.stanford.edu/software/lex-parser.shtml"
+  url "https://nlp.stanford.edu/software/stanford-parser-full-2017-06-09.zip"
+  version "3.8.0"
+  sha256 "d03ed9a823c3001dde3069e96de25f322b7da12c4ea070b969e98ad467c4959f"
 
   bottle :unneeded
 

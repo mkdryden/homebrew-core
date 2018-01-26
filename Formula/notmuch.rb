@@ -1,45 +1,46 @@
 class Notmuch < Formula
   desc "Thread-based email index, search, and tagging"
   homepage "https://notmuchmail.org"
-  url "https://notmuchmail.org/releases/notmuch-0.21.tar.gz"
-  mirror "https://mirrors.kernel.org/debian/pool/main/n/notmuch/notmuch_0.21.orig.tar.gz"
-  sha256 "d06f8ffed168c7d53ffc449dd611038b5fa90f7ee22d58f3bec3b379571e25b3"
+  url "https://notmuchmail.org/releases/notmuch-0.26.tar.gz"
+  sha256 "d3e894ed2ad9d721a442663f07a6f2a241dc98be7cc4af681f16edf88e0d76df"
+  head "git://notmuchmail.org/git/notmuch"
 
   bottle do
     cellar :any
-    sha256 "a54c75c58070d551d5dc5e4e4cee00ada55c889266eb0217921c233d5a1f2e6b" => :el_capitan
-    sha256 "a9679f7a870e10d12633dab987223d96b50bc6cf40ae705741c7f99413d302bd" => :yosemite
-    sha256 "cf83e129e4624002ca6c3e9942f67cd3acfc40f868d5c0ce2a49b62af1872793" => :mavericks
+    sha256 "4a4c6981dbc9cc1061f30a9e571c729372edc52d235ac3682b6711ff19b2c136" => :high_sierra
+    sha256 "ec47c28caf199263d0c11301b42a29ce2326c3201a12ac20c687412db2c39555" => :sierra
+    sha256 "9fd854188d76d174dbd6d19eea001923403c908f33e11aff98cf135f58eb69a2" => :el_capitan
   end
+
+  option "without-python", "Build without python support"
 
   depends_on "pkg-config" => :build
-  depends_on :emacs => ["21.1", :optional]
-  depends_on :python => :optional
-  depends_on :python3 => :optional
-  depends_on "xapian"
-  depends_on "talloc"
+  depends_on "libgpg-error" => :build
+  depends_on "glib"
   depends_on "gmime"
+  depends_on "talloc"
+  depends_on "xapian"
+  depends_on "zlib"
+  depends_on "emacs" => :optional
+  depends_on "python3" => :optional
+  depends_on "ruby" => :optional
 
-  # Requires zlib >= 1.2.5.2
-  resource "zlib" do
-    url "http://zlib.net/zlib-1.2.8.tar.gz"
-    sha256 "36658cb768a54c1d4dec43c3116c27ed893e88b02ecfcb44f2166f9c0b7f2a0d"
-  end
+  # Fix SIP issue with python bindings
+  # A more comprehensive patch has been submitted upstream
+  # https://notmuchmail.org/pipermail/notmuch/2016/022631.html
+  patch :DATA
 
   def install
-    resource("zlib").stage do
-      system "./configure", "--prefix=#{buildpath}/zlib", "--static"
-      system "make", "install"
-      ENV.append_path "PKG_CONFIG_PATH", "#{buildpath}/zlib/lib/pkgconfig"
-    end
+    args = %W[--prefix=#{prefix}]
 
-    args = ["--prefix=#{prefix}"]
     if build.with? "emacs"
       ENV.deparallelize # Emacs and parallel builds aren't friends
-      args << "--with-emacs" << "--emacslispdir=#{elisp}"
+      args << "--with-emacs" << "--emacslispdir=#{elisp}" << "--emacsetcdir=#{elisp}"
     else
       args << "--without-emacs"
     end
+
+    args << "--without-ruby" if build.without? "ruby"
 
     system "./configure", *args
     system "make", "V=1", "install"
@@ -52,6 +53,23 @@ class Notmuch < Formula
   end
 
   test do
-    system "#{bin}/notmuch", "help"
+    (testpath/".notmuch-config").write "[database]\npath=#{testpath}/Mail"
+    (testpath/"Mail").mkpath
+    assert_match "0 total", shell_output("#{bin}/notmuch new")
   end
 end
+
+__END__
+diff --git a/bindings/python/notmuch/globals.py b/bindings/python/notmuch/globals.py
+index b1eec2c..bce5190 100644
+--- a/bindings/python/notmuch/globals.py
++++ b/bindings/python/notmuch/globals.py
+@@ -25,7 +25,7 @@ from notmuch.version import SOVERSION
+ try:
+     from os import uname
+     if uname()[0] == 'Darwin':
+-        nmlib = CDLL("libnotmuch.{0:s}.dylib".format(SOVERSION))
++        nmlib = CDLL("HOMEBREW_PREFIX/lib/libnotmuch.{0:s}.dylib".format(SOVERSION))
+     else:
+         nmlib = CDLL("libnotmuch.so.{0:s}".format(SOVERSION))
+ except:

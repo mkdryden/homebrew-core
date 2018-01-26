@@ -1,57 +1,77 @@
 class Gjs < Formula
-  desc "Javascript Bindings for GNOME"
+  desc "JavaScript Bindings for GNOME"
   homepage "https://wiki.gnome.org/Projects/Gjs"
-  url "https://download.gnome.org/sources/gjs/1.44/gjs-1.44.0.tar.xz"
-  sha256 "88c960f6ad47a6931d123f5d6317d13704f58572f68a4391913a254ff27dce80"
+  url "https://download.gnome.org/sources/gjs/1.50/gjs-1.50.3.tar.xz"
+  sha256 "49962f0126886413fda28e2de13464c8a73f987c3bbf60a4a17e5f638172ce19"
 
   bottle do
-    revision 1
-    sha256 "fb613d40633ad455a5a057d8ea196b6fd602bfd3c5920bb917783f413f0982d0" => :el_capitan
-    sha256 "dfcf484bc4ccbf5d3e6db92247d963712609d7d8d821b8046843899368f9aef1" => :yosemite
-    sha256 "dab6d6305eb3d8046b7f87659b5c3207bb309787a7f58d64a9c018fab78f6437" => :mavericks
+    sha256 "e8c8d8170580a9f258f76bceff724763bbe6677f65d1234873e46f116b60ea47" => :high_sierra
+    sha256 "4a96048259c0002629d014e42c077e2c8bc7df58a7a9d27c1bc016abf5cd7434" => :sierra
+    sha256 "1960d3060c278dc7f14d90230647f143779861851a5c7e88c1ca932dd33919c5" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
+  depends_on "autoconf@2.13" => :build
   depends_on "gobject-introspection"
   depends_on "nspr"
   depends_on "readline"
   depends_on "gtk+3" => :recommended
 
-  resource "mozjs24" do
-    url "https://ftp.mozilla.org/pub/mozilla.org/js/mozjs-24.2.0.tar.bz2"
-    sha256 "e62f3f331ddd90df1e238c09d61a505c516fe9fd8c5c95336611d191d18437d8"
+  needs :cxx11
+
+  resource "mozjs52" do
+    url "https://archive.mozilla.org/pub/firefox/releases/52.3.0esr/source/firefox-52.3.0esr.source.tar.xz"
+    sha256 "c16bc86d6cb8c2199ed1435ab80a9ae65f9324c820ea0eeb38bf89a97d253b5b"
   end
 
   def install
-    resource("mozjs24").stage do
-      cd("js/src") do
-        # patches taken from MacPorts
-        # fixes a problem with Perl 5.22
-        inreplace "config/milestone.pl", "if (defined(@TEMPLATE_FILE)) {", "if (@TEMPLATE_FILE) {"
-        # use absolute path for install_name, don't assume will be put into an app bundle
-        inreplace "config/rules.mk", "@executable_path", "${prefix}/lib"
-        system "./configure", "--disable-debug",
-                              "--disable-dependency-tracking",
-                              "--disable-silent-rules",
-                              "--prefix=#{prefix}",
+    ENV.cxx11
+    ENV["_MACOSX_DEPLOYMENT_TARGET"] = ENV["MACOSX_DEPLOYMENT_TARGET"]
+
+    resource("mozjs52").stage do
+      inreplace "config/rules.mk", "-install_name $(_LOADER_PATH)/$(SHARED_LIBRARY) ", "-install_name #{lib}/$(SHARED_LIBRARY) "
+      inreplace "old-configure", "-Wl,-executable_path,${DIST}/bin", ""
+      mkdir("build") do
+        ENV["PYTHON"] = "python"
+        system "../js/src/configure", "--prefix=#{prefix}",
                               "--with-system-nspr",
+                              "--with-system-zlib",
+                              "--with-system-icu",
                               "--enable-readline",
-                              "--enable-threadsafe"
+                              "--enable-shared-js",
+                              "--with-pthreads",
+                              "--enable-optimize",
+                              "--enable-pie",
+                              "--enable-release",
+                              "--without-intl-api"
         system "make"
         system "make", "install"
+        lib.install "./mozglue/build/libmozglue.dylib"
         rm Dir["#{bin}/*"]
       end
+      # headers were installed as softlinks, which is not acceptable
+      cd(include.to_s) do
+        `find . -type l`.chomp.split.each do |link|
+          header = File.readlink(link)
+          rm link
+          cp header, link
+        end
+      end
       ENV.append_path "PKG_CONFIG_PATH", "#{lib}/pkgconfig"
+      # remove mozjs static lib
+      rm "#{lib}/libjs_static.ajs"
     end
+
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
                           "--disable-silent-rules",
+                          "--without-dbus-tests",
                           "--prefix=#{prefix}"
     system "make", "install"
   end
 
   test do
-    (testpath/"test.js").write <<-EOS.undent
+    (testpath/"test.js").write <<~EOS
       #!/usr/bin/env gjs
       const GLib = imports.gi.GLib;
     EOS

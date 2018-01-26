@@ -1,20 +1,23 @@
 class AmmoniteRepl < Formula
   desc "Ammonite is a cleanroom re-implementation of the Scala REPL"
   homepage "https://lihaoyi.github.io/Ammonite/#Ammonite-REPL"
-  url "https://git.io/vVfy5", :using => :nounzip
-  version "0.5.7"
-  sha256 "ef410dc843391c6b3199f2552a24f5fe3f3c79a7558d813089c8dce8b4ab97b6"
+  url "https://github.com/lihaoyi/Ammonite/releases/download/1.0.3/2.12-1.0.3", :using => :nounzip
+  sha256 "69ee90b067cb5546480c54887a3325f87e272464452fbeaaa0628379936bae3c"
 
   bottle :unneeded
 
-  depends_on :java => "1.7+"
+  # Upstream issue from 2 Aug 2017 "amm throws NPE on OpenJDK 9"
+  # See https://github.com/lihaoyi/Ammonite/issues/675
+  depends_on :java => "1.8"
 
   def install
-    bin.install "vVfy5" => "amm"
+    libexec.install Dir["*"].shift => "amm"
+    chmod 0555, libexec/"amm"
+    (bin/"amm").write_env_script libexec/"amm", Language::Java.java_home_env("1.8")
   end
 
   test do
-    ENV.java_cache
-    assert_equal "hello world!", shell_output("#{bin}/amm -c 'print(\"hello world!\")'")
+    output = shell_output("#{bin}/amm -c 'print(\"hello world!\")'")
+    assert_equal "hello world!", output.lines.last
   end
 end

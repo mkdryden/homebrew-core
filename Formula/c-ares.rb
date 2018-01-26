@@ -1,16 +1,16 @@
 class CAres < Formula
   desc "Asynchronous DNS library"
-  homepage "http://c-ares.haxx.se/"
-  url "http://c-ares.haxx.se/download/c-ares-1.10.0.tar.gz"
-  mirror "https://github.com/bagder/c-ares/archive/cares-1_10_0.tar.gz"
-  sha256 "3d701674615d1158e56a59aaede7891f2dde3da0f46a6d3c684e0ae70f52d3db"
+  homepage "https://c-ares.haxx.se/"
+  url "https://c-ares.haxx.se/download/c-ares-1.13.0.tar.gz"
+  mirror "https://launchpad.net/ubuntu/+archive/primary/+files/c-ares_1.13.0.orig.tar.gz"
+  sha256 "03f708f1b14a26ab26c38abd51137640cb444d3ec72380b21b20f1a8d2861da7"
 
   bottle do
     cellar :any
-    sha256 "68d6374d5665448f947c8cfb2090171c0c865e239a786139f108979138d03a68" => :el_capitan
-    sha256 "759c64eb8eb50bb4358c13b8ca5a7091156a1dd7a2b97784a641702ae27da2cc" => :yosemite
-    sha256 "d1619087a66468b5615f630cc9ae09bf666efaf9f7085890f0a951a6359f4bd2" => :mavericks
-    sha256 "7e3f3e15e8bf502da0f0acc4d57bf296553df15d5fe8f305e6b2adb94ece6c67" => :mountain_lion
+    sha256 "f6778d973ae8c04a1e8abca2d77340b50e19a0448e90f5cdc110b515e62b05e9" => :high_sierra
+    sha256 "e543ffa2ee246cd28e1dc0bb2ba1e2952266500419be8ed3a54d910c274f24be" => :sierra
+    sha256 "5efb5340249ab0b5cd160632391e6e632fbaf8857742d66dbba9938df8ac9215" => :el_capitan
+    sha256 "28977de886a3ca0cf08fae79d2b1abfb2d1c198b7a28c345dd37566ccbf8d670" => :yosemite
   end
 
   head do
@@ -30,7 +30,7 @@ class CAres < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <stdio.h>
       #include <ares.h>
 

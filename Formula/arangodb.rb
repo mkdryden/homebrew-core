@@ -1,17 +1,18 @@
 class Arangodb < Formula
-  desc "Universal open-source database with a flexible data model"
+  desc "The Multi-Model NoSQL Database"
   homepage "https://www.arangodb.com/"
-  url "https://www.arangodb.com/repositories/Source/ArangoDB-2.8.6.tar.gz"
-  sha256 "0a11eb98e5c6bfda88a1e1e0bcae09dda2c88cdbcc3d01a669e4ef66c3284c4f"
-
+  url "https://download.arangodb.com/Source/ArangoDB-3.3.2.tar.gz"
+  sha256 "6d8b97bde6d912c6de47ca27dfa1635425806b7ad4b83e12bdda526bb8129179"
   head "https://github.com/arangodb/arangodb.git", :branch => "unstable"
 
   bottle do
-    sha256 "55b02e0392524ae1cffcc7bcc18bd44a4b10c167940f11db98ee25c267cb92dd" => :el_capitan
-    sha256 "bec740ff6215d3bda3ee7a9e73b2f5c586114d739f728a5c4c00a7d050da95c2" => :yosemite
-    sha256 "02b3a5bf310dba74670eae9bc451ce41cf94d2f11ab9010103b4687d47a5f8ee" => :mavericks
+    sha256 "1a3280c7a1843072272614472aed8e483546cc425304c052c590b7ae169c27c4" => :high_sierra
+    sha256 "698641d23244250fa32a93c73e67aa2af0bebd939d52f74a7b8c8dd7d3b36159" => :sierra
+    sha256 "e8affca7c8c9fd6f0993ba3c22a7aea4e5bddd3baa18aaaaebc712bf098ad895" => :el_capitan
   end
 
+  depends_on :macos => :yosemite
+  depends_on "cmake" => :build
   depends_on "go" => :build
   depends_on "openssl"
 
@@ -23,46 +24,49 @@ class Arangodb < Formula
   end
 
   def install
-    # clang on 10.8 will still try to build against libstdc++,
-    # which fails because it doesn't have the C++0x features
-    # arangodb requires.
-    ENV.libcxx
+    ENV.cxx11
 
-    args = %W[
-      --disable-dependency-tracking
-      --prefix=#{prefix}
-      --disable-relative
-      --datadir=#{share}
-      --localstatedir=#{var}
-    ]
+    mkdir "build" do
+      args = std_cmake_args + %W[
+        -DHOMEBREW=ON
+        -DUSE_OPTIMIZE_FOR_ARCHITECTURE=OFF
+        -DASM_OPTIMIZATIONS=OFF
+        -DCMAKE_INSTALL_DATADIR=#{share}
+        -DCMAKE_INSTALL_DATAROOTDIR=#{share}
+        -DCMAKE_INSTALL_SYSCONFDIR=#{etc}
+        -DCMAKE_INSTALL_LOCALSTATEDIR=#{var}
+      ]
 
-    args << "--program-suffix=-unstable" if build.head?
+      if ENV.compiler == "gcc-6"
+        ENV.append "V8_CXXFLAGS", "-O3 -g -fno-delete-null-pointer-checks"
+      end
 
-    if ENV.compiler != :clang
-      ENV.append "LDFLAGS", "-static-libgcc -static-libstdc++"
+      system "cmake", "..", *args
+      system "make", "install"
+
+      %w[arangod arango-dfdb arangosh foxx-manager].each do |f|
+        inreplace etc/"arangodb3/#{f}.conf", pkgshare, opt_pkgshare
+      end
     end
-
-    system "./configure", *args
-    system "make", "install"
   end
 
   def post_install
-    (var/"arangodb").mkpath
-    (var/"log/arangodb").mkpath
-
-    system "#{sbin}/arangod" + (build.head? ? "-unstable" : ""), "--upgrade", "--log.file", "-"
+    (var/"lib/arangodb3").mkpath
+    (var/"log/arangodb3").mkpath
   end
 
-  def caveats; <<-EOS.undent
-    Please note that clang and/or its standard library 7.0.0 has a severe
-    performance issue. Please consider using '--cc=gcc-5' when installing
-    if you are running on such a system.
+  def caveats
+    s = <<~EOS
+      An empty password has been set. Please change it by executing
+        #{opt_sbin}/arango-secure-installation
     EOS
+
+    s
   end
 
-  plist_options :manual => "#{HOMEBREW_PREFIX}/opt/arangodb/sbin/arangod" + (build.head? ? "-unstable" : "") + " --log.file -"
+  plist_options :manual => "#{HOMEBREW_PREFIX}/opt/arangodb/sbin/arangod"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -71,16 +75,18 @@ class Arangodb < Formula
         <true/>
         <key>Label</key>
         <string>#{plist_name}</string>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{opt_sbin}/arangod</string>
-          <string>-c</string>
-          <string>#{etc}/arangodb/arangod.conf</string>
-        </array>
+        <key>Program</key>
+        <string>#{opt_sbin}/arangod</string>
         <key>RunAtLoad</key>
         <true/>
       </dict>
     </plist>
     EOS
+  end
+
+  test do
+    testcase = "require('@arangodb').print('it works!')"
+    output = shell_output("#{bin}/arangosh --server.password \"\" --javascript.execute-string \"#{testcase}\"")
+    assert_equal "it works!", output.chomp
   end
 end

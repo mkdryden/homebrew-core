@@ -1,14 +1,14 @@
 class Orc < Formula
   desc "Oil Runtime Compiler (ORC)"
   homepage "https://cgit.freedesktop.org/gstreamer/orc/"
-  url "https://gstreamer.freedesktop.org/src/orc/orc-0.4.25.tar.xz"
-  sha256 "c1b1d54a58f26d483f0b3881538984789fe5d5460ab8fab74a1cacbd3d1c53d1"
+  url "https://gstreamer.freedesktop.org/src/orc/orc-0.4.28.tar.xz"
+  sha256 "bfcd7c6563b05672386c4eedfc4c0d4a0a12b4b4775b74ec6deb88fc2bcd83ce"
 
   bottle do
     cellar :any
-    sha256 "74f9286ad20ccad5fcb2f855bd2d855b6709fa5a2f804928c710d3e3229d8087" => :el_capitan
-    sha256 "fa8e5bd4d5899fd420a772025005ec8b25e3f446c01ec61a357d4edc64734aba" => :yosemite
-    sha256 "6f998c310042780d4a8deccd9e3aae25362b7904932d45e4944d761f77bf1fe1" => :mavericks
+    sha256 "bc08fab45dc2650b71950bff090bb09e64595778f3810bca442775b7973a43dd" => :high_sierra
+    sha256 "6eafe23ac5c17b765ca6f59eb65c52d782d2858bbca7a4f374b77258dedb828f" => :sierra
+    sha256 "c640dd001774b981101cbc223c51e31aafb35a6b8bc2e2fc3fc2c15dbfe3fbae" => :el_capitan
   end
 
   def install

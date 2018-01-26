@@ -1,16 +1,18 @@
 class GitFixup < Formula
   desc "Alias for git commit --fixup <ref>"
   homepage "https://github.com/keis/git-fixup"
-  url "https://github.com/keis/git-fixup/archive/v1.0.2.tar.gz"
-  sha256 "e43bef5697927c8efa5f2b562ff8057bb30be828ec7327acba8d593f332eb4f8"
+  url "https://github.com/keis/git-fixup/archive/v1.1.1.tar.gz"
+  sha256 "1843caf40fb54bfd746f966fc04fac68613fe8ec2f18b2af99f9d32a40ea0809"
 
   head "https://github.com/keis/git-fixup.git", :branch => "master"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "0a5e3f65dc07ee3aa2746068edf3cf6256acb0ef0bd44f37509ec35648a9d25c" => :el_capitan
-    sha256 "77474bc651194209e99b061bf6b6753f36c8ce88b40870679023c0eedabf2c9e" => :yosemite
-    sha256 "5e7a1711adbb5b2b46a426a50b103e8c145b34f5c585c75d0b728183fa8abe54" => :mavericks
+    sha256 "ea6a6ead131ad504711f0905aa3899c60412f8a287ee1308aeb2824a10f17ba3" => :high_sierra
+    sha256 "478f6c76e15aa1fe183711e609fdc492bb9be5970a555b2b6a1ccfbbd3b96be0" => :sierra
+    sha256 "0145c568d255c20a0f728d14152aad8a83a0ceb25e9f833d016efc57d19191c8" => :el_capitan
+    sha256 "077bcf80be63e6da3bdd7699f6b82549d99014210ff8e015e5319234d8a9e75a" => :yosemite
+    sha256 "f0c6934dbd1317abae4ef8c0e1440d624dbc7025f06eb1006d654c0c2925cc5b" => :mavericks
   end
 
   def install
@@ -19,7 +21,7 @@ class GitFixup < Formula
   end
 
   test do
-    (testpath/".gitconfig").write <<-EOS.undent
+    (testpath/".gitconfig").write <<~EOS
       [user]
         name = Real Person
         email = notacat@hotmail.cat

@@ -1,15 +1,25 @@
 class Zshdb < Formula
   desc "Debugger for zsh"
   homepage "https://github.com/rocky/zshdb"
-  url "https://downloads.sourceforge.net/project/bashdb/zshdb/0.9/zshdb-0.09.tar.bz2"
-  sha256 "3ad756485a5bfd014649f4ede15187d0cf070919d2ddb15b4ded61e8990e8d4f"
+
+  stable do
+    url "https://downloads.sourceforge.net/project/bashdb/zshdb/0.92/zshdb-0.92.tar.bz2"
+    sha256 "faeb75dc12f4eafff195af103fde4fc5aabc258b7ed902b1aad6d4659f3ae744"
+
+    # Fix compilation with zsh >= 5.3
+    # Remove in next release
+    patch do
+      url "https://github.com/rocky/zshdb/commit/94b389a3.patch?full_index=1"
+      sha256 "be5d4184dbc51570208fa169d6098e378b513cc699d3e2aa3f2d3bb422216995"
+    end
+  end
 
   bottle do
     cellar :any_skip_relocation
-    revision 1
-    sha256 "4542047a09ea1d1d19cc4a5aecd29b8a56216bbb0c0fb1b5f18d4e469281edfa" => :el_capitan
-    sha256 "7f327123ad69da56e966c329311f94aeb46725bdd69513eb819a81681ee22ec0" => :yosemite
-    sha256 "3ad6c3dcefdf709effcc367353982383a1743d07a525970e3b36e0882bfbe645" => :mavericks
+    rebuild 1
+    sha256 "1cb2482a1e326d2849d1692a871704aafdf2fec05cffd0d22d2193cc1da07caf" => :high_sierra
+    sha256 "1cb2482a1e326d2849d1692a871704aafdf2fec05cffd0d22d2193cc1da07caf" => :sierra
+    sha256 "1cb2482a1e326d2849d1692a871704aafdf2fec05cffd0d22d2193cc1da07caf" => :el_capitan
   end
 
   head do

@@ -8,11 +8,12 @@ class Acme < Formula
 
   bottle do
     cellar :any_skip_relocation
-    revision 1
-    sha256 "8e6c5302b7ec8d17bebb8d22a5d409358b92d45a3a683876987113ebce656b08" => :el_capitan
-    sha256 "f5ed6e96c9210436569e97f2c1dff5607814fc21952db39e095c5c34ff6d9502" => :yosemite
-    sha256 "990425c3d467e3ab7bb0b4ff88cf12ad7095a0bd8f22b91f86105d569e87a6a9" => :mavericks
-    sha256 "1831e423ed2389b961ffd3baa9299552aa9c7553455edce8bf94bbe72de54986" => :mountain_lion
+    rebuild 2
+    sha256 "679da82eb906eb814fc69e373fccc81d0c92563d88f2e8138cfe21eedb611c1a" => :high_sierra
+    sha256 "a551c65f11021ede47269b1a29b09c601063267501134daa8213674a62c97615" => :sierra
+    sha256 "84f0ba7e45580d5a28a9a0dd9d7a25a6e67a9bdc7407c5b91cf64b8b9cf0a165" => :el_capitan
+    sha256 "1e7c7805ac21061637cd1ce964f976c6f68b9259e892ffc77ee71f2aa280f879" => :yosemite
+    sha256 "022ef1a9526002dda47023b47c2af6227ee40f33b33b0ed232ae105fcf982911" => :mavericks
   end
 
   devel do
@@ -23,6 +24,7 @@ class Acme < Formula
 
   def install
     system "make", "-C", "src", "install", "BINDIR=#{bin}"
+    doc.install Dir["docs/*"]
   end
 
   test do

@@ -1,26 +1,27 @@
 class Taglib < Formula
   desc "Audio metadata library"
   homepage "https://taglib.github.io/"
-  url "https://taglib.github.io/releases/taglib-1.10.tar.gz"
-  sha256 "24c32d50042cb0ddf162eb263f8ac75c5a158e12bf32ed534c1d5c71ee369baa"
-
+  url "https://taglib.github.io/releases/taglib-1.11.1.tar.gz"
+  sha256 "b6d1a5a610aae6ff39d93de5efd0fdc787aa9e9dc1e7026fa4c961b26563526b"
   head "https://github.com/taglib/taglib.git"
 
   bottle do
     cellar :any
-    sha256 "083ede2ae70eabf409a82e4999aa78f027ecb8c0b71065008eee90d4a4ccc59d" => :el_capitan
-    sha256 "60a0e999802c0a3b4aced2375cbe0cb94744329bd9773beb18bbefb99b5692c4" => :yosemite
-    sha256 "7f673f94a4263441327b83691f47c56605b8f4d20e7129c5d2883b8f603dcc15" => :mavericks
+    sha256 "14e9be9fd1d5a86615d8b2b6ac51893eb6fab0eb6100f44547d297ccadc4497e" => :high_sierra
+    sha256 "a0a374439cbf94a6fb57d791abf0bc6fb974eef1cf21f66c2731d1fc83d2428d" => :sierra
+    sha256 "edaf79d2a2ec72ae32d9b46621697626a27299226a6b4d963431da8c37d3af52" => :el_capitan
+    sha256 "bfda081fd34cb47bcdfd41e814612dbdf330166e30e69867cf43fcac60e5ed1a" => :yosemite
   end
-
-  option :cxx11
 
   depends_on "cmake" => :build
 
   def install
-    ENV.cxx11 if build.cxx11?
-    system "cmake", "-DWITH_MP4=ON", "-DWITH_ASF=ON", *std_cmake_args
-    system "make"
+    system "cmake", "-DWITH_MP4=ON", "-DWITH_ASF=ON", "-DBUILD_SHARED_LIBS=ON",
+                    *std_cmake_args
     system "make", "install"
+  end
+
+  test do
+    assert_match version.to_s, shell_output("#{bin}/taglib-config --version")
   end
 end

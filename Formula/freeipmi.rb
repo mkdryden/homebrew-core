@@ -1,28 +1,30 @@
 class Freeipmi < Formula
   desc "In-band and out-of-band IPMI (v1.5/2.0) software"
   homepage "https://www.gnu.org/software/freeipmi/"
-  url "http://ftpmirror.gnu.org/freeipmi/freeipmi-1.5.1.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/freeipmi/freeipmi-1.5.1.tar.gz"
-  sha256 "47985ab902a62e23aba60e30a9fba5190599eecbc107d442e8b948a220ed1252"
+  url "https://ftp.gnu.org/gnu/freeipmi/freeipmi-1.5.7.tar.gz"
+  mirror "https://ftpmirror.gnu.org/freeipmi/freeipmi-1.5.7.tar.gz"
+  sha256 "b46c9432e8649b87d4646bbf4da32f7e9039796fc256f4b229c94c3ac7d0bde5"
 
   bottle do
-    sha256 "3899c06966a03f33c81bcc3e9c8bda0c97b3b2a76d4735aa5d2442aa327f83ea" => :el_capitan
-    sha256 "03bf2f25261711adc97bbd49a448fd8c6377343bad7e64ae3f43f0f30eebd0ed" => :yosemite
-    sha256 "f03eea84bc3c7e8548f29716ff181489f97eb8021ea1daff73dcf13b02b0f917" => :mavericks
+    sha256 "a510f28794572ed659d6e709b44ee45d96d5c662d730084442d99771bca9d1ff" => :high_sierra
+    sha256 "41c5cf3544953f6127dc312f09d08b8bfac2f551f298880a40e45cc260fac9bd" => :sierra
+    sha256 "e008f84b3ef595205d47a81c6abcb32cbdbc7704ede7cd462dba41be292b963e" => :el_capitan
+    sha256 "85d35f29c9f0be5849c6e7b6a8b6ef4f19c988a63edbe830240ea676f430422f" => :yosemite
   end
 
   depends_on "argp-standalone"
   depends_on "libgcrypt"
 
   def install
+    inreplace "man/Makefile.in",
+      "$(CPP) -nostdinc -w -C -P -I$(top_srcdir)/man $@.pre  $@",
+      "$(CPP) -nostdinc -w -C -P -I$(top_srcdir)/man $@.pre > $@"
+
     system "./configure", "--prefix=#{prefix}"
-    # This is a big hammer to disable building the man pages
-    # It breaks under homebrew's build system and I'm not sure why
-    inreplace "man/Makefile", "install: install-am", "install:"
     system "make", "install"
   end
 
   test do
-    system "#{sbin}/ipmi-fru", "--version"
+    system sbin/"ipmi-fru", "--version"
   end
 end

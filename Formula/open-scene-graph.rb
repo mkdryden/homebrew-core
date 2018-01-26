@@ -1,29 +1,26 @@
 class OpenSceneGraph < Formula
   desc "3D graphics toolkit"
-  homepage "http://www.openscenegraph.org/projects/osg"
-  url "http://trac.openscenegraph.org/downloads/developer_releases/OpenSceneGraph-3.4.0.zip"
-  sha256 "5c727d84755da276adf8c4a4a3a8ba9c9570fc4b4969f06f1d2e9f89b1e3040e"
-  revision 1
-
-  head "http://www.openscenegraph.org/svn/osg/OpenSceneGraph/trunk/"
+  homepage "https://github.com/openscenegraph/OpenSceneGraph"
+  url "https://github.com/openscenegraph/OpenSceneGraph/archive/OpenSceneGraph-3.5.9.tar.gz"
+  sha256 "e18bd54d7046ea73525941244ef4f77b38b2a90bdf21d81468ac3874c41e9448"
+  head "https://github.com/openscenegraph/OpenSceneGraph.git"
 
   bottle do
-    revision 1
-    sha256 "d34411461ff10b207645ac58981b71476b0e7da7d4461ea636fe2d530be5872a" => :el_capitan
-    sha256 "d85daf3e7ffa72f7fbfa2c3c9d0423689cce7f2864545775ded0899616f07c86" => :yosemite
-    sha256 "64d9990922aeff846ae9263e4f4457c6173d4b3be998150206c113490506e4ff" => :mavericks
+    sha256 "e29e28e5812042f63f2225549191b00306ca1f428538d2150453bd69789c97aa" => :high_sierra
+    sha256 "90b2999887964f4392d2467fab2ee178e372d9b85ee969d3da428a5a116375bd" => :sierra
+    sha256 "51ae8250fb6131a510c052969e6e4834bb5b69ec40b85b184b575595453be2cd" => :el_capitan
   end
 
-  option :cxx11
   option "with-docs", "Build the documentation with Doxygen and Graphviz"
+
   deprecated_option "docs" => "with-docs"
 
   depends_on "cmake" => :build
   depends_on "pkg-config" => :build
   depends_on "jpeg"
-  depends_on "wget"
   depends_on "gtkglext"
   depends_on "freetype"
+  depends_on "sdl"
   depends_on "gdal" => :optional
   depends_on "jasper" => :optional
   depends_on "openexr" => :optional
@@ -32,8 +29,6 @@ class OpenSceneGraph < Formula
   depends_on "collada-dom" => :optional
   depends_on "gnuplot" => :optional
   depends_on "ffmpeg" => :optional
-  depends_on "qt5" => :optional
-  depends_on "qt" => :optional
 
   # patch necessary to ensure support for gtkglext-quartz
   # filed as an issue to the developers https://github.com/openscenegraph/osg/issues/34
@@ -45,7 +40,11 @@ class OpenSceneGraph < Formula
   end
 
   def install
-    ENV.cxx11 if build.cxx11?
+    # Fix "fatal error: 'os/availability.h' file not found" on 10.11 and
+    # "error: expected function body after function declarator" on 10.12
+    if MacOS.version == :sierra || MacOS.version == :el_capitan
+      ENV["SDKROOT"] = MacOS.sdk_path
+    end
 
     # Turning off FFMPEG takes this change or a dozen "-DFFMPEG_" variables
     if build.without? "ffmpeg"
@@ -53,7 +52,7 @@ class OpenSceneGraph < Formula
     end
 
     args = std_cmake_args
-    args << "-DBUILD_DOCUMENTATION=" + ((build.with? "docs") ? "ON" : "OFF")
+    args << "-DBUILD_DOCUMENTATION=" + (build.with?("docs") ? "ON" : "OFF")
     args << "-DCMAKE_CXX_FLAGS=-Wno-error=narrowing" # or: -Wno-c++11-narrowing
 
     if MacOS.prefer_64_bit?
@@ -65,13 +64,7 @@ class OpenSceneGraph < Formula
     end
 
     if build.with? "collada-dom"
-      args << "-DCOLLADA_INCLUDE_DIR=#{Formula["collada-dom"].opt_include}/collada-dom"
-    end
-
-    if build.with? "qt5"
-      args << "-DCMAKE_PREFIX_PATH=#{Formula["qt5"].opt_prefix}"
-    elsif build.with? "qt"
-      args << "-DCMAKE_PREFIX_PATH=#{Formula["qt"].opt_prefix}"
+      args << "-DCOLLADA_INCLUDE_DIR=#{Formula["collada-dom"].opt_include}/collada-dom2.4"
     end
 
     mkdir "build" do
@@ -84,7 +77,7 @@ class OpenSceneGraph < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <iostream>
       #include <osg/Version>
       using namespace std;

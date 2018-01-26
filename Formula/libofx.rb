@@ -1,15 +1,13 @@
 class Libofx < Formula
   desc "Library to support OFX command responses"
-  homepage "http://libofx.sourceforge.net"
-  url "https://downloads.sourceforge.net/project/libofx/libofx/0.9.9/libofx-0.9.9.tar.gz"
-  sha256 "94ef88c5cdc3e307e473fa2a55d4a05da802ee2feb65c85c63b9019c83747b23"
+  homepage "https://libofx.sourceforge.io"
+  url "https://downloads.sourceforge.net/project/libofx/libofx/libofx-0.9.12.tar.gz"
+  sha256 "c15fa062fa11e759eb6d8c7842191db2185ee1b221a3f75e9650e2849d7b7373"
 
   bottle do
-    revision 1
-    sha256 "cb45299c0a279d0cf67a3f0de1875b78f6944cf899ae9844ba6cfc8f39689599" => :el_capitan
-    sha256 "5d29ae89fa771229fd80ce514db0303507a51f2bd3a32ea85f4db4727e11a59b" => :yosemite
-    sha256 "deddd527249a7d2a77772c42d656e4b44ea54a7b122da6b485594947927ec49b" => :mavericks
-    sha256 "88f857936a621b9ee2b09b7e0d2412673d49271e3528507c2071619490dc3534" => :mountain_lion
+    sha256 "b682be169269451309ccc7827782a66489e8cf3c9b1793a6b03aa51fd1a943e6" => :high_sierra
+    sha256 "74ccac1d72a7c16eb296c19ea7396f504ab7428aa0b302a84629cd00ef64d6ac" => :sierra
+    sha256 "1e5b91a3e74e5bf3f8ae5ac577a0ad1c81c679a328abee6770b9671fd678456d" => :el_capitan
   end
 
   depends_on "open-sp"
@@ -18,5 +16,9 @@ class Libofx < Formula
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make", "install"
+  end
+
+  test do
+    assert_equal "ofxdump #{version}", shell_output("#{bin}/ofxdump -V").chomp
   end
 end

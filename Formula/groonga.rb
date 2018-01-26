@@ -1,14 +1,13 @@
 class Groonga < Formula
   desc "Fulltext search engine and column store"
   homepage "http://groonga.org/"
-  url "http://packages.groonga.org/source/groonga/groonga-6.0.0.tar.gz"
-  sha256 "a14c93240dcf749eb583087988703b72dada4a06ab3f6f2e985a3fe3828b4f6c"
-  revision 1
+  url "https://packages.groonga.org/source/groonga/groonga-7.1.0.tar.gz"
+  sha256 "a7a23598ca3a666bd1121da4ac4126e81bae38925c6dcfde0a001d4ca1f20dec"
 
   bottle do
-    sha256 "6d689d96def16b1519a5cf56cda44c3fa1faac896eb8e70c3995bf882bfd5c9b" => :el_capitan
-    sha256 "5d45d7d58c454dad31b7c218bbe1733dba140dc78af9bf633621658bc3872abb" => :yosemite
-    sha256 "9b914098f34d412e38148e127d2f1555f4b7bbf836f67ad4a550b1132d7edb07" => :mavericks
+    sha256 "0df1adffc5236f880d747bcd408f6045d5f12503ae12d77fc46126674c04ea40" => :high_sierra
+    sha256 "d1144f977a650e22bf96ab5a1f29f1c28daf69011896fa89ed5001ecec2a637c" => :sierra
+    sha256 "3f8bea68dc7611c307c11bf5d3723c06ec4b76d5aaa2add99bf0f6b344b14d68" => :el_capitan
   end
 
   head do
@@ -18,28 +17,34 @@ class Groonga < Formula
     depends_on "libtool" => :build
   end
 
-  option "with-benchmark", "With benchmark program for developer use"
-  option "with-suggest-plugin", "With suggest plugin for suggesting"
+  option "with-glib", "With benchmark program for developer use"
+  option "with-zeromq", "With suggest plugin for suggesting"
+  option "with-stemmer", "Build with libstemmer support"
 
-  deprecated_option "enable-benchmark" => "with-benchmark"
-
-  resource "groonga-normalizer-mysql" do
-    url "http://packages.groonga.org/source/groonga-normalizer-mysql/groonga-normalizer-mysql-1.1.0.tar.gz"
-    sha256 "525daffdb999b647ce87328ec2e94c004ab59803b00a71ce1afd0b5dfd167116"
-  end
+  deprecated_option "enable-benchmark" => "with-glib"
+  deprecated_option "with-benchmark" => "with-glib"
+  deprecated_option "with-suggest-plugin" => "with-zeromq"
 
   depends_on "pkg-config" => :build
   depends_on "pcre"
   depends_on "msgpack"
-  depends_on "mecab" => :optional
-  depends_on "lz4" => :optional
   depends_on "openssl"
+  depends_on "glib" => :optional
+  depends_on "lz4" => :optional
+  depends_on "mecab" => :optional
   depends_on "mecab-ipadic" if build.with? "mecab"
-  depends_on "glib" if build.with? "benchmark"
+  depends_on "zeromq" => :optional
+  depends_on "libevent" if build.with? "zeromq"
+  depends_on "zstd" => :optional
 
-  if build.with? "suggest-plugin"
-    depends_on "libevent"
-    depends_on "zeromq"
+  resource "groonga-normalizer-mysql" do
+    url "https://packages.groonga.org/source/groonga-normalizer-mysql/groonga-normalizer-mysql-1.1.1.tar.gz"
+    sha256 "bc83d1e5e0f32d4b95e219cb940a7e3f61f0f743abd3bd47c2d436a34e503870"
+  end
+
+  resource "stemmer" do
+    url "https://github.com/snowballstem/snowball.git",
+        :revision => "5137019d68befd633ce8b1cd48065f41e77ed43e"
   end
 
   link_overwrite "lib/groonga/plugins/normalizers/"
@@ -52,19 +57,32 @@ class Groonga < Formula
       --with-zlib
       --with-ssl
       --enable-mruby
-      --without-libstemmer
     ]
 
-    # ZeroMQ is an optional dependency that will be auto-detected unless we disable it
-    if build.with? "suggest-plugin"
+    if build.with? "zeromq"
       args << "--enable-zeromq"
     else
       args << "--disable-zeromq"
     end
 
-    args << "--enable-benchmark" if build.with? "benchmark"
+    if build.with? "stemmer"
+      resource("stemmer").stage do
+        system "make", "dist_libstemmer_c"
+        system "tar", "xzf", "dist/libstemmer_c.tgz", "-C", buildpath
+        Dir.chdir buildpath.join("libstemmer_c")
+        system "make"
+        mkdir "lib"
+        mv "libstemmer.o", "lib/libstemmer.a"
+        args << "--with-libstemmer=#{Dir.pwd}"
+      end
+    else
+      args << "--without-libstemmer"
+    end
+
+    args << "--enable-benchmark" if build.with? "glib"
     args << "--with-mecab" if build.with? "mecab"
     args << "--with-lz4" if build.with? "lz4"
+    args << "--with-zstd" if build.with? "zstd"
 
     if build.head?
       args << "--with-ruby"
@@ -84,22 +102,22 @@ class Groonga < Formula
   end
 
   test do
-    IO.popen("#{bin}/groonga -n #{testpath}/test.db", "r+") {|io|
+    IO.popen("#{bin}/groonga -n #{testpath}/test.db", "r+") do |io|
       io.puts("table_create --name TestTable --flags TABLE_HASH_KEY --key_type ShortText")
       sleep 2
       io.puts("shutdown")
       # expected returned result is like this:
       # [[0,1447502555.38667,0.000824928283691406],true]\n
       assert_match(/\[\[0,\d+.\d+,\d+.\d+\],true\]/, io.read)
-    }
+    end
 
-    IO.popen("#{bin}/groonga -n #{testpath}/test-normalizer-mysql.db", "r+") {|io|
+    IO.popen("#{bin}/groonga -n #{testpath}/test-normalizer-mysql.db", "r+") do |io|
       io.puts "register normalizers/mysql"
       sleep 2
       io.puts("shutdown")
       # expected returned result is like this:
       # [[0,1447502555.38667,0.000824928283691406],true]\n
       assert_match(/\[\[0,\d+.\d+,\d+.\d+\],true\]/, io.read)
-    }
+    end
   end
 end

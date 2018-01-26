@@ -1,48 +1,77 @@
 class Ibex < Formula
-  desc "C++ library for constraint processing over real numbers."
+  desc "C++ library for constraint processing over real numbers"
   homepage "http://www.ibex-lib.org/"
-  url "http://www.ibex-lib.org/sites/default/files/ibex-2.1.16.tar.gz"
-  sha256 "d92ff32f14d27ad7b390ae693beb311b58cf6babccac85bbdaa5f5d0b8648845"
+  url "https://github.com/ibex-team/ibex-lib/archive/ibex-2.6.5.tar.gz"
+  sha256 "667b1f57a4c83fbef915ad13e8d0a5847b4cc4df42810330da758bd9ca637ad7"
+  head "https://github.com/ibex-team/ibex-lib.git"
 
   bottle do
     cellar :any
-    sha256 "21744850c087156a1ced058b7c4ca6bc8521d0f29b97929b211f544f9284e3c9" => :el_capitan
-    sha256 "8f3820e87fea2799f4789bf956803dadab7789e2c51c29567e339db4e08473b7" => :yosemite
-    sha256 "51288d9af477d65a26f8f37bee74e07913df0e77be6bbc979758a8486a1d6fd3" => :mavericks
-    sha256 "41327b6a0da9b8b2ed888c3c2c33d5f6ff061ea13eceb4b9e8b6e660049d624d" => :mountain_lion
+    sha256 "9df6236bb522c74caf3cbde0eaf19465e2a3674588282982348b628322ca097a" => :high_sierra
+    sha256 "4b835a404ec50199fccc22c9248bccbf235d63a8f0736dad5b95df8babdea2cc" => :sierra
+    sha256 "8f4d1957bbe546215cf3d328ce06ae6aae6657c764ca2658895654358596f256" => :el_capitan
   end
 
-  option "with-java", "Build Java bindings for Choco solver."
+  option "with-java", "Enable Java bindings for CHOCO solver."
+  option "with-ampl", "Use AMPL file loader plugin"
 
   depends_on :java => ["1.8+", :optional]
   depends_on "bison" => :build
   depends_on "flex" => :build
   depends_on "pkg-config" => :build
 
-  def install
-    args = ["--prefix=#{prefix}"]
+  needs :cxx11
 
-    if build.with? "java"
-      args << "--with-jni"
-    else
-      args << "--enable-shared"
+  def install
+    ENV.cxx11
+
+    # Reported 9 Oct 2017 https://github.com/ibex-team/ibex-lib/issues/286
+    ENV.deparallelize
+
+    if build.with?("java") && build.with?("ampl")
+      odie "Cannot set options --with-java and --with-ampl simultaneously for now."
     end
+
+    args = %W[
+      --prefix=#{prefix}
+      --enable-shared
+      --with-optim
+      --lp-lib=soplex
+    ]
+
+    args << "--with-jni" if build.with? "java"
+    args << "--with-ampl" if build.with? "ampl"
 
     system "./waf", "configure", *args
     system "./waf", "install"
 
-    cd "examples" do
-      cxxflags = "-frounding-math -ffloat-store -I#{include} -I#{include}/ibex"
-      libflags = "-L#{lib} -libex -lprim -lClp -lCoinUtils -lm"
-      system "make", "defaultsolver", "LIBS=#{libflags}", "CXXFLAGS=#{cxxflags}"
-    end
-
-    pkgshare.install %w[examples benchs]
+    pkgshare.install %w[examples plugins/solver/benchs]
+    (pkgshare/"examples/symb01.txt").write <<~EOS
+      function f(x)
+        return ((2*x,-x);(-x,3*x));
+      end
+    EOS
   end
 
   test do
-    cp_r "#{pkgshare}/examples/.", testpath
-    cp "#{pkgshare}/benchs/cyclohexan3D.bch", testpath
-    system "./defaultsolver", "cyclohexan3D.bch", "1e-05", "10"
+    cp_r (pkgshare/"examples").children, testpath
+
+    # so that pkg-config can remain a build-time only dependency
+    inreplace %w[makefile slam/makefile] do |s|
+      s.gsub! /CXXFLAGS.*pkg-config --cflags ibex./,
+              "CXXFLAGS := -I#{include} -I#{include}/ibex "\
+                          "-I#{include}/ibex/3rd"
+      s.gsub! /LIBS.*pkg-config --libs  ibex./, "LIBS := -L#{lib} -libex"
+    end
+
+    (1..8).each do |n|
+      system "make", "lab#{n}"
+      system "./lab#{n}"
+    end
+
+    (1..3).each do |n|
+      system "make", "-C", "slam", "slam#{n}"
+      system "./slam/slam#{n}"
+    end
   end
 end

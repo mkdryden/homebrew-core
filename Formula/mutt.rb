@@ -3,43 +3,36 @@
 # not kept up-to-date when new versions of mutt (occasionally) come
 # out.
 #
-# To reduce Homebrew's maintenance burden, new patches are not being
-# accepted for this formula. We would be very happy to see members of
-# the mutt community maintain a more comprehesive tap with better
-# support for patches.
+# To reduce Homebrew's maintenance burden, patches are not accepted
+# for this formula. The NeoMutt project has a Homebrew tap for their
+# patched version of Mutt: https://github.com/neomutt/homebrew-neomutt
 
 class Mutt < Formula
   desc "Mongrel of mail user agents (part elm, pine, mush, mh, etc.)"
   homepage "http://www.mutt.org/"
-  url "https://bitbucket.org/mutt/mutt/downloads/mutt-1.6.0.tar.gz"
-  mirror "ftp://ftp.mutt.org/pub/mutt/mutt-1.6.0.tar.gz"
-  sha256 "29afb6238ab7a540c0e3a78ce25c970f975ab6c0f0bc9f919993aab772136c19"
+  url "https://bitbucket.org/mutt/mutt/downloads/mutt-1.9.2.tar.gz"
+  mirror "http://ftp.mutt.org/pub/mutt/mutt-1.9.2.tar.gz"
+  sha256 "a2e152a352bbf02d222d54074199d9c53821c19f700c4cb85f78fa85faed7896"
 
   bottle do
-    revision 1
-    sha256 "06e06c5aa69200dc8070f870faf1267e94e93a06fbbe19c56809ad8c87338970" => :el_capitan
-    sha256 "95765c32a076db6f7732217c1c667ca4d9a8157355f5c075b3912b6a2e7321f4" => :yosemite
-    sha256 "81ff19dbdfa6ea08be29388cde8ebdff19b128b51d6557ea0e42e8afadb02350" => :mavericks
+    sha256 "c6cd39c6155449a0ddd30f770a496fe47ae53d0ce27d981fe251cd386d9aaffe" => :high_sierra
+    sha256 "cade3cd3cfb7510780e15c2562fc69e37f0696fd2ebb66f6774068cbab769da2" => :sierra
+    sha256 "03d423d4653eb9aa668cc2acec4a9bd9263e819e38e0ed7579857abcf0396762" => :el_capitan
   end
 
   head do
-    url "https://dev.mutt.org/hg/mutt#default", :using => :hg
+    url "https://gitlab.com/muttmua/mutt.git"
 
     resource "html" do
       url "https://dev.mutt.org/doc/manual.html", :using => :nounzip
     end
   end
 
-  conflicts_with "tin",
-    :because => "both install mmdf.5 and mbox.5 man pages"
-
   option "with-debug", "Build with debug option enabled"
   option "with-s-lang", "Build against slang instead of ncurses"
-  option "with-confirm-attachment-patch", "Apply confirm attachment patch"
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
-
   depends_on "openssl"
   depends_on "tokyo-cabinet"
   depends_on "gettext" => :optional
@@ -47,12 +40,8 @@ class Mutt < Formula
   depends_on "libidn" => :optional
   depends_on "s-lang" => :optional
 
-  if build.with? "confirm-attachment-patch"
-    patch do
-      url "https://gist.githubusercontent.com/tlvince/5741641/raw/c926ca307dc97727c2bd88a84dcb0d7ac3bb4bf5/mutt-attach.patch"
-      sha256 "da2c9e54a5426019b84837faef18cc51e174108f07dc7ec15968ca732880cb14"
-    end
-  end
+  conflicts_with "tin",
+    :because => "both install mmdf.5 and mbox.5 man pages"
 
   def install
     user_admin = Etc.getgrnam("admin").mem.include?(ENV["USER"])
@@ -69,6 +58,7 @@ class Mutt < Formula
       --enable-pop
       --enable-hcache
       --with-tokyocabinet
+      --enable-sidebar
     ]
 
     # This is just a trick to keep 'make install' from trying

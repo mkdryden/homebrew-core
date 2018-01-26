@@ -1,16 +1,14 @@
 class Chicken < Formula
   desc "Compiler for the Scheme programming language"
-  homepage "http://www.call-cc.org/"
-  url "http://code.call-cc.org/releases/4.10.0/chicken-4.10.0.tar.gz"
-  sha256 "0e07f5abcd11961986950dbeaa5a40db415f8a1b65daff9c300e9b05b334899b"
-
-  head "http://code.call-cc.org/git/chicken-core.git"
+  homepage "https://www.call-cc.org/"
+  url "https://code.call-cc.org/releases/4.13.0/chicken-4.13.0.tar.gz"
+  sha256 "add549619a31363d6608b39e0cf0e68b9d5e6ff2a719b5691ddeba57229c6c43"
+  head "https://code.call-cc.org/git/chicken-core.git"
 
   bottle do
-    revision 1
-    sha256 "199e04ed0a8a62c936ed24c3c044f4c0a14c7f9e356501b936223a8ef10da6bf" => :el_capitan
-    sha256 "fb5d63369b19db771c3620ae5aa584b110fb3f40df5cdd3760d9070878043e6d" => :yosemite
-    sha256 "2f3a6ea745ffae4ab324c0740808d69b90e985e58946a0dfcf6bb4d44621342f" => :mavericks
+    sha256 "199bb0ca7a8b534fc1d5873d9bdd977bc7522f381fd35fea016a874a49fb1d19" => :high_sierra
+    sha256 "b8e06f1d8f765466982ef62889aca28012ee21ebc613db9b3ed3490019999fcf" => :sierra
+    sha256 "cb2786e345617675c288b2b3bc8a93300591fd19cfe4f9264d1d4ba17ae745d8" => :el_capitan
   end
 
   def install

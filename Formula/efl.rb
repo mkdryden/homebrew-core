@@ -1,60 +1,64 @@
 class Efl < Formula
-  desc "Libraries for the Enlightenment window manager"
+  desc "Enlightenment Foundation Libraries"
   homepage "https://www.enlightenment.org"
-  url "https://download.enlightenment.org/rel/libs/efl/efl-1.14.2.tar.gz"
-  sha256 "e5699d8183c1540fe45dddaf692254632f9131335e97a09cc313e866a150b42c"
-  revision 1
+  url "https://download.enlightenment.org/rel/libs/efl/efl-1.20.6.tar.xz"
+  sha256 "56c67ea77435753a4f324a0a13488ba58f4ed7eb35a97c1a354fdc79c39a32c1"
 
   bottle do
-    sha256 "7e97f7173a21a18e7da2ac673eaf9e44fe14b6455e173ae10166154795385355" => :el_capitan
-    sha256 "dd6dfce0cab67849f5c51697be0610ee385984710b05a8311955df1829e33ac1" => :yosemite
-    sha256 "a516bca511ea00851a41d3294fbfce0352b28eb64239bf499c359fddf37295ec" => :mavericks
+    sha256 "c5d578f34a149d622f8252331e37c27d202f9b309d38140e44b1996d828f40cd" => :high_sierra
+    sha256 "38a698665712b7b7dc1677365fc345be860430c7a5deb632ccd055ac9054cc4a" => :sierra
+    sha256 "36d805eb820b46d7458c4ed3293d1e1bbf62d64b561cca7598fcdf828f643b38" => :el_capitan
   end
-
-  conflicts_with "eina", :because => "efl aggregates formerly distinct libs, one of which is eina"
-  conflicts_with "evas", :because => "efl aggregates formerly distinct libs, one of which is evas"
-  conflicts_with "eet", :because => "efl aggregates formerly distinct libs, one of which is eet"
-  conflicts_with "embryo", :because => "efl aggregates formerly distinct libs, one of which is embryo"
 
   option "with-docs", "Install development libraries/headers and HTML docs"
 
   depends_on "doxygen" => :build if build.with? "docs"
   depends_on "pkg-config" => :build
-  depends_on :x11 => :optional
+  depends_on "gettext" => :build
   depends_on "openssl"
   depends_on "freetype"
   depends_on "fontconfig"
   depends_on "jpeg"
   depends_on "libpng"
-  depends_on "webp" => :optional
   depends_on "luajit"
   depends_on "fribidi"
   depends_on "giflib"
   depends_on "libtiff"
   depends_on "gstreamer"
   depends_on "gst-plugins-good"
-  depends_on "d-bus"
+  depends_on "dbus"
   depends_on "pulseaudio"
   depends_on "bullet"
+  depends_on "libsndfile"
+  depends_on "libspectre"
+  depends_on "libraw"
+  depends_on "librsvg"
+  depends_on "poppler"
+  depends_on "shared-mime-info"
+  depends_on "webp" => :optional
+  depends_on "glib" => :optional
 
   needs :cxx11
 
   def install
     ENV.cxx11
-    args = ["--disable-dependency-tracking",
-            "--disable-silent-rules",
-            "--enable-cocoa",
-            "--enable-i-really-know-what-i-am-doing-and-that-this-will-probably-break-things-and-i-will-fix-them-myself-and-send-patches-aba", # There's currently (1.14) no clean profile for Mac OS, so we need to force passing configure
-            "--prefix=#{prefix}",
-           ]
-    args << "--with-x11=none" if build.without? "x11"
+
+    args = %W[
+      --disable-dependency-tracking
+      --prefix=#{prefix}
+    ]
 
     system "./configure", *args
     system "make", "install"
     system "make", "install-doc" if build.with? "docs"
   end
 
+  def post_install
+    system Formula["shared-mime-info"].opt_bin/"update-mime-database", "#{HOMEBREW_PREFIX}/share/mime"
+  end
+
   test do
-    system "#{bin}/edje_cc", "-V"
+    system bin/"edje_cc", "-V"
+    system bin/"eet", "-V"
   end
 end

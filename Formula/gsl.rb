@@ -1,27 +1,19 @@
-# Please don't update me to the 2.x branch yet until issues discussed in
-# https://github.com/Homebrew/homebrew/issues/45812 are resolved.
-# If you want 2.x now, file a PR in homebrew/versions. Thanks!
 class Gsl < Formula
   desc "Numerical library for C and C++"
   homepage "https://www.gnu.org/software/gsl/"
-  url "http://ftpmirror.gnu.org/gsl/gsl-1.16.tar.gz"
-  mirror "https://ftp.gnu.org/gnu/gsl/gsl-1.16.tar.gz"
-  sha256 "73bc2f51b90d2a780e6d266d43e487b3dbd78945dd0b04b14ca5980fe28d2f53"
+  url "https://ftp.gnu.org/gnu/gsl/gsl-2.4.tar.gz"
+  mirror "https://ftpmirror.gnu.org/gsl/gsl-2.4.tar.gz"
+  sha256 "4d46d07b946e7b31c19bbf33dda6204d7bedc2f5462a1bae1d4013426cd1ce9b"
 
   bottle do
     cellar :any
-    revision 2
-    sha256 "c9e21bb886a70e58470fc026b885d8fc929656389679f0b18f2073e630406e2a" => :el_capitan
-    sha256 "15ce99a31e31584740852571f4f237195d21083f6675390dc50283429127400a" => :yosemite
-    sha256 "06f9197561e1425ed56820dcab37bc64c35cfaa1b98a353b7fe9d4d220701bd1" => :mavericks
-    sha256 "ab1f1a358a9307f81c0aea895d5ed69b7c20c24ab6d1673010f31f0d25f78ea2" => :mountain_lion
+    sha256 "a1977bfdc9a2803521d471a85fd943641df753c0dc2e8ce102b0c8d9113c9783" => :high_sierra
+    sha256 "ea19659efea6c85dfda0b42468fd2d4bc980ec2689a07fa3506ea2a5fc9a9c89" => :sierra
+    sha256 "0e58f3748624d439a7152557518e389827a8a38dfa7ea486625d38e86291f9b2" => :el_capitan
+    sha256 "e8f5a126564d238ed734d3f069b183304ec1a707473cbce7fdde512122ccf3fb" => :yosemite
   end
 
-  option :universal
-
   def install
-    ENV.universal_binary if build.universal?
-
     system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
     system "make" # A GNU tool which doesn't support just make install! Shameful!
     system "make", "install"

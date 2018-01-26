@@ -1,14 +1,14 @@
 class GnuCobol < Formula
   desc "Implements much of the COBOL 85 and COBOL 2002 standards"
   homepage "http://www.opencobol.org/"
-  revision 2
+  revision 5
 
   stable do
     url "https://downloads.sourceforge.net/project/open-cobol/gnu-cobol/1.1/gnu-cobol-1.1.tar.gz"
     sha256 "5cd6c99b2b1c82fd0c8fffbb350aaf255d484cde43cf5d9b92de1379343b3d7e"
 
     fails_with :clang do
-      cause <<-EOS.undent
+      cause <<~EOS
         Building with Clang configures GNU-COBOL to use Clang as its compiler,
         which causes subsequent GNU-COBOL-based builds to fail.
       EOS
@@ -16,9 +16,10 @@ class GnuCobol < Formula
   end
 
   bottle do
-    sha256 "012a52adf5bdb3f137afaadafb315bf966f037e1620fee022d98bab3541531cd" => :el_capitan
-    sha256 "62b99b26f9a6e83330ff6b0fc4834c578fecef83d4b49e418a4435b9d2e766d5" => :yosemite
-    sha256 "044fad7cd09f88cdda0c9e84f5af6c45c854749e69a0b481fc6e3868641595f9" => :mavericks
+    sha256 "d8d90339937363e53f4555e93d195d3c9d69f495876cfe975c320dbfbf130b8a" => :high_sierra
+    sha256 "af857363783841c39c355677f7ef68f68239cfa66e4f31e9105d6399c30fc957" => :sierra
+    sha256 "580728d788d7e3a818a8d50d945ca4c7dafacbfa8eecd78d0fac364d63c0657e" => :el_capitan
+    sha256 "ec0481e921b59ac386a1e2a1266cb86b671a82fa466e6478f8581f4f2b114881" => :yosemite
   end
 
   devel do

@@ -1,22 +1,30 @@
 class Assimp < Formula
   desc "Portable library for importing many well-known 3D model formats"
   homepage "http://www.assimp.org"
-  url "https://github.com/assimp/assimp/archive/v3.2.tar.gz"
-  sha256 "187f825c563e84b1b17527a4da0351aa3d575dfd696a9d204ae4bb19ee7df94a"
-
+  url "https://github.com/assimp/assimp/archive/v4.1.0.tar.gz"
+  sha256 "3520b1e9793b93a2ca3b797199e16f40d61762617e072f2d525fad70f9678a71"
   head "https://github.com/assimp/assimp.git"
 
   bottle do
     cellar :any
-    sha256 "b3d78e827c13d6f66a98bd9c52cf2a3bd44a69082f33183f2afbcbbf4fe68fc5" => :el_capitan
-    sha256 "bf4f61f6fe5c3debd29c768bba9024ca1ce51606fe2e9814ad36415ea4f391a7" => :yosemite
-    sha256 "82faa217aabc364693ca749e55f990cf16c8cc808eceb768d0880f70cff95d59" => :mavericks
+    sha256 "2a3c4f77532717d3cd6b8de75a4cdb033b26fc4d64736f17e90d836e11b90fe4" => :high_sierra
+    sha256 "632ab4d0bd3f3aaa002945ace7e90362b396154ef3c4536b884872f82f3dd30d" => :sierra
+    sha256 "5991caf1877f8193889d0929399aa24790e8eeab96736c3c1d28800966d75169" => :el_capitan
   end
 
   option "without-boost", "Compile without thread safe logging or multithreaded computation if boost isn't installed"
 
   depends_on "cmake" => :build
   depends_on "boost" => [:recommended, :build]
+
+  # Fix "unzip.c:150:11: error: unknown type name 'z_crc_t'"
+  # Upstream PR from 12 Dec 2017 "unzip: fix build with older zlib"
+  if MacOS.version <= :el_capitan
+    patch do
+      url "https://github.com/assimp/assimp/pull/1634.patch?full_index=1"
+      sha256 "79b93f785ee141dc2f56d557b2b8ee290eed0afc7dd373ad84715c6c9aa23460"
+    end
+  end
 
   def install
     args = std_cmake_args
@@ -27,7 +35,7 @@ class Assimp < Formula
 
   test do
     # Library test.
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <assimp/Importer.hpp>
       int main() {
         Assimp::Importer importer;
@@ -38,26 +46,36 @@ class Assimp < Formula
     system "./test"
 
     # Application test.
-    (testpath/"test.obj").write <<-EOS.undent
+    (testpath/"test.obj").write <<~EOS
       # WaveFront .obj file - a single square based pyramid
 
       # Start a new group:
       g MySquareBasedPyramid
 
       # List of vertices:
-      v -0.5 0 0.5    # Front left.
-      v 0.5 0 0.5   # Front right.
-      v 0.5 0 -0.5    # Back right
-      v -0.5 0 -0.5   # Back left.
-      v 0 1 0           # Top point (top of pyramid).
+      # Front left
+      v -0.5 0 0.5
+      # Front right
+      v 0.5 0 0.5
+      # Back right
+      v 0.5 0 -0.5
+      # Back left
+      v -0.5 0 -0.5
+      # Top point (top of pyramid).
+      v 0 1 0
 
       # List of faces:
-      f 4 3 2 1       # Square base (note: normals are placed anti-clockwise).
-      f 1 2 5         # Triangle on front.
-      f 3 4 5         # Triangle on back.
-      f 4 1 5         # Triangle on left side.
+      # Square base (note: normals are placed anti-clockwise).
+      f 4 3 2 1
+      # Triangle on front
+      f 1 2 5
+      # Triangle on back
+      f 3 4 5
+      # Triangle on left side
+      f 4 1 5
+      # Triangle on right side
       f 2 3 5
     EOS
-    system "assimp", "export", testpath/"test.obj", testpath/"test.ply"
+    system bin/"assimp", "export", "test.obj", "test.ply"
   end
 end

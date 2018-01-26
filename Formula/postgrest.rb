@@ -4,19 +4,21 @@ require "net/http"
 class Postgrest < Formula
   include Language::Haskell::Cabal
 
-  desc "Serves a fully RESTful API from any existing PostgreSQL database."
+  desc "Serves a fully RESTful API from any existing PostgreSQL database"
   homepage "https://github.com/begriffs/postgrest"
-  url "https://github.com/begriffs/postgrest/archive/v0.3.1.1.tar.gz"
-  sha256 "1830900175879d4be40b93410a7617cb637aae7e9e70792bf70e2bf72b0b2150"
+  url "https://github.com/begriffs/postgrest/archive/v0.4.4.0.tar.gz"
+  sha256 "063eb700dc5c85a7916fc51d52c36ca2ae1d2dc326e1bc3211ec143bdaf66bf5"
+  head "https://github.com/begriffs/postgrest.git"
 
   bottle do
-    sha256 "17403cf79873ee9771e6af936386c07ee57d4e74dbef893ca813b856726339e9" => :el_capitan
-    sha256 "13195c0ffc3095ff433e71f080410162732e9353c2bea70b12a6d2578de5bf38" => :yosemite
-    sha256 "d75b2d421104cb8d9d052b59ef7ca014ea07bb6984756ec0566694b07bae8ac9" => :mavericks
+    cellar :any
+    sha256 "2960819fa37338ac4f610865b0365e2226dd7f4d0956cfcca738770932105ed3" => :high_sierra
+    sha256 "c332f0905eaa2357110e2f144577dd348cbbf18c8e2ca3f8e47cd3bcbb786ffb" => :sierra
+    sha256 "557472bb552b83c7c3e13b3df9e9e6f7473dcc91560d53751495f8304d2b59ac" => :el_capitan
   end
 
-  depends_on "ghc" => :build
   depends_on "cabal-install" => :build
+  depends_on "ghc" => :build
   depends_on "postgresql"
 
   def install
@@ -33,18 +35,23 @@ class Postgrest < Formula
       "--auth=trust", "--username=#{pg_user}"
 
     system "#{pg_bin}/pg_ctl", "-D", testpath/test_db, "-l",
-      testpath/"#{test_db}.log", "-w", "-o", %("-p #{pg_port}"), "start"
+      testpath/"#{test_db}.log", "-w", "-o", %Q("-p #{pg_port}"), "start"
 
     begin
       system "#{pg_bin}/createdb", "-w", "-p", pg_port, "-U", pg_user, test_db
+      (testpath/"postgrest.config").write <<~EOS
+        db-uri = "postgres://#{pg_user}@localhost:#{pg_port}/#{test_db}"
+        db-schema = "public"
+        db-anon-role = "#{pg_user}"
+        server-port = 55560
+      EOS
       pid = fork do
-        exec "postgrest", "postgres://#{pg_user}@localhost:#{pg_port}/#{test_db}",
-          "-a", pg_user, "-p", "55560"
+        exec "#{bin}/postgrest", "postgrest.config"
       end
       Process.detach(pid)
       sleep(5) # Wait for the server to start
       response = Net::HTTP.get(URI("http://localhost:55560"))
-      assert_equal "[]", response
+      assert_match /responses.*200.*OK/, response
     ensure
       begin
         Process.kill("TERM", pid) if pid

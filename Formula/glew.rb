@@ -1,40 +1,31 @@
 class Glew < Formula
   desc "OpenGL Extension Wrangler Library"
-  homepage "http://glew.sourceforge.net/"
-  url "https://downloads.sourceforge.net/project/glew/glew/1.13.0/glew-1.13.0.tgz"
-  mirror "https://mirrors.kernel.org/debian/pool/main/g/glew/glew_1.13.0.orig.tar.gz"
-  sha256 "aa25dc48ed84b0b64b8d41cdd42c8f40f149c37fa2ffa39cd97f42c78d128bc7"
+  homepage "https://glew.sourceforge.io/"
+  url "https://downloads.sourceforge.net/project/glew/glew/2.1.0/glew-2.1.0.tgz"
+  sha256 "04de91e7e6763039bc11940095cd9c7f880baba82196a7765f727ac05a993c95"
   head "https://github.com/nigels-com/glew.git"
 
   bottle do
     cellar :any
-    sha256 "a0d99f5538ffc0a182f227934753b0129b5b6cdfdc790cf7ef208fb4d8b00845" => :el_capitan
-    sha256 "351ff9dbee1b1307720a2e3ad8e86c28975b3bc2614cfbc7ae45492cb3810062" => :yosemite
-    sha256 "a8d8c2095176c09b10667627de9861b0e35d310bcd860922a2be4037a3e6418c" => :mavericks
+    sha256 "6923b0c452de864a5be7a4d1c47803f434590e9caca1366c57811aead7e5a34b" => :high_sierra
+    sha256 "17d6b3bbb956bd1672a26490eb58a82eaa0e3e1adb926f3e87ba060bdf999cf3" => :sierra
+    sha256 "7d4cc74d42072da62ef61737bf28b638f52b4f56b2b8234f4709427eb44a11fe" => :el_capitan
+    sha256 "a2f2237afc466ec31735d03c983e962240555e7ad32f2bc7b5cbceb996f48ade" => :yosemite
   end
 
-  option :universal
+  depends_on "cmake" => :build
 
   def install
-    # Makefile directory race condition on lion
-    ENV.deparallelize
-
-    if build.universal?
-      ENV.universal_binary
-
-      # Do not strip resulting binaries; https://sourceforge.net/p/glew/bugs/259/
-      ENV["STRIP"] = ""
+    cd "build" do
+      system "cmake", "./cmake", *std_cmake_args
+      system "make"
+      system "make", "install"
     end
-
-    inreplace "glew.pc.in", "Requires: @requireslib@", ""
-    system "make", "GLEW_PREFIX=#{prefix}", "GLEW_DEST=#{prefix}", "all"
-    system "make", "GLEW_PREFIX=#{prefix}", "GLEW_DEST=#{prefix}", "install.all"
-
     doc.install Dir["doc/*"]
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <GL/glew.h>
       #include <GLUT/glut.h>
 
@@ -48,8 +39,8 @@ class Glew < Formula
         return 0;
       }
     EOS
-    system ENV.cc, "-framework", "OpenGL", "-framework", "GLUT",
-           "-lglew", testpath/"test.c", "-o", "test"
+    system ENV.cc, testpath/"test.c", "-o", "test", "-L#{lib}", "-lGLEW",
+           "-framework", "GLUT"
     system "./test"
   end
 end

@@ -1,36 +1,49 @@
 class KubernetesHelm < Formula
-  desc "The package manager for Kubernetes"
-  homepage "https://helm.sh"
-  url "https://github.com/helm/helm/archive/0.5.0.tar.gz"
-  sha256 "7dfd2b27a400e690c16bf2fbf261e2afd198d88fe90a18b1ccd0b3d863e93332"
+  desc "The Kubernetes package manager"
+  homepage "https://helm.sh/"
+  url "https://github.com/kubernetes/helm.git",
+      :tag => "v2.8.0",
+      :revision => "14af25f1de6832228539259b821949d20069a222"
+  head "https://github.com/kubernetes/helm.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "fc90eb9f1d14c7d8059c199a1d6f10376f5266cffac489ba4430594ee3602a15" => :el_capitan
-    sha256 "046559b6b28c6c4e1de3a7638d3fc8f22d66e69e474825ff0db3ff5f5daf3fbb" => :yosemite
-    sha256 "c1f65e57f5688ea4212d4c1dbb0a442820126415e7523abdf68311ad253d0e7b" => :mavericks
+    sha256 "25b600d01706cd1137adf44fd75ce8f5d7be03b5145e10aee40d5a5c0fbb45a1" => :high_sierra
+    sha256 "6d5047109b475bb49df11b6725ee7e451a3315f72c3103df15f417ed032c43e4" => :sierra
+    sha256 "6fc269c67501605fb133f409da809da85a88460878e1140f87b77973c940b77d" => :el_capitan
   end
 
-  depends_on :hg
+  depends_on "mercurial" => :build
   depends_on "go" => :build
   depends_on "glide" => :build
 
   def install
     ENV["GOPATH"] = buildpath
+    ENV["GLIDE_HOME"] = HOMEBREW_CACHE/"glide_home/#{name}"
     ENV.prepend_create_path "PATH", buildpath/"bin"
+    arch = MacOS.prefer_64_bit? ? "amd64" : "x86"
+    ENV["TARGETS"] = "darwin/#{arch}"
+    dir = buildpath/"src/k8s.io/helm"
+    dir.install buildpath.children - [buildpath/".brew_home"]
 
-    mkdir_p buildpath/"src/github.com/helm/"
-    ln_sf buildpath, buildpath/"src/github.com/helm/helm"
-
-    cd "src/github.com/helm/helm" do
+    cd dir do
       system "make", "bootstrap"
-      system "make", "build", "VERSION=#{version}"
+      system "make", "build"
+
       bin.install "bin/helm"
+      bin.install "bin/tiller"
+      man1.install Dir["docs/man/man1/*"]
+      bash_completion.install "scripts/completions.bash" => "helm"
+      prefix.install_metafiles
     end
   end
 
   test do
     system "#{bin}/helm", "create", "foo"
-    assert File.directory?("#{testpath}/.helm/workspace/charts/foo")
+    assert File.directory? "#{testpath}/foo/charts"
+
+    version_output = shell_output("#{bin}/helm version --client 2>&1")
+    assert_match "GitTreeState:\"clean\"", version_output
+    assert_match stable.instance_variable_get(:@resource).instance_variable_get(:@specs)[:revision], version_output if build.stable?
   end
 end

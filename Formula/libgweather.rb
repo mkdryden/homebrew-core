@@ -1,13 +1,13 @@
 class Libgweather < Formula
   desc "GNOME library for weather, locations and timezones"
   homepage "https://wiki.gnome.org/Projects/LibGWeather"
-  url "https://download.gnome.org/sources/libgweather/3.18/libgweather-3.18.1.tar.xz"
-  sha256 "94b2292f8f7616e2aa81b1516befd7b27682b20acecbd5d656b6954990ca7ad0"
+  url "https://download.gnome.org/sources/libgweather/3.26/libgweather-3.26.1.tar.xz"
+  sha256 "fca78470b345bce948e0333cab0a7c52c32562fc4a75de37061248a64e8fc4b8"
 
   bottle do
-    sha256 "e2b7853e95cf104ccd5f3cff216336077d77e671349b1734f7b4c3a4f0773fba" => :el_capitan
-    sha256 "96c5965af80663bb49d302d38120bcf747c7f14105d7d1abd238a369a544c95c" => :yosemite
-    sha256 "6b1b5cb020dbe92b6ef1221c895536f889ca8ed4ac14938cda10bf838286de09" => :mavericks
+    sha256 "07ccd0c7376e8b3df7f535d8a2a38bfa4912442957c787099d87cb7fbbc3140e" => :high_sierra
+    sha256 "f70cfbb5fe2c7c26d74af33487f6a259069449e3d65f1e52c37fbcb4f3af1763" => :sierra
+    sha256 "136de1236c9cec9d180e90bfcdc07778e07609737c48417eb50e0d8a6a36a130" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
@@ -20,7 +20,10 @@ class Libgweather < Formula
 
   def install
     # ensures that the vala files remain within the keg
-    inreplace "libgweather/Makefile.in", "VAPIGEN_VAPIDIR = @VAPIGEN_VAPIDIR@", "VAPIGEN_VAPIDIR = @datadir@/vala/vapi"
+    inreplace "libgweather/Makefile.in",
+              "VAPIGEN_VAPIDIR = @VAPIGEN_VAPIDIR@",
+              "VAPIGEN_VAPIDIR = @datadir@/vala/vapi"
+
     system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
                           "--prefix=#{prefix}",
@@ -33,7 +36,7 @@ class Libgweather < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <libgweather/gweather.h>
 
       int main(int argc, char *argv[]) {
@@ -55,8 +58,7 @@ class Libgweather < Formula
     libsoup = Formula["libsoup"]
     pango = Formula["pango"]
     pixman = Formula["pixman"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{atk.opt_include}/atk-1.0
       -I#{cairo.opt_include}/cairo
       -I#{fontconfig.opt_include}

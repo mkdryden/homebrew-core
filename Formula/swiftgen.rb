@@ -1,31 +1,43 @@
 class Swiftgen < Formula
-  desc "Collection of Swift tools to generate Swift code"
-  homepage "https://github.com/AliSoftware/SwiftGen"
-  url "https://github.com/AliSoftware/SwiftGen/archive/0.8.0.tar.gz"
-  sha256 "fd95c0c1e8504df0cfa708a75e77343e2e89944aa4815e644d11b6e4e82f4dd0"
-  head "https://github.com/AliSoftware/SwiftGen.git"
+  desc "Swift code generator for assets, storyboards, Localizable.strings, …"
+  homepage "https://github.com/SwiftGen/SwiftGen"
+  url "https://github.com/SwiftGen/SwiftGen.git",
+      :tag => "5.2.1",
+      :revision => "21107b1de6180cf5644e512e67e4d60a0d115ac4"
+  head "https://github.com/SwiftGen/SwiftGen.git"
 
   bottle do
     cellar :any
-    sha256 "e9f2dd908c5abc8f37c2438a5806d67d82b745c8a97817beb2cd9c31bfc65f15" => :el_capitan
-    sha256 "e17b9b0a0d46de2ba2aa897285d9cf59102d5b589274aff53c4dcecd20e1cc66" => :yosemite
+    sha256 "bb8de04d9fa6e153a15268ad1b1c901e08288087fa76bad72829877488ab1cf8" => :high_sierra
+    sha256 "129d086e2cca6ce4d204ad3a699524e48c5e8eee0c67f0d698a94ac8fa3d7d77" => :sierra
   end
 
-  depends_on :xcode => "7.0"
+  depends_on :xcode => ["9.0", :build]
 
   def install
-    rake "install[#{bin},#{lib},#{pkgshare}/templates]"
+    # Disable swiftlint Build Phase to avoid build errors if versions mismatch
+    ENV["NO_CODE_LINT"]="1"
 
-    fixtures = %w[
-      UnitTests/fixtures/Images.xcassets
-      UnitTests/fixtures/colors.txt
-      UnitTests/fixtures/Localizable.strings
-      UnitTests/fixtures/Message.storyboard
-      UnitTests/expected/Images-File-Defaults.swift.out
-      UnitTests/expected/Colors-File-Defaults.swift.out
-      UnitTests/expected/Strings-File-Defaults.swift.out
-      UnitTests/expected/Storyboards-Message-Defaults.swift.out
-    ]
+    # Install bundler, then use it to `rake cli:install` SwiftGen
+    ENV["GEM_HOME"] = buildpath/"gem_home"
+    system "gem", "install", "bundler"
+    ENV.prepend_path "PATH", buildpath/"gem_home/bin"
+    system "bundle", "install"
+    system "bundle", "exec", "rake", "cli:install[#{bin},#{lib},#{pkgshare}/templates]"
+
+    fixtures = {
+      "Resources/Fixtures/XCAssets/Images.xcassets" => "Images.xcassets",
+      "Resources/Fixtures/XCAssets/Colors.xcassets" => "Colors.xcassets",
+      "Resources/Fixtures/Colors/colors.xml" => "colors.xml",
+      "Resources/Fixtures/Strings/Localizable.strings" => "Localizable.strings",
+      "Resources/Fixtures/Storyboards-iOS" => "Storyboards-iOS",
+      "Resources/Fixtures/Fonts" => "Fonts",
+      "Resources/Tests/Expected/XCAssets/swift3-context-all.swift" => "xcassets.swift",
+      "Resources/Tests/Expected/Colors/swift3-context-defaults.swift" => "colors.swift",
+      "Resources/Tests/Expected/Strings/structured-swift3-context-localizable.swift" => "strings.swift",
+      "Resources/Tests/Expected/Storyboards-iOS/swift3-context-all.swift" => "storyboards.swift",
+      "Resources/Tests/Expected/Fonts/swift3-context-defaults.swift" => "fonts.swift",
+    }
     (pkgshare/"fixtures").install fixtures
   end
 
@@ -34,16 +46,19 @@ class Swiftgen < Formula
 
     fixtures = pkgshare/"fixtures"
 
-    output = shell_output("#{bin}/swiftgen images --templatePath #{pkgshare/"templates/images-default.stencil"} #{fixtures}/Images.xcassets").strip
-    assert_equal output, (fixtures/"Images-File-Defaults.swift.out").read.strip, "swiftgen images failed"
+    output = shell_output("#{bin}/swiftgen xcassets --templatePath #{pkgshare/"templates/xcassets/swift3.stencil"} #{fixtures}/Images.xcassets #{fixtures}/Colors.xcassets").strip
+    assert_equal output, (fixtures/"xcassets.swift").read.strip, "swiftgen xcassets failed"
 
-    output = shell_output("#{bin}/swiftgen colors --templatePath #{pkgshare/"templates/colors-default.stencil"} #{fixtures}/colors.txt").strip
-    assert_equal output, (fixtures/"Colors-File-Defaults.swift.out").read.strip, "swiftgen colors failed"
+    output = shell_output("#{bin}/swiftgen colors --templatePath #{pkgshare/"templates/colors/swift3.stencil"} #{fixtures}/colors.xml").strip
+    assert_equal output, (fixtures/"colors.swift").read.strip, "swiftgen colors failed"
 
-    output = shell_output("#{bin}/swiftgen strings --templatePath #{pkgshare/"templates/strings-default.stencil"} #{fixtures}/Localizable.strings").strip
-    assert_equal output, (fixtures/"Strings-File-Defaults.swift.out").read.strip, "swiftgen strings failed"
+    output = shell_output("#{bin}/swiftgen strings --templatePath #{pkgshare/"templates/strings/structured-swift3.stencil"} #{fixtures}/Localizable.strings").strip
+    assert_equal output, (fixtures/"strings.swift").read.strip, "swiftgen strings failed"
 
-    output = shell_output("#{bin}/swiftgen storyboards --templatePath #{pkgshare/"templates/storyboards-default.stencil"} #{fixtures}/Message.storyboard").strip
-    assert_equal output, (fixtures/"Storyboards-Message-Defaults.swift.out").read.strip, "swiftgen storyboards failed"
+    output = shell_output("#{bin}/swiftgen storyboards --templatePath #{pkgshare/"templates/storyboards/swift3.stencil"} #{fixtures}/Storyboards-iOS").strip
+    assert_equal output, (fixtures/"storyboards.swift").read.strip, "swiftgen storyboards failed"
+
+    output = shell_output("#{bin}/swiftgen fonts --templatePath #{pkgshare/"templates/fonts/swift3.stencil"} #{fixtures}/Fonts").strip
+    assert_equal output, (fixtures/"fonts.swift").read.strip, "swiftgen fonts failed"
   end
 end

@@ -1,16 +1,10 @@
 class Nuxeo < Formula
   desc "Enterprise Content Management"
   homepage "https://nuxeo.github.io/"
-  url "https://cdn.nuxeo.com/nuxeo-8.1/nuxeo-cap-8.1-tomcat.zip"
-  version "8.1"
-  sha256 "d1fb98489e001caacf2aad5102ce0e5b135481263ba366b3ad773a289ea80aa9"
+  url "https://cdn.nuxeo.com/nuxeo-9.10/nuxeo-server-9.10-tomcat.zip"
+  sha256 "b0d70c28c1a01cf43a9598245f6ff2aaf71b42dad7ff9ce29fe51d3b17736642"
 
-  bottle do
-    cellar :any_skip_relocation
-    sha256 "7bc87c735af9427fa47594123e83a8e8f8b94c4288c714c215df5a69d72be679" => :el_capitan
-    sha256 "501a42d91f4b482e2f40ec7cf37a6e8bf97ec40fa8e32e8e820645bb311f8717" => :yosemite
-    sha256 "32e038c7960f6aefb997bafc4367b878e13aaa6cff1d7a2a75fa8c6bde1d72a0" => :mavericks
-  end
+  bottle :unneeded
 
   depends_on "poppler" => :recommended
   depends_on "pdftohtml" => :optional
@@ -44,7 +38,7 @@ class Nuxeo < Formula
     libexec.install_symlink var/"cache/nuxeo/packages"
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     You need to edit #{etc}/nuxeo.conf file to configure manually the server.
     Also, in case of upgrade, run 'nuxeoctl mp-upgrade' to ensure all
     downloaded addons are up to date.

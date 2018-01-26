@@ -3,61 +3,37 @@ require "language/go"
 class SSearch < Formula
   desc "Web search from the terminal"
   homepage "https://github.com/zquestz/s"
-  url "https://github.com/zquestz/s/archive/v0.4.5.tar.gz"
-  sha256 "5c6cc19f3e66b5a98eb757e7b42d6faaceeff3c88a3d4c57af2107ac3be20a19"
-
+  url "https://github.com/zquestz/s/archive/v0.5.11.tar.gz"
+  sha256 "37e585a4bc66bc4b41b17d94099e6a1e696d5429e916e3e65c5a961540183a27"
   head "https://github.com/zquestz/s.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "dc7219a4610ae994e217543289935fd3d00b2f0038e9ef318aed1e1e9c443952" => :el_capitan
-    sha256 "28c0eddd56ddfe99c3c30e4fea6c1a288f595b84158aa6f85f4f8a65b3f05e14" => :yosemite
-    sha256 "46cc653b0036738fa31b89498af1673052f24a255b5363ed611183da5c2fbb59" => :mavericks
+    sha256 "6b3f6d5710af9d795cbed0f83767420d36729f0ce5b8d8a5c28ea57ad95a1d0c" => :high_sierra
+    sha256 "3e83c81203408155ccd9a9c26e4569996afe83d2ddfdb9d3e82cfa9e98662755" => :sierra
+    sha256 "d386a3c79b5e9124db394daf5597a20704d6d3d63322504d4a62bbd051fc91ed" => :el_capitan
+    sha256 "ef7633627980f70a86d0620e478c91e5f7f8b20f635a91a16b39065d0bba64d0" => :yosemite
   end
 
   depends_on "go" => :build
 
-  go_resource "github.com/NYTimes/gziphandler" do
-    url "https://github.com/NYTimes/gziphandler.git",
-    :revision => "a88790d49798560db24af70fb6a10a66e2549a72"
-  end
-
-  go_resource "github.com/mitchellh/go-homedir" do
-    url "https://github.com/mitchellh/go-homedir.git",
-    :revision => "981ab348d865cf048eb7d17e78ac7192632d8415"
-  end
-
-  go_resource "github.com/spf13/cobra" do
-    url "https://github.com/spf13/cobra.git",
-    :revision => "966e6048eb43ccf9f240a078557b37f0a407f1df"
-  end
-
-  go_resource "github.com/spf13/pflag" do
-    url "https://github.com/spf13/pflag.git",
-    :revision => "7f60f83a2c81bc3c3c0d5297f61ddfa68da9d3b7"
-  end
-
-  go_resource "github.com/zquestz/go-ucl" do
-    url "https://github.com/zquestz/go-ucl.git",
-    :revision => "ec59c7af0062f62671cdc1e974aa857771f105d2"
-  end
-
-  go_resource "golang.org/x/text" do
-    url "https://go.googlesource.com/text.git",
-    :revision => "1b466db55e0ba5d56ef5315c728216b42f796491"
+  go_resource "github.com/FiloSottile/gvt" do
+    url "https://github.com/FiloSottile/gvt.git",
+        :revision => "50d83ea21cb0405e81efd284951e111b3a68d701"
   end
 
   def install
     ENV["GOPATH"] = buildpath
-    (buildpath/"src/github.com/zquestz").mkpath
-    ln_s buildpath, buildpath/"src/github.com/zquestz/s"
     Language::Go.stage_deps resources, buildpath/"src"
-
-    system "go", "build", "-o", "#{bin}/s"
+    cd("src/github.com/FiloSottile/gvt") { system "go", "install" }
+    (buildpath/"src/github.com/zquestz").mkpath
+    ln_s buildpath, "src/github.com/zquestz/s"
+    system buildpath/"bin/gvt", "restore"
+    system "go", "build", "-o", bin/"s"
   end
 
   test do
-    assert_equal "https://www.google.com/search?q=homebrew\n",
-      shell_output("#{bin}/s -p google -b echo homebrew")
+    output = shell_output("#{bin}/s -p bing -b echo homebrew")
+    assert_equal "https://www.bing.com/search?q=homebrew", output.chomp
   end
 end

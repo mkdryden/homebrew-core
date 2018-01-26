@@ -1,39 +1,30 @@
-require "language/go"
-
 class AmazonEcsCli < Formula
-  desc "CLI for Amazon ECS to manage clusters and tasks for development."
+  desc "CLI for Amazon ECS to manage clusters and tasks for development"
   homepage "https://aws.amazon.com/ecs"
-  url "https://github.com/aws/amazon-ecs-cli/archive/v0.2.1.tar.gz"
-  sha256 "c3056bcae583fd6966e3dc9e60ba96ffb23679bfc5671a5d8d4d7bfe6c2e5d73"
+  url "https://github.com/aws/amazon-ecs-cli/archive/v1.3.0.tar.gz"
+  sha256 "d995b54b7a970880032e1c52d7d7c39672eacca575b5ca214d91c9230e31b57b"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "6b40724d56012f9905dc0a90263a655c924cf4ea248819704b7acbf8c816513b" => :el_capitan
-    sha256 "b64969a0b343f9b2da32bfe3587b0b8ccb725ab79a854a78d724a79b1788b340" => :yosemite
-    sha256 "81ce218cc1271383664eb7e3a42276d90bc0254b9a2bae1c179ce97d9f10979c" => :mavericks
+    sha256 "f0a4772df6393a0788eabbb65e4e34c51ead2e3cda58e3a76d1100866d033c96" => :high_sierra
+    sha256 "d2ba421659ea6d53fef61dee146c7ca7c8c835dccb323a8184938aabed05747a" => :sierra
+    sha256 "e974f26497bb01f1d069c7a09ab69bdef239f87a3d969da01fda1180873d12dc" => :el_capitan
   end
 
   depends_on "go" => :build
 
   def install
     ENV["GOPATH"] = buildpath
-    ENV.prepend_create_path "PATH", buildpath/"bin"
-
-    clipath = buildpath/"src/github.com/aws/amazon-ecs-cli"
-    clipath.install Dir["*"]
-
-    Language::Go.stage_deps resources, buildpath/"src"
-
-    ENV.append_path "PATH", buildpath/"bin"
-
+    (buildpath/"src/github.com/aws/amazon-ecs-cli").install buildpath.children
     cd "src/github.com/aws/amazon-ecs-cli" do
       system "make", "build"
+      system "make", "test"
       bin.install "bin/local/ecs-cli"
+      prefix.install_metafiles
     end
   end
 
   test do
-    output = shell_output(bin/"ecs-cli --version")
-    assert_match "ecs-cli version #{version} (*UNKNOWN)", output
+    assert_match version.to_s, shell_output("#{bin}/ecs-cli -v")
   end
 end

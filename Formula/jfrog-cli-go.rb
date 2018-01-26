@@ -1,38 +1,28 @@
-require "language/go"
-
 class JfrogCliGo < Formula
-  desc "command-line interface for Jfrog Artifactory and Bintray"
+  desc "Command-line interface for Jfrog Artifactory and Bintray"
   homepage "https://github.com/JFrogDev/jfrog-cli-go"
-  url "https://github.com/JFrogDev/jfrog-cli-go/archive/1.0.1.tar.gz"
-  sha256 "9189993c3201dc354a73fdbd5dfdecb8ae077ef06e2d3badc6ac6450e7c64eaa"
+  url "https://github.com/JFrogDev/jfrog-cli-go/archive/1.13.1.tar.gz"
+  sha256 "12ae8aef171c6924fc17098fc2e7e9553054b2203c2ba9a2569e6d98fbc0c83d"
 
   bottle do
     cellar :any_skip_relocation
-    revision 1
-    sha256 "4bc2bed7d7bce710fc0279a9f7d6eeb6514a3a060d81d6875c50e6f059ff627d" => :el_capitan
-    sha256 "b2f04248ecdb95cabec6dca51b1e0d6c96b026d327efb3f2999439c064fcb031" => :yosemite
-    sha256 "eba7de045f256ac8f079b33ed4d891b6551636ac4aae88cf586cd2dc3639ae0b" => :mavericks
+    sha256 "712b7ae14f2006f450c13cb006dedb595d044acab8c9417f67cbb51c21e655a2" => :high_sierra
+    sha256 "5e123128079e1132d0284be0ccd79321e3b8350bc6616b628fc4c6a8cd448ac4" => :sierra
+    sha256 "756f7dd9aa7776aaa7807d2f719f7cc647748f3790c3747966c38569db637271" => :el_capitan
   end
 
   depends_on "go" => :build
 
-  go_resource "golang.org/x/crypto" do
-    url "https://go.googlesource.com/crypto.git",
-    :revision => "c197bcf24cde29d3f73c7b4ac6fd41f4384e8af6"
-  end
-
   def install
     ENV["GOPATH"] = buildpath
-    (buildpath/"src/github.com/JFrogDev/").mkpath
-    ln_sf buildpath, buildpath/"src/github.com/JFrogDev/jfrog-cli-go"
-    Language::Go.stage_deps resources, buildpath/"src"
-
-    system "go", "build", "-o", "#{bin}/jfrog", "github.com/jfrogdev/jfrog-cli-go/jfrog"
+    (buildpath/"src/github.com/jfrogdev/jfrog-cli-go").install Dir["*"]
+    cd "src/github.com/jfrogdev/jfrog-cli-go" do
+      system "go", "build", "-o", bin/"jfrog", "jfrog-cli/jfrog/main.go"
+      prefix.install_metafiles
+    end
   end
 
   test do
-    actual = pipe_output("#{bin}/jfrog rt -v")
-    expected = "jfrog version 1.0.1\n"
-    assert_equal expected, actual
+    assert_match version.to_s, shell_output("#{bin}/jfrog -v")
   end
 end

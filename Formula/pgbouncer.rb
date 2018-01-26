@@ -1,15 +1,14 @@
 class Pgbouncer < Formula
   desc "Lightweight connection pooler for PostgreSQL"
   homepage "https://wiki.postgresql.org/wiki/PgBouncer"
-  url "https://pgbouncer.github.io/downloads/files/1.6.1/pgbouncer-1.6.1.tar.gz"
-  mirror "https://github.com/pgbouncer/pgbouncer/archive/pgbouncer_1_6_1.tar.gz"
-  sha256 "40ff5cd84399b4da3ba864ad654fe155a0ed085261e68f3e31b1117812b17056"
+  url "https://pgbouncer.github.io/downloads/files/1.8.1/pgbouncer-1.8.1.tar.gz"
+  sha256 "fa8bde2a2d2c8c80d53a859f8e48bc6713cf127e31c77d8f787bbc1d673e8dc8"
 
   bottle do
     cellar :any
-    sha256 "f4002665b424ad1a17fbeb6823b9ebc5dcb7ba1e46b508275de9ffdea9bf05f1" => :el_capitan
-    sha256 "d74eb1920c6b93d10f9143e89170a57850a1e07b95988dc84216951d8ebf70dd" => :yosemite
-    sha256 "041022098c72050bbeea9b3af992287e24453e590b549bb81c396cfff2b7f5c7" => :mavericks
+    sha256 "c6c51632e0c13fcccac322fe8ee11217af80b3bfa02f737b0ad05528511ceeff" => :high_sierra
+    sha256 "8831a6603870ca7e6e2833acaaced55ee1ae89065d0841454ddfc510433bf7fb" => :sierra
+    sha256 "37b2e592b6d012a6b59f69bb7f55187465f0e91771d9cc2aa84b8d78f4c69fa2" => :el_capitan
   end
 
   depends_on "asciidoc" => :build
@@ -28,10 +27,10 @@ class Pgbouncer < Formula
     etc.install %w[etc/pgbouncer.ini etc/userlist.txt]
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     The config file: #{etc}/pgbouncer.ini is in the "ini" format and you
     will need to edit it for your particular setup. See:
-    http://pgbouncer.projects.postgresql.org/doc/config.html
+    https://pgbouncer.github.io/config.html
 
     The auth_file option should point to the #{etc}/userlist.txt file which
     can be populated by the #{bin}/mkauth.py script.
@@ -40,7 +39,8 @@ class Pgbouncer < Formula
 
   plist_options :manual => "pgbouncer -q #{HOMEBREW_PREFIX}/etc/pgbouncer.ini"
 
-  def plist; <<-EOS.undent
+  def plist
+    <<~EOS
       <?xml version="1.0" encoding="UTF-8"?>
       <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
       <plist version="1.0">

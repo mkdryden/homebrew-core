@@ -1,14 +1,15 @@
 class Chuck < Formula
   desc "Concurrent, on-the-fly audio programming language"
   homepage "http://chuck.cs.princeton.edu/"
-  url "http://chuck.cs.princeton.edu/release/files/chuck-1.3.5.2.tgz"
-  sha256 "e900b8545ffcb69c6d49354b18c43a9f9b8f789d3ae822f34b408eaee8d3e70b"
+  url "http://chuck.cs.princeton.edu/release/files/chuck-1.3.6.0.tgz"
+  mirror "https://dl.bintray.com/homebrew/mirror/chuck-1.3.6.0.tgz"
+  sha256 "5a68b427c0caf63719a903c544244ddb67415889278f975234d58c7583ec34b4"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "3babc57b6bd458d31ffdf632d0402e9e2d6c014a217b45b1d0c121ad4916e8e9" => :el_capitan
-    sha256 "5a98251b603885026ee3bae389fe35172bd3b69abd8a54d35d457b825bcadfda" => :yosemite
-    sha256 "cdaf6db6aa64715c6fa3aee979fa233a9fb9a2ff9d5d17650d0e3cc70290fcb0" => :mavericks
+    sha256 "9bf0b727be8e8834dc9fa5f6f6e0ec2b03586a44156b6a8ed722ed9c92b8d041" => :high_sierra
+    sha256 "baf8c0ba4a280b4541621fceeebf8a28c9b16bae69730487a2e794544a04f6fb" => :sierra
+    sha256 "7c9c950c35def6347e37fa1455722312577e37efc5c83a9fb7f8d029ad88d033" => :el_capitan
   end
 
   depends_on :xcode => :build
@@ -20,6 +21,6 @@ class Chuck < Formula
   end
 
   test do
-    assert_match /probe \[success\]/m, shell_output("#{bin}/chuck --probe 2>&1")
+    assert_match "device", shell_output("#{bin}/chuck --probe 2>&1")
   end
 end

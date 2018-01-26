@@ -1,13 +1,15 @@
 class Libressl < Formula
   desc "Version of the SSL/TLS protocol forked from OpenSSL"
-  homepage "http://www.libressl.org/"
-  url "http://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-2.3.3.tar.gz"
-  sha256 "76733166187cc8587e0ebe1e83965ef257262a1a676a36806edd3b6d51b50aa9"
+  homepage "https://www.libressl.org/"
+  # Please ensure when updating version the release is from stable branch.
+  url "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-2.6.4.tar.gz"
+  mirror "https://mirrorservice.org/pub/OpenBSD/LibreSSL/libressl-2.6.4.tar.gz"
+  sha256 "638a20c2f9e99ee283a841cd787ab4d846d1880e180c4e96904fc327d419d11f"
 
   bottle do
-    sha256 "8293395e7dc5bed93db97e215e56517c6c871b6a4fb76ccb36b30c7384f88bfc" => :el_capitan
-    sha256 "adb8fdae706d589ecdb24d338fb712c396d3a4c052e9e58d1bc7f1b6b4a1ea96" => :yosemite
-    sha256 "ac399714e57b5debf5a8d3ad7a4ac83f71efe3c9bfaf87a4f84fd13e2d544ed5" => :mavericks
+    sha256 "d2abc3ab5d504cb47551a2cfb92a74891545dfad91286dd38c656091e8d8a904" => :high_sierra
+    sha256 "a122b93e665a7c20c98593267c13ab4a927a0e53517fd97458a4a2205e5f0f67" => :sierra
+    sha256 "5bd61a5f92787788895ff88aabd9bfd15e3661207c1c55610ff42e96a44ca771" => :el_capitan
   end
 
   head do
@@ -18,7 +20,7 @@ class Libressl < Formula
     depends_on "libtool" => :build
   end
 
-  keg_only "LibreSSL is not linked to prevent conflict with the system OpenSSL."
+  keg_only "LibreSSL is not linked to prevent conflict with the system OpenSSL"
 
   def install
     args = %W[
@@ -38,32 +40,32 @@ class Libressl < Formula
 
   def post_install
     keychains = %w[
-      /Library/Keychains/System.keychain
       /System/Library/Keychains/SystemRootCertificates.keychain
     ]
 
     certs_list = `security find-certificate -a -p #{keychains.join(" ")}`
     certs = certs_list.scan(
-      /-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----/m
+      /-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----/m,
     )
 
     valid_certs = certs.select do |cert|
-      IO.popen("openssl x509 -inform pem -checkend 0 -noout", "w") do |openssl_io|
+      IO.popen("#{bin}/openssl x509 -inform pem -checkend 0 -noout", "w") do |openssl_io|
         openssl_io.write(cert)
         openssl_io.close_write
       end
 
-      $?.success?
+      $CHILD_STATUS.success?
     end
 
-    # LibreSSL install a default pem - We prefer to use OS X for consistency.
-    rm_f etc/"libressl/cert.pem"
+    # LibreSSL install a default pem - We prefer to use macOS for consistency.
+    rm_f %W[#{etc}/libressl/cert.pem #{etc}/libressl/cert.pem.default]
     (etc/"libressl/cert.pem").atomic_write(valid_certs.join("\n"))
   end
 
-  def caveats; <<-EOS.undent
-    A CA file has been bootstrapped using certificates from the system
-    keychain. To add additional certificates, place .pem files in
+  def caveats; <<~EOS
+    A CA file has been bootstrapped using certificates from the SystemRoots
+    keychain. To add additional certificates (e.g. the certificates added in
+    the System keychain), place .pem files in
       #{etc}/libressl/certs
 
     and run
@@ -73,7 +75,7 @@ class Libressl < Formula
 
   test do
     # Make sure the necessary .cnf file exists, otherwise LibreSSL gets moody.
-    assert (HOMEBREW_PREFIX/"etc/libressl/openssl.cnf").exist?,
+    assert_predicate HOMEBREW_PREFIX/"etc/libressl/openssl.cnf", :exist?,
             "LibreSSL requires the .cnf file for some functionality"
 
     # Check LibreSSL itself functions as expected.

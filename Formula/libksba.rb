@@ -1,16 +1,17 @@
 class Libksba < Formula
   desc "X.509 and CMS library"
   homepage "https://www.gnupg.org/related_software/libksba/"
-  url "https://gnupg.org/ftp/gcrypt/libksba/libksba-1.3.3.tar.bz2"
-  mirror "https://www.mirrorservice.org/sites/ftp.gnupg.org/gcrypt/libksba/libksba-1.3.3.tar.bz2"
-  sha256 "0c7f5ffe34d0414f6951d9880a46fcc2985c487f7c36369b9f11ad41131c7786"
+  url "https://gnupg.org/ftp/gcrypt/libksba/libksba-1.3.5.tar.bz2"
+  mirror "https://www.mirrorservice.org/sites/ftp.gnupg.org/gcrypt/libksba/libksba-1.3.5.tar.bz2"
+  sha256 "41444fd7a6ff73a79ad9728f985e71c9ba8cd3e5e53358e70d5f066d35c1a340"
 
   bottle do
     cellar :any
-    sha256 "f455678eb6f38f3c0d07b174b4c2f1b8d3a034b64996f0db9ea14ad559e2fbcb" => :el_capitan
-    sha256 "6ac68b0bd118c3f1e0440af4f805b75e925f4c2dde6ab466fb117323ac23dc92" => :yosemite
-    sha256 "38108681341eae8a7b196c356ad790f265663f794c5eb7eea5378579c920356b" => :mavericks
-    sha256 "b0428dd17c910797a627f9a7d85ee1bc6deeb0a3354d2aaa1bf400ceb6ad682c" => :mountain_lion
+    sha256 "d4fff673a919dd666e81cf857af1b5fbb32b21e1c35df1e05d299401a08d5334" => :high_sierra
+    sha256 "b7b47004aa87a4464b74992bca866d0fe7960597085f99463598d37264ed2a01" => :sierra
+    sha256 "65fbc5b34f507b1bac6d7a3dc926eab3aeb90e028f1e4dad5868039d61dfdf76" => :el_capitan
+    sha256 "113e407c5d04392cedbcf901841508d68a9ce8ad858cbff2edf9b2a56eef787a" => :yosemite
+    sha256 "a3c9609e2dad2939138cb109ed75903b633f84f3e914ecba1b83de91aa2eccd2" => :mavericks
   end
 
   depends_on "libgpg-error"
@@ -20,6 +21,9 @@ class Libksba < Formula
                           "--disable-silent-rules",
                           "--prefix=#{prefix}"
     system "make", "install"
+
+    # avoid triggering mandatory rebuilds of software that hard-codes this path
+    inreplace bin/"ksba-config", prefix, opt_prefix
   end
 
   test do

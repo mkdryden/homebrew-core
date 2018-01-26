@@ -1,15 +1,15 @@
 class Leptonica < Formula
   desc "Image processing and image analysis library"
   homepage "http://www.leptonica.org/"
-  url "http://www.leptonica.org/source/leptonica-1.72.tar.gz"
-  sha256 "79d5eadd32658c9fea38700c975d60aa3d088eaa3e307659f004d40834de1f56"
+  url "https://github.com/DanBloomberg/leptonica/releases/download/1.75.0/leptonica-1.75.0.tar.gz"
+  mirror "http://www.leptonica.org/source/leptonica-1.75.0.tar.gz"
+  sha256 "def1a40e30f69fd3c80d9063bdd69fa50451d45e773b8609cffce7d42f287652"
 
   bottle do
     cellar :any
-    sha256 "b68c82a844295d456afd19c3f85eb3841f936819210015d67957e1ec8b8f14bd" => :el_capitan
-    sha256 "6f46198e077161bd40654e29da0bb26243701dcb75069ef169542f006c3b745b" => :yosemite
-    sha256 "a4d35adcbf811eb48a2dec51bc6e7dcd3ecf61a0c716ae10de0e55c9eaec5065" => :mavericks
-    sha256 "2c747c2e33de6c93958e34353bdad7c9ce41dfbcbc4588cb19411d8956445895" => :mountain_lion
+    sha256 "2734d2df82914756f80473265f3babac69b851ea776081b05b1f8292d15e5697" => :high_sierra
+    sha256 "21925fe1b9f78721e5c0dee6b92aff38f952dee49430b58b4f696e16396664f5" => :sierra
+    sha256 "6449817bb92ceea1f5863a6b88485072acd6ba2dc1ac798e2854a343ac085db1" => :el_capitan
   end
 
   depends_on "libpng" => :recommended
@@ -19,9 +19,6 @@ class Leptonica < Formula
   depends_on "openjpeg" => :optional
   depends_on "webp" => :optional
   depends_on "pkg-config" => :build
-
-  conflicts_with "osxutils",
-    :because => "both leptonica and osxutils ship a `fileinfo` executable."
 
   def install
     args = %W[
@@ -47,7 +44,7 @@ class Leptonica < Formula
     #include <leptonica/allheaders.h>
 
     int main(int argc, char **argv) {
-        std::fprintf(stdout, "%d.%d", LIBLEPT_MAJOR_VERSION, LIBLEPT_MINOR_VERSION);
+        std::fprintf(stdout, "%d.%d.%d", LIBLEPT_MAJOR_VERSION, LIBLEPT_MINOR_VERSION, LIBLEPT_PATCH_VERSION);
         return 0;
     }
     EOS

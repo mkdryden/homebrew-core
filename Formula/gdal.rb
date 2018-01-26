@@ -1,14 +1,16 @@
 class Gdal < Formula
-  desc "GDAL: Geospatial Data Abstraction Library"
+  desc "Geospatial Data Abstraction Library"
   homepage "http://www.gdal.org/"
-  url "http://download.osgeo.org/gdal/1.11.3/gdal-1.11.3.tar.gz"
-  sha256 "561588bdfd9ca91919d4679a77a2b44214b158934ee8b425295ca5be33a1014d"
-  revision 1
+  url "http://download.osgeo.org/gdal/1.11.5/gdal-1.11.5.tar.gz"
+  sha256 "49f99971182864abed9ac42de10545a92392d88f7dbcfdb11afe449a7eb754fe"
+  revision 3
 
   bottle do
-    sha256 "768d5ee34e959628f630ea7f8ba1933b5936c82da5cfbae9f4eb6b90bf0bbc25" => :el_capitan
-    sha256 "eae2f587ef0dbd43b1fe2f68bced28b5a6eec92fad136eb6b2ace194e8b78efe" => :yosemite
-    sha256 "f976aaf7d52096afb4f8af340f81837e50678d1be06cee7712f9278233b5bb98" => :mavericks
+    rebuild 1
+    sha256 "4d084ada89aa6461c48730686ae157ae0f3447cc7b04aa11ffecb3e19feb81a7" => :high_sierra
+    sha256 "69dcd735eb3543c602e65d2b35be1f09dd62724d8673571397f2802a38d5e3de" => :sierra
+    sha256 "4d960f47450a62f7b59fa3d83691c8379111f6d00ad7231774d21bdcc45ebcc2" => :el_capitan
+    sha256 "4107e0b06a0466f37f5ffe8dfddae8ccc8eafce8c187ccf4382a3986851115bb" => :yosemite
   end
 
   head do
@@ -23,6 +25,7 @@ class Gdal < Formula
   option "with-mdb", "Build with Access MDB driver (requires Java 1.6+ JDK/JRE, from Apple or Oracle)."
   option "with-libkml", "Build with Google's libkml driver (requires libkml --HEAD or >= 1.3)"
   option "with-swig-java", "Build the swig java bindings"
+  option "without-python", "Build without python2 support"
 
   deprecated_option "enable-opencl" => "with-opencl"
   deprecated_option "enable-armadillo" => "with-armadillo"
@@ -37,15 +40,16 @@ class Gdal < Formula
   depends_on "libgeotiff"
   depends_on "proj"
   depends_on "geos"
-
+  depends_on "json-c"
+  depends_on "libxml2"
+  depends_on "pcre"
   depends_on "sqlite" # To ensure compatibility with SpatiaLite.
   depends_on "freexl"
   depends_on "libspatialite"
 
   depends_on "postgresql" => :optional
   depends_on "mysql" => :optional
-
-  depends_on "homebrew/science/armadillo" if build.with? "armadillo"
+  depends_on "armadillo" => :optional
 
   if build.with? "libkml"
     depends_on "autoconf" => :build
@@ -55,7 +59,7 @@ class Gdal < Formula
 
   if build.with? "complete"
     # Raster libraries
-    depends_on "homebrew/science/netcdf" # Also brings in HDF5
+    depends_on "netcdf" # Also brings in HDF5
     depends_on "jasper"
     depends_on "webp"
     depends_on "cfitsio"
@@ -64,7 +68,7 @@ class Gdal < Formula
     depends_on "libxml2"
 
     # Vector libraries
-    depends_on "unixodbc" # OS X version is not complete enough
+    depends_on "unixodbc" # macOS version is not complete enough
     depends_on "xerces-c"
 
     # Other libraries
@@ -81,10 +85,12 @@ class Gdal < Formula
     depends_on "swig" => :build
   end
 
-  option "without-python", "Build without python2 support"
-  depends_on :python => :optional if MacOS.version <= :snow_leopard
-  depends_on :python3 => :optional
-  depends_on :fortran => :build if build.with?("python") || build.with?("python3")
+  depends_on "python" => :optional if MacOS.version <= :snow_leopard
+  depends_on "python3" => :optional
+
+  if build.with?("python") || build.with?("python3")
+    depends_on "gcc" => :build # for gfortran
+  end
 
   # Extra linking libraries in configure test of armadillo may throw warning
   # see: https://trac.osgeo.org/gdal/ticket/5455
@@ -126,14 +132,9 @@ class Gdal < Formula
       "--with-grib",
       "--with-pam",
 
-      # Backends supported by OS X.
-      "--with-libiconv-prefix=/usr",
-      "--with-libz=/usr",
-      "--with-png=#{Formula["libpng"].opt_prefix}",
-      "--with-expat=/usr",
-      "--with-curl=/usr/bin/curl-config",
-
       # Default Homebrew backends.
+      "--with-png=#{Formula["libpng"].opt_prefix}",
+      "--with-curl=/usr/bin/curl-config",
       "--with-jpeg=#{HOMEBREW_PREFIX}",
       "--without-jpeg12", # Needs specially configured JPEG and TIFF libraries.
       "--with-gif=#{HOMEBREW_PREFIX}",
@@ -150,7 +151,7 @@ class Gdal < Formula
       # Should be installed separately after GRASS installation using the
       # official GDAL GRASS plugin.
       "--without-grass",
-      "--without-libgrass"
+      "--without-libgrass",
     ]
 
     # Optional Homebrew packages supporting additional formats.
@@ -171,8 +172,8 @@ class Gdal < Formula
       supported_backends.delete "liblzma"
       args << "--with-liblzma=yes"
       args.concat supported_backends.map { |b| "--with-" + b + "=" + HOMEBREW_PREFIX }
-    else
-      args.concat supported_backends.map { |b| "--without-" + b } if build.without? "unsupported"
+    elsif build.without? "unsupported"
+      args.concat supported_backends.map { |b| "--without-" + b }
     end
 
     # The following libraries are either proprietary, not available for public
@@ -241,6 +242,10 @@ class Gdal < Formula
   end
 
   def install
+    inreplace "frmts/jpeg2000/jpeg2000_vsil_io.cpp",
+      "stream->bufbase_ = JAS_CAST(uchar *, buf);",
+      "stream->bufbase_ = JAS_CAST(u_char *, buf);"
+
     if build.with? "libkml"
       resource("libkml").stage do
         # See main `libkml` formula for info on patches
@@ -272,7 +277,7 @@ class Gdal < Formula
     # Reset ARCHFLAGS to match how we build.
     ENV["ARCHFLAGS"] = "-arch #{MacOS.preferred_arch}"
 
-    # Fix hardcoded mandir: http://trac.osgeo.org/gdal/ticket/5092
+    # Fix hardcoded mandir: https://trac.osgeo.org/gdal/ticket/5092
     inreplace "configure", %r[^mandir='\$\{prefix\}/man'$], ""
 
     # These libs are statically linked in vendored libkml and libkml formula
@@ -317,12 +322,11 @@ class Gdal < Formula
 
   def caveats
     if build.with? "mdb"
-      <<-EOS.undent
+      <<~EOS
+        To have a functional MDB driver, install supporting .jar files in:
+          `/Library/Java/Extensions/`
 
-      To have a functional MDB driver, install supporting .jar files in:
-        `/Library/Java/Extensions/`
-
-      See: `http://www.gdal.org/ogr/drv_mdb.html`
+        See: `http://www.gdal.org/ogr/drv_mdb.html`
       EOS
     end
   end

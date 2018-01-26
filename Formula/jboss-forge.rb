@@ -1,11 +1,13 @@
 class JbossForge < Formula
   desc "Tools to help set up and configure a project"
-  homepage "http://forge.jboss.org/"
-  url "https://downloads.jboss.org/forge/releases/3.0.1.Final/forge-distribution-3.0.1.Final-offline.zip"
-  version "3.0.1.Final"
-  sha256 "2a3ee9702d3e9b32b0696920607e7a067d14b6d87fbbba634b6583089a4897c7"
+  homepage "https://forge.jboss.org/"
+  url "https://downloads.jboss.org/forge/releases/3.8.1.Final/forge-distribution-3.8.1.Final-offline.zip"
+  version "3.8.1.Final"
+  sha256 "7bb83b529de25c5505b6066f9c170492ffdf656dcdc591612c6d45c3b64a868e"
 
   bottle :unneeded
+
+  depends_on :java => "1.8+"
 
   def install
     rm_f Dir["bin/*.bat"]
@@ -14,7 +16,6 @@ class JbossForge < Formula
   end
 
   test do
-    ENV["FORGE_OPTS"] = "-Duser.home=#{testpath}"
     assert_match "org.jboss.forge.addon:core", shell_output("#{bin}/forge --list")
   end
 end

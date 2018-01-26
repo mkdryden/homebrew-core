@@ -1,13 +1,19 @@
 class Ditaa < Formula
   desc "Convert ASCII diagrams into proper bitmap graphics"
-  homepage "http://ditaa.sourceforge.net/"
-  url "https://downloads.sourceforge.net/project/ditaa/ditaa/0.9/ditaa0_9.zip"
-  sha256 "d689e933b80b065cd7c349e489cfb8feea69dd3e91ca78931edc6fa6e098e689"
+  homepage "https://ditaa.sourceforge.io/"
+  url "https://github.com/stathissideris/ditaa/releases/download/v0.11.0/ditaa-0.11.0-standalone.jar"
+  sha256 "9418aa63ff6d89c5d2318396f59836e120e75bea7a5930c4d34aa10fe7a196a9"
 
   bottle :unneeded
 
+  depends_on :java
+
   def install
-    libexec.install "ditaa0_9.jar"
-    bin.write_jar_script libexec/"ditaa0_9.jar", "ditaa"
+    libexec.install "ditaa-#{version}-standalone.jar"
+    bin.write_jar_script libexec/"ditaa-#{version}-standalone.jar", "ditaa"
+  end
+
+  test do
+    system "#{bin}/ditaa", "-help"
   end
 end

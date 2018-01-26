@@ -1,28 +1,34 @@
 class Pdal < Formula
   desc "Point data abstraction library"
-  homepage "http://www.pdal.io/"
-  url "https://github.com/PDAL/PDAL/archive/1.1.0.tar.gz"
-  sha256 "70e0c84035b3fdc75c4eb72dde62a7a2138171d249f2a607170f79d5cafe589d"
+  homepage "https://www.pdal.io/"
+  url "https://github.com/PDAL/PDAL/archive/1.6.tar.gz"
+  sha256 "66baf8510225b34ee24021731758251cd70657dd578c210ae86c78d158f283eb"
+  revision 1
   head "https://github.com/PDAL/PDAL.git"
 
   bottle do
-    sha256 "21dc2f8487f310e9ccafbb625639c2fb795ff915b5ace70272c1f101760d05da" => :el_capitan
-    sha256 "7b7d7a29d450d3e6f4a8abce3b3ac24900419d753e3b64726d4991fe6e0219b7" => :yosemite
-    sha256 "cd3a166ed19422b0cc9eba5de4e37031cc8c1cfe29973373c54d48e72e2f68b2" => :mavericks
+    sha256 "5d709651475f4c2588623540bf3c760e9e6ca023fc055bd82cb08b99cb978390" => :high_sierra
+    sha256 "33f66b42d167f8b682fe0a5ca175206cdf004195487225e861d61573eeb84d64" => :sierra
+    sha256 "e8b51690f071595820a99997e0b123ed70a3802e8d29538621834290b4002447" => :el_capitan
   end
 
   depends_on "cmake" => :build
   depends_on "gdal"
-
-  if MacOS.version < :mavericks
-    depends_on "boost" => "c++11"
-  else
-    depends_on "boost"
-  end
+  depends_on "hdf5"
+  depends_on "laszip"
+  depends_on "pcl"
+  depends_on "postgresql"
 
   def install
-    ENV.cxx11 if MacOS.version < :mavericks
-    system "cmake", ".", *std_cmake_args
+    system "cmake", ".", *std_cmake_args,
+                         "-DWITH_LASZIP=TRUE",
+                         "-DBUILD_PLUGIN_GREYHOUND=ON",
+                         "-DBUILD_PLUGIN_ICEBRIDGE=ON",
+                         "-DBUILD_PLUGIN_PCL=ON",
+                         "-DBUILD_PLUGIN_PGPOINTCLOUD=ON",
+                         "-DBUILD_PLUGIN_PYTHON=ON",
+                         "-DBUILD_PLUGIN_SQLITE=ON"
+
     system "make", "install"
     doc.install "examples", "test"
   end

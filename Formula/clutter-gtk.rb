@@ -1,13 +1,14 @@
 class ClutterGtk < Formula
   desc "GTK+ integration library for Clutter"
   homepage "https://wiki.gnome.org/Projects/Clutter"
-  url "https://download.gnome.org/sources/clutter-gtk/1.6/clutter-gtk-1.6.6.tar.xz"
-  sha256 "9440a68600f58d00fe0af35383738943e8ead9907f4cf507a102d96822434a28"
+  url "https://download.gnome.org/sources/clutter-gtk/1.8/clutter-gtk-1.8.4.tar.xz"
+  sha256 "521493ec038973c77edcb8bc5eac23eed41645117894aaee7300b2487cb42b06"
 
   bottle do
-    sha256 "b877f157f95367d57649090765d3ee751bc0640f3d22fe7c4b548036559f70f2" => :el_capitan
-    sha256 "003d0f0cf0316b0db59b59709ef881b6825d6af3c067ff2c51a57767e5ef2d31" => :yosemite
-    sha256 "e60f0391b3ea16940125d56d59f085853b8ee2d264daef4a1326a94c2b623a0d" => :mavericks
+    sha256 "8d8a3b7e7937a1bdcb461ed3cd2874f226585f6422fe18536347128c7d8d591f" => :high_sierra
+    sha256 "357d29890f4b188e6175e401a5c9b7de2dac85cd8b8f623ee649a19c3bdcd026" => :sierra
+    sha256 "6fad5ba6272b5cceda263f1e48923db56567e7ae730aae9b78d59022ba5e33c8" => :el_capitan
+    sha256 "5656d4eff289206a81b7a401f2d55912fac61990fa1f7c141336c0042240f74b" => :yosemite
   end
 
   depends_on "pkg-config" => :build
@@ -32,7 +33,7 @@ class ClutterGtk < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <clutter-gtk/clutter-gtk.h>
 
       int main(int argc, char *argv[]) {
@@ -55,8 +56,7 @@ class ClutterGtk < Formula
     libpng = Formula["libpng"]
     pango = Formula["pango"]
     pixman = Formula["pixman"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{atk.opt_include}/atk-1.0
       -I#{cairo.opt_include}/cairo
       -I#{clutter.opt_include}/clutter-1.0

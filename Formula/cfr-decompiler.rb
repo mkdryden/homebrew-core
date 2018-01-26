@@ -1,8 +1,8 @@
 class CfrDecompiler < Formula
-  desc "Yet Another Java Decompiler."
+  desc "Yet Another Java Decompiler"
   homepage "http://www.benf.org/other/cfr/"
-  url "http://www.benf.org/other/cfr/cfr_0_115.jar"
-  sha256 "776fef3765d90a1e5d1d501c59ce7b2a8fae0a5d1d756bd5d199d087b423d926"
+  url "http://www.benf.org/other/cfr/cfr_0_122.jar"
+  sha256 "65c2dfb76c4904014092663b74c2ea4a8e2f18ca75e98a1e4e064352c618360f"
 
   bottle :unneeded
 
@@ -15,17 +15,17 @@ class CfrDecompiler < Formula
   end
 
   test do
-    fixture = <<-EOS.undent
-    import java.io.PrintStream;
+    fixture = <<~EOS
+      import java.io.PrintStream;
 
-    class T {
-        T() {
-        }
+      class T {
+          T() {
+          }
 
-        public static void main(String[] arrstring) {
-            System.out.println("Hello brew!");
-        }
-    }
+          public static void main(String[] arrstring) {
+              System.out.println("Hello brew!");
+          }
+      }
     EOS
     (testpath/"T.java").write fixture
     system "javac", "T.java"

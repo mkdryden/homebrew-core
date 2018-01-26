@@ -1,37 +1,29 @@
 class Libfreenect < Formula
   desc "Drivers and libraries for the Xbox Kinect device"
   homepage "https://openkinect.org/"
-  url "https://github.com/OpenKinect/libfreenect/archive/v0.5.1.tar.gz"
-  sha256 "97e5dd11a0f292b6a3014d1a31c7af16a21cd6574a63057ed7a364064a7614d0"
-
+  url "https://github.com/OpenKinect/libfreenect/archive/v0.5.7.tar.gz"
+  sha256 "5f22c9a0260efd5a31d8e6465bb06b2b389f61b8f7714e0b42b7b20314e5ef59"
   head "https://github.com/OpenKinect/libfreenect.git"
 
   bottle do
     cellar :any
-    revision 1
-    sha256 "b1a6522fbcfad660703f1f86bafded7cbe4050ecd95a53481e5ccaa5bae7b86f" => :el_capitan
-    sha256 "3747228221eaf4e35b18f07fb2f57dfb85cd1787d5b8534e7174d16820534cbf" => :yosemite
-    sha256 "0923504aaedced53b34a1a1d5a7b32a4b2573926ba462b4b44e9ba0cac85d61a" => :mavericks
-    sha256 "f1a1590a8ae0ad8baa18b82e95a2bd24fb5be9bae152f816780114c236ba85e6" => :mountain_lion
+    sha256 "1785eb110c7b3144bf80ad66e83125f4631655792134b673ca64a551cc31fc12" => :high_sierra
+    sha256 "dcfd6d414d14d98f292e60d9a7000d479ce4562f83d34745ac63841bd9b40d2c" => :sierra
+    sha256 "75f6dfd0a873c4268bc766f4fdc7607fb456118e164a0fdb45f37179adb768b8" => :el_capitan
   end
-
-  option :universal
 
   depends_on "cmake" => :build
   depends_on "libusb"
 
   def install
-    args = std_cmake_args
-    args << "-DBUILD_OPENNI2_DRIVER=ON"
-
-    if build.universal?
-      ENV.universal_binary
-      args << "-DCMAKE_OSX_ARCHITECTURES=#{Hardware::CPU.universal_archs.as_cmake_arch_flags}"
-    end
-
     mkdir "build" do
-      system "cmake", "..", *args
+      system "cmake", "..", *std_cmake_args,
+                      "-DBUILD_OPENNI2_DRIVER=ON"
       system "make", "install"
     end
+  end
+
+  test do
+    system bin/"fakenect-record", "-h"
   end
 end

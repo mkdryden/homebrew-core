@@ -1,16 +1,18 @@
 class Dcraw < Formula
   desc "Digital camera RAW photo decoding software"
   homepage "https://www.cybercom.net/~dcoffin/dcraw/"
-  url "https://www.cybercom.net/~dcoffin/dcraw/archive/dcraw-9.26.0.tar.gz"
-  mirror "https://imagemagick.org/download/delegates/dcraw-9.26.0.tar.gz"
-  sha256 "85791d529e037ad5ca09770900ae975e2e4cc1587ca1da4192ca072cbbfafba3"
+  url "https://www.cybercom.net/~dcoffin/dcraw/archive/dcraw-9.27.0.tar.gz"
+  mirror "https://distfiles.macports.org/dcraw/dcraw-9.27.0.tar.gz"
+  mirror "https://mirror.csclub.uwaterloo.ca/MacPorts/mpdistfiles/dcraw/dcraw-9.27.0.tar.gz"
+  sha256 "c1d8cc4f19752a3d3aaab1fceb712ea85b912aa25f1f33f68c69cd42ef987099"
+  revision 2
 
   bottle do
     cellar :any
-    revision 1
-    sha256 "b30d2dffb7edf644f1713626d2e01e1485d7089e58421c84f94e9e0fc7d86695" => :el_capitan
-    sha256 "0ce10a8ec1115adf1e7105231cb39c67ab43842d282dda1df58d2f7d0fb160f7" => :yosemite
-    sha256 "ac71978f16ef81b3b20e61785a7f015a576802c7c1e601f8677a2edb2b3c869d" => :mavericks
+    sha256 "52d2965cf0fc6d8786ee075e568218f6a21a3d29bfdbb6c3554e24a3a10ec5e4" => :high_sierra
+    sha256 "7f61c315a5c6820b3d4aeb1d79cb53d7f4f1fa9a99d3a2dc6143dbd6482fd23a" => :sierra
+    sha256 "94815d5ba879494311ba80c943549d7a2326fe3e5c6b54411af081d3e417a435" => :el_capitan
+    sha256 "d976fa7133006d6aa32393f257c21294be073dc6f570968fa647e3ae229eb0b5" => :yosemite
   end
 
   depends_on "jpeg"

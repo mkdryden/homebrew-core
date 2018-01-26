@@ -1,14 +1,16 @@
 class Libsass < Formula
   desc "C implementation of a Sass compiler"
   homepage "https://github.com/sass/libsass"
-  url "https://github.com/sass/libsass.git", :tag => "3.3.4", :revision => "213339a802827fab23cb61b79ad7d592fad33c2d"
+  url "https://github.com/sass/libsass.git",
+      :tag => "3.4.8",
+      :revision => "a1f13edf19f90f0723e02a736a33e0fc03c6c584"
   head "https://github.com/sass/libsass.git"
 
   bottle do
     cellar :any
-    sha256 "c4025f473057bf31c13bf9ac4d4a20eb751a2fcf7b04fbace621be44926e94bf" => :el_capitan
-    sha256 "4b0d80be7b0613fe225553ad8dcb9b8cd02e5442e6f59ff276d250fe3cc9046a" => :yosemite
-    sha256 "7946a4f1d9686006c082cce7b23af874e4e902ca221b41ffd96d9c7d3099f367" => :mavericks
+    sha256 "26f55250d3fcddc334a5f995feadfe781245746b10ce429d421e0f730799281e" => :high_sierra
+    sha256 "f2d42d8b41e1341885bbcdeed2dd556a4c2346e3d54b0ccf3a1d69011c37af24" => :sierra
+    sha256 "ba7455458afd25a3f6bb37a31568dfc8571e7fcfd367c4c9028d3c6c80368838" => :el_capitan
   end
 
   depends_on "autoconf" => :build
@@ -26,7 +28,7 @@ class Libsass < Formula
 
   test do
     # This will need to be updated when devel = stable due to API changes.
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <sass/context.h>
       #include <string.h>
 
@@ -48,7 +50,7 @@ class Libsass < Formula
         }
       }
     EOS
-    system ENV.cc, "-o", "test", "test.c", "-lsass"
+    system ENV.cc, "-o", "test", "test.c", "-L#{lib}", "-lsass"
     system "./test"
   end
 end

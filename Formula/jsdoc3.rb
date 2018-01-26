@@ -1,27 +1,28 @@
+require "language/node"
+
 class Jsdoc3 < Formula
-  desc "Inline API documentation processor for JavaScript"
+  desc "API documentation generator for JavaScript"
   homepage "http://usejsdoc.org/"
-  url "https://github.com/jsdoc3/jsdoc/archive/v3.2.2.tar.gz"
-  sha256 "c101896d2cf08be636332a5eaaf38fe318ae7f639c37735abd1643b1b973254b"
+  url "https://registry.npmjs.org/jsdoc/-/jsdoc-3.5.5.tgz"
+  sha256 "f80dd27d77c4b6110cc4c548c2c026eee7df6c86df2bb047e2a6c30594bba088"
   head "https://github.com/jsdoc3/jsdoc.git"
 
-  devel do
-    url "https://github.com/jsdoc3/jsdoc/archive/3.3.0-beta3.tar.gz"
-    sha256 "de32d538a5eb1835fdafbb686cdab7ea80ad64b3651a0b85904766c2f5e94b44"
-    version "3.3.0-alpha13"
+  bottle do
+    cellar :any_skip_relocation
+    sha256 "746c92b92e292189a958f35739ebd267f0a861e33cdd5c08026da3d255d92ad7" => :high_sierra
+    sha256 "bfab5fccdd1e49260dc2166af13885de94d43acb7cc689663aa0414cef88698a" => :sierra
+    sha256 "9d5a8b63309f02f86c42c7cf6973a000f4eda4ad0e1cea080a64674abea0a2da" => :el_capitan
   end
 
-  bottle :unneeded
-
-  conflicts_with "jsdoc-toolkit", :because => "both install jsdoc"
+  depends_on "node"
 
   def install
-    libexec.install Dir["*"]
-    bin.install_symlink libexec/"jsdoc"
+    system "npm", "install", *Language::Node.std_npm_install_args(libexec)
+    bin.install_symlink Dir["#{libexec}/bin/*"]
   end
 
   test do
-    (testpath/"test.js").write <<-EOS.undent
+    (testpath/"test.js").write <<~EOS
       /**
        * Represents a formula.
        * @constructor
@@ -31,6 +32,6 @@ class Jsdoc3 < Formula
       function Formula(name, version) {}
     EOS
 
-    system "#{bin}/jsdoc", "--verbose", "test.js"
+    system bin/"jsdoc", "--verbose", "test.js"
   end
 end

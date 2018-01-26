@@ -1,23 +1,31 @@
 class Gperftools < Formula
   desc "Multi-threaded malloc() and performance analysis tools"
   homepage "https://github.com/gperftools/gperftools"
-  url "https://github.com/gperftools/gperftools/releases/download/gperftools-2.5/gperftools-2.5.tar.gz"
-  sha256 "6fa2748f1acdf44d750253e160cf6e2e72571329b42e563b455bde09e9e85173"
+  url "https://github.com/gperftools/gperftools/releases/download/gperftools-2.6.3/gperftools-2.6.3.tar.gz"
+  sha256 "314b2ff6ed95cc0763704efb4fb72d0139e1c381069b9e17a619006bee8eee9f"
 
   bottle do
     cellar :any
-    sha256 "b53926eaf6db1fa5ff0e9c3412628db838a070ce57d16581f9d596a9728b47ca" => :el_capitan
-    sha256 "9ce10dbc6d575ce7004ac8fa5e97d188bbd0d5dbb76e1058e5c5069e9a8e4c11" => :yosemite
-    sha256 "6036aafcbbce98242174d9481b14112ec947598452f493878b1394d08e6ca275" => :mavericks
+    sha256 "0d36f2291e12318c900358e5c5b38d1322533173d66cc64ec17e404333b40a70" => :high_sierra
+    sha256 "498699638aa7e06c11c7ceee5b7c4bb96eaffa02ef0fe043b22140fe5f22c575" => :sierra
+    sha256 "d91d9e54d3522a3c6aca928660d6521455fa2ddc21e766e8f386fd58ebaac17b" => :el_capitan
   end
 
-  fails_with :llvm do
-    build 2326
-    cause "Segfault during linking"
+  head do
+    url "https://github.com/gperftools/gperftools.git"
+
+    depends_on "autoconf" => :build
+    depends_on "automake" => :build
+    depends_on "libtool" => :build
   end
 
   def install
+    # Fix "error: unknown type name 'mach_port_t'"
+    ENV["SDKROOT"] = MacOS.sdk_path if MacOS.version == :sierra
+
     ENV.append_to_cflags "-D_XOPEN_SOURCE"
+
+    system "autoreconf", "-fiv" if build.head?
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make"
@@ -25,7 +33,7 @@ class Gperftools < Formula
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <assert.h>
       #include <gperftools/tcmalloc.h>
 
@@ -39,7 +47,7 @@ class Gperftools < Formula
         return 0;
       }
     EOS
-    system ENV.cc, "test.c", "-ltcmalloc", "-o", "test"
+    system ENV.cc, "test.c", "-L#{lib}", "-ltcmalloc", "-o", "test"
     system "./test"
   end
 end

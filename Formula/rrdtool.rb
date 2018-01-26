@@ -1,13 +1,14 @@
 class Rrdtool < Formula
   desc "Round Robin Database"
   homepage "https://oss.oetiker.ch/rrdtool/index.en.html"
-  url "https://github.com/oetiker/rrdtool-1.x/releases/download/v1.5.5/rrdtool-1.5.5.tar.gz"
-  sha256 "aeb5e58799b6c02e1046e409ceed1b9ed8b3238241d952e0267c7e9be1525a54"
+  url "https://github.com/oetiker/rrdtool-1.x/releases/download/v1.7.0/rrdtool-1.7.0.tar.gz"
+  sha256 "f97d348935b91780f2cd80399719e20c0b91f0a23537c0a85f9ff306d4c5526b"
 
   bottle do
-    sha256 "40ef7a5538670895456321c7f34e359a88556532be110fe1f5c9b75912678e98" => :el_capitan
-    sha256 "05faf9477d73dcc9880622199f170255db8f7b050502e5e0f6b2685b5c76125f" => :yosemite
-    sha256 "4ad881432a19f31f917a14d793f8838e0fbba140efeca9eb6efe7fbbf60ebdfa" => :mavericks
+    sha256 "13e306802f30a3339af907717d2c5ada6a431fc9ee9e9650c8e49deb1664520c" => :high_sierra
+    sha256 "9118f17c71711617a9a2ed33bdc5bd738f0dc99c83eb73d0818892b5e20ba044" => :sierra
+    sha256 "13db68e30a36777abacc58b37080f19d5e184bdc7a69e5470337273f9d567c1d" => :el_capitan
+    sha256 "6928ae9eea858d09e114fd82c128b0dacfa629067e8879c8429ce2eb51ba79dc" => :yosemite
   end
 
   head do
@@ -22,13 +23,12 @@ class Rrdtool < Formula
   depends_on "pango"
   depends_on "lua" => :optional
 
-  env :userpaths # For perl, ruby
-
   # Ha-ha, but sleeping is annoying when running configure a lot
   patch :DATA
 
   def install
-    ENV.libxml2
+    # fatal error: 'ruby/config.h' file not found
+    ENV.delete("SDKROOT")
 
     args = %W[
       --disable-dependency-tracking

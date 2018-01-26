@@ -1,9 +1,8 @@
 class Mockserver < Formula
   desc "Mock HTTP server and proxy"
-  homepage "http://www.mock-server.com/"
-  url "https://oss.sonatype.org/content/repositories/releases/org/mock-server/mockserver-netty/3.10.4/mockserver-netty-3.10.4-brew-tar.tar"
-  version "3.10.4"
-  sha256 "0abd89cb0f894cf53d678360452962f6102477a45b41691eaaea47dfce8d8467"
+  homepage "https://www.mock-server.com/"
+  url "https://oss.sonatype.org/content/repositories/releases/org/mock-server/mockserver-netty/5.1.1/mockserver-netty-5.1.1-brew-tar.tar"
+  sha256 "7fc77904986e6fc5c17c7a3b25af3d0a45e7e94d8fc0de62f3126efb68a3ed91"
 
   bottle :unneeded
 
@@ -33,11 +32,11 @@ class Mockserver < Formula
     end
 
     loop do
-      Utils.popen_read("curl", "-s", "http://localhost:" + port.to_s + "/status", "-X", "PUT")
-      break if $?.exitstatus == 0
+      Utils.popen_read("curl", "-s", "http://localhost:#{port}/status", "-X", "PUT")
+      break if $CHILD_STATUS.exitstatus.zero?
     end
 
-    system "curl", "-s", "http://localhost:" + port.to_s + "/stop", "-X", "PUT"
+    system "curl", "-s", "http://localhost:#{port}/stop", "-X", "PUT"
 
     Process.wait(mockserver)
   end

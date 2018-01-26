@@ -1,15 +1,16 @@
 class Progress < Formula
   desc "Progress: Coreutils Progress Viewer"
   homepage "https://github.com/Xfennec/progress"
-  url "https://github.com/Xfennec/progress/archive/v0.9.tar.gz"
-  sha256 "63e1834ec114ccc1de3d11722131b5975e475bfd72711d457e21ddd7fd16b6bd"
+  url "https://github.com/Xfennec/progress/archive/v0.13.1.tar.gz"
+  sha256 "064c95e8b93893dbf4b4b8152290cbb3b0c005eda0cae500353561048c9939a5"
   head "https://github.com/Xfennec/progress.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "966124c6d66ed029895b1f2f3a9548e9d100287676cc31630e7179eec0009728" => :el_capitan
-    sha256 "003f1a3ba9356bfd68149d9ae6f57e4e81bb0d7def7dc9d4419338275f2e6af1" => :yosemite
-    sha256 "9bb9bb6343e1d886f98e9ab94f2dc9391c800151bae49b27f87397319c69d730" => :mavericks
+    sha256 "2efd9539e80fa903348eb1c6c7448351e1447c195b430fa7054e5f2a07c96e3f" => :high_sierra
+    sha256 "c04bdc66a7781fea19a127c30ad986de002bad27f7a198bdc892871a0fed78dc" => :sierra
+    sha256 "25a02d55c08c5bc17fa3830f577bbdc7320db434a499c95e5d6822cddccafdda" => :el_capitan
+    sha256 "0227e47f3d9614b1d67422d22f15321e5dfb2a078feee89dcff30ec0bffd2adc" => :yosemite
   end
 
   def install
@@ -18,14 +19,15 @@ class Progress < Formula
 
   test do
     pid = fork do
-      system "/bin/dd", "if=/dev/zero", "of=/dev/null", "bs=100000", "count=1000000"
+      system "/bin/dd", "if=/dev/urandom", "of=foo", "bs=512", "count=1048576"
     end
     sleep 1
     begin
-      assert_match(/dd/, shell_output("#{bin}/progress"))
+      assert_match "dd", shell_output("#{bin}/progress")
     ensure
       Process.kill 9, pid
       Process.wait pid
+      rm "foo"
     end
   end
 end

@@ -1,41 +1,38 @@
-require "language/go"
-require "socket"
-require "timeout"
-
 class Fabio < Formula
-  desc "Zero-conf load balancing HTTP(S) router."
-  homepage "https://github.com/eBay/fabio"
-  url "https://github.com/eBay/fabio/archive/v1.0.8.tar.gz"
-  sha256 "32f771087cbd789293b655d7469e9a79d4f16c65956f81d54be8ff0fcf2d6e39"
-
-  head "https://github.com/eBay/fabio.git"
+  desc "Zero-conf load balancing HTTP(S) router"
+  homepage "https://github.com/fabiolb/fabio"
+  url "https://github.com/fabiolb/fabio/archive/v1.5.6.tar.gz"
+  sha256 "178764c8cba2298370166984a13f630a938c51ed8e627e24426538d7af2f3f3e"
+  head "https://github.com/fabiolb/fabio.git"
+  revision 1
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "e177dca51302945ac474803afd0428ae9ae0f05afbbb79611ea3cdb8c119ba05" => :el_capitan
-    sha256 "49ed8fbdb03f96f4da8129640162b2768b545c81903a92c9a047034db9676c02" => :yosemite
-    sha256 "5b873a04761247c0c087157ff8f1cbaeb5337573fa840f2d16d8592e75015ee3" => :mavericks
+    sha256 "066b27c7f2cb285cd864632817cf614ea4c07a9f69c6bcb61034013189056a64" => :high_sierra
+    sha256 "cd911cd0490c4f5bf4a4241bfd61d783c6317ffe1972131e3b4cd0b769f78aff" => :sierra
+    sha256 "6c4581af8078e11eec3a1832729d45b77bab9fd8a14f18c323b7b131022eeea6" => :el_capitan
   end
 
   depends_on "go" => :build
   depends_on "consul" => :recommended
 
   def install
-    mkdir_p buildpath/"src/github.com/ebay"
-    ln_s buildpath, buildpath/"src/github.com/ebay/fabio"
+    mkdir_p buildpath/"src/github.com/fabiolb"
+    ln_s buildpath, buildpath/"src/github.com/fabiolb/fabio"
 
-    ENV["GOPATH"] = "#{buildpath}/_third_party:#{buildpath}"
+    ENV["GOPATH"] = buildpath.to_s
 
-    Language::Go.stage_deps resources, buildpath/"src"
-
-    system "go", "build", "-o", "fabio"
-    bin.install "fabio"
+    system "go", "install", "github.com/fabiolb/fabio"
+    bin.install "#{buildpath}/bin/fabio"
   end
 
   test do
-    CONSUL_DEFAULT_PORT=8500
-    FABIO_DEFAULT_PORT=9999
-    LOCALHOST_IP="127.0.0.1".freeze
+    require "socket"
+    require "timeout"
+
+    CONSUL_DEFAULT_PORT = 8500
+    FABIO_DEFAULT_PORT = 9999
+    LOCALHOST_IP = "127.0.0.1".freeze
 
     def port_open?(ip, port, seconds = 1)
       Timeout.timeout(seconds) do
@@ -56,7 +53,7 @@ class Fabio < Formula
           exec "consul agent -dev -bind 127.0.0.1"
           puts "consul started"
         end
-        sleep 15
+        sleep 30
       else
         puts "Consul already running"
       end
@@ -64,7 +61,7 @@ class Fabio < Formula
         exec "#{bin}/fabio &>fabio-start.out&"
         puts "fabio started"
       end
-      sleep 5
+      sleep 10
       assert_equal true, port_open?(LOCALHOST_IP, FABIO_DEFAULT_PORT)
       system "killall", "fabio" # fabio forks off from the fork...
       system "consul", "leave"

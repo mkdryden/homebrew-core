@@ -1,18 +1,18 @@
 class AircrackNg < Formula
   desc "Next-generation aircrack with lots of new features"
-  homepage "http://aircrack-ng.org/"
+  homepage "https://aircrack-ng.org/"
 
   # We can't update this due to linux-only dependencies in >1.1.
   # See https://github.com/Homebrew/homebrew/issues/29450
-  url "http://download.aircrack-ng.org/aircrack-ng-1.1.tar.gz"
+  url "https://download.aircrack-ng.org/aircrack-ng-1.1.tar.gz"
   sha256 "b136b549b7d2a2751c21793100075ea43b28de9af4c1969508bb95bcc92224ad"
   revision 2
 
   bottle do
-    cellar :any
-    sha256 "cb70cfa6efceada012445e9bf0300050207dc59572edc5e58795c9035e14dc43" => :el_capitan
-    sha256 "97fd0debe4e17e143facd4fa4483d7813c3edc328acd366a72d3fda29d7a6c7b" => :yosemite
-    sha256 "02efed81e48c8f70bbd1d3051e84b25815fcceb7166cb79d472f9552a4708ae2" => :mavericks
+    rebuild 1
+    sha256 "1330c445bb9560fccc182c8a129cc3999830d5ce9e988bad60b45b43f869be61" => :high_sierra
+    sha256 "07d79311d1480e5fb22c9fc17dbbf9758f02871a518bb3bbc3158a712f2abe9f" => :sierra
+    sha256 "bc1052e5690192346ffe097cf08292dec9f61293e1e928bfcdb485ca71c130d6" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
@@ -33,9 +33,13 @@ class AircrackNg < Formula
     system "make", "prefix=#{prefix}", "mandir=#{man1}", "install"
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     Run `airodump-ng-oui-update` install or update the Airodump-ng OUI file.
     EOS
+  end
+
+  test do
+    system "#{bin}/aircrack-ng", "--help"
   end
 end
 

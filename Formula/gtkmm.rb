@@ -1,15 +1,16 @@
 class Gtkmm < Formula
   desc "C++ interfaces for GTK+ and GNOME"
-  homepage "http://www.gtkmm.org/"
-  url "https://download.gnome.org/sources/gtkmm/2.24/gtkmm-2.24.4.tar.xz"
-  sha256 "443a2ff3fcb42a915609f1779000390c640a6d7fd19ad8816e6161053696f5ee"
-  revision 2
+  homepage "https://www.gtkmm.org/"
+  url "https://download.gnome.org/sources/gtkmm/2.24/gtkmm-2.24.5.tar.xz"
+  sha256 "0680a53b7bf90b4e4bf444d1d89e6df41c777e0bacc96e9c09fc4dd2f5fe6b72"
 
   bottle do
     cellar :any
-    sha256 "b700d9e2d3389f371e59fe39bd0bd1c537badd5356e51448d55c32e036b7f26b" => :el_capitan
-    sha256 "1a48acc2f862ac672410ace2a25aea1f79557be26c47db254cd860e619b35746" => :yosemite
-    sha256 "e8c600eec1f8a6062f2623a696700a3deb5a72d710b6287f5ce052b13da15432" => :mavericks
+    sha256 "caf234cdf906a4bec9d7cf58de598f5517268385ad905944c8dca38cea830cc5" => :high_sierra
+    sha256 "bf4238b76b945811435126e2fae15390aec21f1bb2365102a69bd5e82c40d868" => :sierra
+    sha256 "52e16536cb24b6714de19939b7d81e7458af9e3bf2fc186784615234ee61f3d5" => :el_capitan
+    sha256 "96d116f0764c6cc537a3ec4b068422714e1e491f732239166f6ee6ed210e4607" => :yosemite
+    sha256 "e6e38009b081330074bed4a673bb63bab16ca84a56e348b42944cf44d29e4b71" => :mavericks
   end
 
   depends_on "pkg-config" => :build
@@ -29,7 +30,7 @@ class Gtkmm < Formula
   end
 
   test do
-    (testpath/"test.cpp").write <<-EOS.undent
+    (testpath/"test.cpp").write <<~EOS
       #include <gtkmm.h>
 
       int main(int argc, char *argv[]) {
@@ -53,8 +54,7 @@ class Gtkmm < Formula
     pango = Formula["pango"]
     pangomm = Formula["pangomm"]
     pixman = Formula["pixman"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{atk.opt_include}/atk-1.0
       -I#{atkmm.opt_include}/atkmm-1.6
       -I#{cairo.opt_include}/cairo

@@ -1,15 +1,15 @@
 class Lzip < Formula
   desc "LZMA-based compression program similar to gzip or bzip2"
   homepage "http://www.nongnu.org/lzip/lzip.html"
-  url "http://download.savannah.gnu.org/releases/lzip/lzip-1.17.tar.gz"
-  sha256 "9443855e0a33131233b22cdb6c62c9313a483f16cc7415efe88d4a494cea0352"
+  url "https://download.savannah.gnu.org/releases/lzip/lzip-1.19.tar.gz"
+  sha256 "ffadc4f56be1bc0d3ae155ec4527bd003133bdc703a753b2cc683f610e646ba9"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "7914d124a70223bfa59bfcc4973810a26e6b05e99326a33efabe69b05b68df26" => :el_capitan
-    sha256 "220396d58834507c1a82d6baa6713c754fd0b1363e40c6db76d6d659a6bb452a" => :yosemite
-    sha256 "1a2749597e4dfee9ddc74451d932fc3d6c335ab00c1d0ca15b3b5643b696e3c6" => :mavericks
-    sha256 "2932b6bfc8e63d336b58f373d46012ee379143d6e06bb9b99398149ce13edd86" => :mountain_lion
+    sha256 "7139dcfd0b8611bbc6c6e855cc678883dc0340214a4af84d55bba27f2b54461c" => :high_sierra
+    sha256 "0a6d59b6f75c039ad566dbda99ab47f929f5087f0b551c2930dab208b67ec9d0" => :sierra
+    sha256 "46fe2fe457326ea5f5bff7252b1e73642e3a516ee3f97e343cd03a253372047c" => :el_capitan
+    sha256 "9daceb61b21e2e493683348ebd0f3770a4085c8d75c2d2f7b6bb8ae455087383" => :yosemite
   end
 
   def install
@@ -17,7 +17,7 @@ class Lzip < Formula
                           "CXX=#{ENV.cxx}",
                           "CXXFLAGS=#{ENV.cflags}"
     system "make", "check"
-    ENV.j1
+    ENV.deparallelize
     system "make", "install"
   end
 

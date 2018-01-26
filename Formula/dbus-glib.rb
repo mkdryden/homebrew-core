@@ -1,20 +1,21 @@
 class DbusGlib < Formula
   desc "GLib bindings for the D-Bus message bus system"
   homepage "https://wiki.freedesktop.org/www/Software/DBusBindings/"
-  url "https://dbus.freedesktop.org/releases/dbus-glib/dbus-glib-0.106.tar.gz"
-  sha256 "b38952706dcf68bad9c302999ef0f420b8cf1a2428227123f0ac4764b689c046"
+  url "https://dbus.freedesktop.org/releases/dbus-glib/dbus-glib-0.108.tar.gz"
+  sha256 "9f340c7e2352e9cdf113893ca77ca9075d9f8d5e81476bf2bf361099383c602c"
 
   bottle do
     cellar :any
-    sha256 "621550837f7ee93fab562120edc5852e5af03f671dca773de3a8ea44008e5ad6" => :el_capitan
-    sha256 "0fc755aa6af5b706275d82a782ce99188050084e504f7b865413db482ab1ed67" => :yosemite
-    sha256 "fcac3d3c20ccb4a114b736dab4fb952e44d6f3ccecd5d2b69495d3474a0f24db" => :mavericks
+    sha256 "3557c1341a5e5ba8edd314a0d0fd6b5b88577ce8228363fc341d872e68aa6a32" => :high_sierra
+    sha256 "75b313131b5b37dbb8899901239183b1bdce3dcad0a42fae82c0681b7ae233c9" => :sierra
+    sha256 "397f602c5f4a7dcb69c12c1c33be603f4c6640244ff70732f06fa6d86a8654a3" => :el_capitan
+    sha256 "815d7200c61d67960fb60ba4bc42a10f8c822b2ab58d63fb967122cd14444d9c" => :yosemite
   end
 
   depends_on "pkg-config" => :build
   depends_on "gettext"
   depends_on "glib"
-  depends_on "d-bus"
+  depends_on "dbus"
 
   def install
     system "./configure", "--disable-dependency-tracking",

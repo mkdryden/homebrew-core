@@ -1,21 +1,20 @@
 class Memcached < Formula
   desc "High performance, distributed memory object caching system"
-  homepage "http://memcached.org/"
-  url "http://www.memcached.org/files/memcached-1.4.24.tar.gz"
-  sha256 "08a426c504ecf64633151eec1058584754d2f54e62e5ed2d6808559401617e55"
+  homepage "https://memcached.org/"
+  url "https://www.memcached.org/files/memcached-1.5.4.tar.gz"
+  sha256 "e0c3cfa89fa4c2ffd8aa45df7825c6d1a2423ac89ab1a7c4f42bb9803f7403d4"
 
   bottle do
     cellar :any
-    sha256 "da6347788e34f2914ec939c1f14d5a36b70ce2e546d04bf95123a01f98084674" => :el_capitan
-    sha256 "5524972e73c753e43289f06eb615a3100831eb7c33ce15489ea65d2904344acf" => :yosemite
-    sha256 "0ff0b4273be5860850878f391e4cc6f1492fe13ffe7f80388634511210ff473f" => :mavericks
-    sha256 "ad37c20bd1dfc1275c055ec33cb3fae594ed22463a264b80f08b01db3f7d0578" => :mountain_lion
+    sha256 "46bac0953561643a2c5f9acd53126918c52bdde812e7150f64995a21b370dbba" => :high_sierra
+    sha256 "7b96b2df47a73f0770c0bc4455979eb94fa77d5445f2a0df9862be974b25f3d0" => :sierra
+    sha256 "30253a4809a8218878b01bc13bb82c5016d1b1e52b78c5a62f7b1cb47f9854b8" => :el_capitan
   end
-
-  depends_on "libevent"
 
   option "with-sasl", "Enable SASL support -- disables ASCII protocol!"
   option "with-sasl-pwdb", "Enable SASL with memcached's own plain text password db support -- disables ASCII protocol!"
+
+  depends_on "libevent"
 
   deprecated_option "enable-sasl" => "with-sasl"
   deprecated_option "enable-sasl-pwdb" => "with-sasl-pwdb"
@@ -33,7 +32,7 @@ class Memcached < Formula
 
   plist_options :manual => "#{HOMEBREW_PREFIX}/opt/memcached/bin/memcached"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -58,6 +57,12 @@ class Memcached < Formula
   end
 
   test do
-    system "#{bin}/memcached", "-h"
+    pidfile = testpath/"memcached.pid"
+    # Assumes port 11211 is not already taken
+    system bin/"memcached", "--listen=localhost:11211", "--daemon", "--pidfile=#{pidfile}"
+    sleep 1
+    assert_predicate pidfile, :exist?, "Failed to start memcached daemon"
+    pid = (testpath/"memcached.pid").read.chomp.to_i
+    Process.kill "TERM", pid
   end
 end

@@ -1,16 +1,15 @@
 class Sqlcipher < Formula
   desc "SQLite extension providing 256-bit AES encryption"
   homepage "http://sqlcipher.net"
-  url "https://github.com/sqlcipher/sqlcipher/archive/v3.4.0.tar.gz"
-  sha256 "99b702ecf796de02bf7b7b35de4ceef145f0d62b4467a86707c2d59beea243d0"
-
+  url "https://github.com/sqlcipher/sqlcipher/archive/v3.4.2.tar.gz"
+  sha256 "69897a5167f34e8a84c7069f1b283aba88cdfa8ec183165c4a5da2c816cfaadb"
   head "https://github.com/sqlcipher/sqlcipher.git"
 
   bottle do
     cellar :any
-    sha256 "4bf0216834686577051b6d58aa2b6b2a1c0a91b45831a0c8f07aea9877e2df70" => :el_capitan
-    sha256 "0354c675587c3727bf360c1562d87743361045fabca11567ad8e1fff7dd586f4" => :yosemite
-    sha256 "ed88417a177ddd5340dd7f04523aa1d444863648a7cd82a3bfa642bc4f5b1992" => :mavericks
+    sha256 "5b8aaeb3f3f41a57f171a3f1175887ea9d98511982354479d4171ebae24377c6" => :high_sierra
+    sha256 "9462222059285b70d3a301812a38516ce0337e7dddb064ab052549124b9aca3f" => :sierra
+    sha256 "6370ce68ccb2f598f42bee2f799f7e97d7f1bac75ec71aeb446ee57761436642" => :el_capitan
   end
 
   option "with-fts", "Build with full-text search enabled"
@@ -27,13 +26,27 @@ class Sqlcipher < Formula
     ]
 
     if build.with?("fts")
-      args << "CFLAGS=-DSQLITE_HAS_CODEC -DSQLITE_ENABLE_FTS5"
+      args << "CFLAGS=-DSQLITE_HAS_CODEC -DSQLITE_ENABLE_JSON1 -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS -DSQLITE_ENABLE_FTS5"
     else
-      args << "CFLAGS=-DSQLITE_HAS_CODEC"
+      args << "CFLAGS=-DSQLITE_HAS_CODEC -DSQLITE_ENABLE_JSON1"
     end
 
     system "./configure", *args
     system "make"
     system "make", "install"
+  end
+
+  test do
+    path = testpath/"school.sql"
+    path.write <<~EOS
+      create table students (name text, age integer);
+      insert into students (name, age) values ('Bob', 14);
+      insert into students (name, age) values ('Sue', 12);
+      insert into students (name, age) values ('Tim', json_extract('{"age": 13}', '$.age'));
+      select name from students order by age asc;
+    EOS
+
+    names = shell_output("#{bin}/sqlcipher < #{path}").strip.split("\n")
+    assert_equal %w[Sue Tim Bob], names
   end
 end

@@ -1,10 +1,17 @@
 class Xcproj < Formula
   desc "Manipulate Xcode project files"
   homepage "https://github.com/0xced/xcproj"
-  url "https://github.com/0xced/xcproj/archive/0.1.2.tar.gz"
-  sha256 "5281fbe618eb406cc012f1fb2996662c2a7919400c1eb6fdd03f4e85f2da0bfb"
+  url "https://github.com/0xced/xcproj/archive/0.2.1.tar.gz"
+  sha256 "8c31f85d57945cd5bb306d7a0ff7912f2a0d53fa3c888657e0a69ca5d27348cb"
+  head "https://github.com/0xced/xcproj.git", :branch => "develop"
 
-  head "https://github.com/0xced/xcproj.git"
+  bottle do
+    cellar :any_skip_relocation
+    sha256 "d34b031444c1122392afb789036d3197a0d333ae11447c819509f1f31de30c9f" => :high_sierra
+    sha256 "f21fe7b203fbee383f502d66ac8471c7798d74dae7d4ad4491e933fcd1de22d5" => :sierra
+    sha256 "c7a6b18a500b28fbd9cba8939423b7a9c480be98e09883ef90e4b605023b451f" => :el_capitan
+    sha256 "8e20d277d1927c425544654cd8613765460f0b9bbbb8133b0ac04ebdff5d6f0e" => :yosemite
+  end
 
   depends_on :macos => :mountain_lion
   depends_on :xcode
@@ -20,7 +27,7 @@ class Xcproj < Formula
   end
 
   def caveats
-    <<-EOS.undent
+    <<~EOS
       The xcproj binary is bound to the Xcode version that compiled it. If you delete, move or
       rename the Xcode version that compiled the binary, xcproj will fail with the following error:
 

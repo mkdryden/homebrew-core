@@ -1,55 +1,34 @@
 class Yara < Formula
   desc "Malware identification and classification tool"
-  homepage "https://github.com/plusvic/yara/"
-  head "https://github.com/plusvic/yara.git"
-
-  stable do
-    url "https://github.com/plusvic/yara/archive/v3.4.0.tar.gz"
-    sha256 "528571ff721364229f34f6d1ff0eedc3cd5a2a75bb94727dc6578c6efe3d618b"
-
-    # fixes a variable redefinition error with clang (fixed in HEAD)
-    patch do
-      url "https://github.com/plusvic/yara/pull/261.diff"
-      sha256 "6b5c135b577a71ca1c1a5f0a15e512f5157b13dfbd08710f9679fb4cd0b47dba"
-    end
-  end
+  homepage "https://github.com/VirusTotal/yara/"
+  url "https://github.com/VirusTotal/yara/archive/v3.7.1.tar.gz"
+  sha256 "df077a29b0fffbf4e7c575f838a440f42d09b215fcb3971e6fb6360318a64892"
+  head "https://github.com/VirusTotal/yara.git"
 
   bottle do
     cellar :any
-    sha256 "06f30b9ee4bf08b75531d2bcbd868385f4900bd89338cb76c1a3b893439924bf" => :el_capitan
-    sha256 "464eb3be9b5d1ca097e3c8bd85820fd3d8ad6089a8043f82b2e933f0eccca01d" => :yosemite
-    sha256 "85229abc8299bb2946949e4db5acde29a007fc53dae7b7ee38d2df7cfbad6ed2" => :mavericks
-    sha256 "b0b6a9ae09e1e42e5a173a2e2589271c9d9ef4038a7165ecd6fa9ce9dd6c73a6" => :mountain_lion
+    sha256 "6a995595a48f513196225445dc4ee2889b54d288eb19fb1adfddbeac0b8ac9a9" => :high_sierra
+    sha256 "8769d808d6360ac8440893c4fc2f8d81b4842b3d4631c65441bc81d35f872ce1" => :sierra
+    sha256 "deba43f8ebc4d52d0d8a17febdebf8cc5b0de6c9f81f28e7d6a03aea2a87abe7" => :el_capitan
   end
 
   depends_on "libtool" => :build
   depends_on "autoconf" => :build
   depends_on "automake" => :build
-  depends_on :python if MacOS.version <= :snow_leopard
-  depends_on "pcre"
+  depends_on "python" if MacOS.version <= :snow_leopard
   depends_on "openssl"
 
   def install
-    # Use of "inline" requires gnu89 semantics
-    ENV.append "CFLAGS", "-std=gnu89" if ENV.compiler == :clang
-
-    # find Homebrew's libpcre
-    ENV.append "LDFLAGS", "-L#{Formula["pcre"].opt_lib} -lpcre"
-
     system "./bootstrap.sh"
     system "./configure", "--disable-silent-rules",
                           "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make", "install"
-
-    cd "yara-python" do
-      system "python", *Language::Python.setup_install_args(prefix)
-    end
   end
 
   test do
     rules = testpath/"commodore.yara"
-    rules.write <<-EOS.undent
+    rules.write <<~EOS
       rule chrout {
         meta:
           description = "Calls CBM KERNAL routine CHROUT"

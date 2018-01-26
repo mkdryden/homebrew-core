@@ -1,35 +1,26 @@
 class Sslh < Formula
   desc "Forward connections based on first data packet sent by client"
-  homepage "http://www.rutschle.net/tech/sslh.shtml"
-
-  stable do
-    url "http://www.rutschle.net/tech/sslh-v1.17.tar.gz"
-    sha256 "4f3589ed36d8a21581268d53055240eee5e5adf02894a2ca7a6c9022f24b582a"
-
-    # fixes `make install`, fixed in HEAD
-    patch do
-      url "https://github.com/yrutschle/sslh/commit/7c35ef8528d47b97894a6495275b57dc1ae3f8c7.diff"
-      sha256 "a6f8e1c3f9776d7344ea839de1d8a40e9925101528bd3beee50a0c60c62872cf"
-    end
-  end
-  bottle do
-    cellar :any
-    sha256 "57377bc2f5df6479428b757741a61ab2d3aa1fc899772f732f602bd9d4be9dd8" => :el_capitan
-    sha256 "45ba9e8ef45233919decee90e7f764ee1272b010c6ab0ae54fa509531cd60e0e" => :yosemite
-    sha256 "7896dfcd03335687ddd1232f1226bc5149ddd5cf8062423f398a6328ade6519b" => :mavericks
-    sha256 "2a712be56b116244717fb4e414846b6b9373bf2b0482b764b2142096cffbac18" => :mountain_lion
-  end
-
+  homepage "https://www.rutschle.net/tech/sslh.shtml"
+  url "https://www.rutschle.net/tech/sslh/sslh-v1.19.tar.gz"
+  sha256 "ef9cb18396da404bb705b2c4cd4562aa5feb554de6f9bd074b24e7ac4713669c"
   head "https://github.com/yrutschle/sslh.git"
 
+  bottle do
+    cellar :any
+    sha256 "eae60774c512bafa86dd54cd94e36db5dc4142076bf18c3b7fa5a8a7524951e5" => :high_sierra
+    sha256 "d4b465ae8828aefdedd85dd963e09d0d08cb7bc80bd8f7fd839a4739209f5176" => :sierra
+    sha256 "66d97d677f47c957c7139af895f10ae013d10bcf7a28eae998906bbc75e0c234" => :el_capitan
+  end
+
   depends_on "libconfig"
+  depends_on "pcre"
 
   def install
-    ENV.j1
+    ENV.deparallelize
     system "make", "install", "PREFIX=#{prefix}"
   end
 
   test do
-    system sbin/"sslh", "-V"
+    assert_match version.to_s, shell_output("#{sbin}/sslh -V")
   end
 end

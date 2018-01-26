@@ -1,17 +1,17 @@
 class Fleetctl < Formula
   desc "Distributed init system"
   homepage "https://github.com/coreos/fleet"
-  url "https://github.com/coreos/fleet/archive/v0.11.5.tar.gz"
-  sha256 "a6a785099df71645b5fe8755a36baa6c11138749bc02ae4990fd3f52663c0394"
-  revision 1
-
+  url "https://github.com/coreos/fleet.git",
+      :tag => "v1.0.0",
+      :revision => "b8127afc06e3e41089a7fc9c3d7d80c9925f4dab"
   head "https://github.com/coreos/fleet.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "5cbe19ef4a338f385fa2f5ab8367155f28488f5bff8778e7e5a6d99a0811d78d" => :el_capitan
-    sha256 "e9d42b3c4201e3e205ee5831a6260c5b3e43ecb402c4926e0f461874c8c04721" => :yosemite
-    sha256 "cdc085a93ce8437ce3b4bdbdff3a8b41fa7f6bc67fb066a6c41bee12a0a5f17e" => :mavericks
+    sha256 "01ae897f69a8d74b22c52faeb300380299b2c369eb39c0778eee6fb0602e5309" => :high_sierra
+    sha256 "217f22406b9a249f6101b40605b020766547b00bb24e8c005cbdecc099251a80" => :sierra
+    sha256 "a51e7c700bb0074445e0a0ccea938592841a49f9c858051f6ec97170e30eccd0" => :el_capitan
+    sha256 "09492b0c1dc6af381bb22bec46b51c585db9068cda51f290dc5d2c46d91d6c48" => :yosemite
   end
 
   depends_on "go" => :build
@@ -23,6 +23,6 @@ class Fleetctl < Formula
   end
 
   test do
-    system "#{bin}/fleetctl", "-version"
+    assert_match version.to_s, shell_output("#{bin}/fleetctl --version")
   end
 end

@@ -1,14 +1,13 @@
 class Libsoup < Formula
   desc "HTTP client/server library for GNOME"
   homepage "https://live.gnome.org/LibSoup"
-  url "https://download.gnome.org/sources/libsoup/2.52/libsoup-2.52.2.tar.xz"
-  sha256 "db55628b5c7d952945bb71b236469057c8dfb8dea0c271513579c6273c2093dc"
-  revision 1
+  url "https://download.gnome.org/sources/libsoup/2.60/libsoup-2.60.3.tar.xz"
+  sha256 "1b0dc762f23abe4e0d29b77370e539fd35f31d8e8e0318d6ddccff395be68a22"
 
   bottle do
-    sha256 "de28079d444082ea4f6f2aca4388152aa8d303926917baa5f656bdd7d222ef72" => :el_capitan
-    sha256 "20307b7b63cc31b13243d5c69352a650ddb9c814f7ed3da4e25eaf5658488d95" => :yosemite
-    sha256 "5906c25c1cc3da2f65759625853be406fda083a8551129b79141196dbb63c81c" => :mavericks
+    sha256 "9324d895eeed906f4685c4a0ec4e34505c1928f3a7b0c70f25ba30588372dbbe" => :high_sierra
+    sha256 "b801fadef26e8a135850d367b7c06267d1fc871ca60f81e31b0354ed50c128d8" => :sierra
+    sha256 "611d2867125b1c7d7d4d24c8c2c7fb2300c593b2af3a0d195a50b3aacd73a81b" => :el_capitan
   end
 
   depends_on "pkg-config" => :build
@@ -20,23 +19,26 @@ class Libsoup < Formula
   depends_on "vala"
 
   def install
-    args = [
-      "--disable-debug",
-      "--disable-dependency-tracking",
-      "--disable-silent-rules",
-      "--prefix=#{prefix}",
-      "--without-gnome",
-      "--disable-tls-check",
+    args = %W[
+      --disable-debug
+      --disable-dependency-tracking
+      --disable-silent-rules
+      --prefix=#{prefix}
+      --disable-tls-check
+      --enable-introspection=yes
     ]
 
     # ensures that the vala files remain within the keg
-    inreplace "libsoup/Makefile.in", "VAPIDIR = @VAPIDIR@", "VAPIDIR = @datadir@/vala/vapi"
+    inreplace "libsoup/Makefile.in",
+              "VAPIDIR = @VAPIDIR@",
+              "VAPIDIR = @datadir@/vala/vapi"
+
     system "./configure", *args
     system "make", "install"
   end
 
   test do
-    (testpath/"test.c").write <<-EOS.undent
+    (testpath/"test.c").write <<~EOS
       #include <libsoup/soup.h>
 
       int main(int argc, char *argv[]) {
@@ -47,8 +49,7 @@ class Libsoup < Formula
     ENV.libxml2
     gettext = Formula["gettext"]
     glib = Formula["glib"]
-    flags = (ENV.cflags || "").split + (ENV.cppflags || "").split + (ENV.ldflags || "").split
-    flags += %W[
+    flags = %W[
       -I#{gettext.opt_include}
       -I#{glib.opt_include}/glib-2.0
       -I#{glib.opt_lib}/glib-2.0/include
@@ -60,7 +61,6 @@ class Libsoup < Formula
       -lgio-2.0
       -lglib-2.0
       -lgobject-2.0
-      -lintl
       -lsoup-2.4
     ]
     system ENV.cc, "test.c", "-o", "test", *flags

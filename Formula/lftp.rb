@@ -1,27 +1,29 @@
 class Lftp < Formula
   desc "Sophisticated file transfer program"
-  homepage "http://lftp.yar.ru/"
-  url "http://lftp.yar.ru/ftp/lftp-4.6.5.tar.xz"
-  sha256 "1fd0920a1791ce0e9e39ffce77ae6619e5dc665f16e9380bafbfc69411eeb71e"
+  homepage "https://lftp.yar.ru/"
+  url "https://lftp.yar.ru/ftp/lftp-4.8.3.tar.xz"
+  sha256 "de7aee451afaa1aa391f7076b5f602922c2da0e05524a8d8fea413eda83cc78b"
 
   bottle do
-    sha256 "f341d62601963f968e46907f88e1e96d21154deb2b60d97bd3bac27a37816575" => :el_capitan
-    sha256 "182979ca79b7ea9d9e70e9fefab990d5d238da709ce0e17edf5ec7166b976fb1" => :yosemite
-    sha256 "dc44f63a8f1767af2b4ed2008c199377eabd117339f01ee17bb73aa844cf3dee" => :mavericks
+    sha256 "699cbe616307d318e21e36f2665d5f6acfa616b194d9dd998feb977be61694af" => :high_sierra
+    sha256 "b9bdd2db27e79ac0fe39ac583fa2734f4296303a5f46d9f7a953122829643f75" => :sierra
+    sha256 "1bfc8491a2ff1103daf12a5b4c16f6f0b897c830d4cff85002db8bb0e1e14313" => :el_capitan
   end
 
-  depends_on "pkg-config" => :build
   depends_on "readline"
   depends_on "openssl"
+  depends_on "libidn"
 
   def install
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
-                          "--with-openssl=#{Formula["openssl"].opt_prefix}"
+                          "--with-openssl=#{Formula["openssl"].opt_prefix}",
+                          "--with-readline=#{Formula["readline"].opt_prefix}",
+                          "--with-libidn=#{Formula["libidn"].opt_prefix}"
     system "make", "install"
   end
 
   test do
-    system "#{bin}/lftp", "-c", "open ftp://mirrors.kernel.org; ls"
+    system "#{bin}/lftp", "-c", "open https://ftp.gnu.org/; ls"
   end
 end

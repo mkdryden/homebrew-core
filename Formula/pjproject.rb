@@ -1,15 +1,14 @@
 class Pjproject < Formula
   desc "C library for multimedia protocols such as SIP, SDP, RTP and more"
   homepage "http://www.pjsip.org/"
-  url "http://www.pjsip.org/release/2.3/pjproject-2.3.tar.bz2"
-  sha256 "e7fa60a3b59424430145af90372282ca778449f7b68b77bb24a9cf75d94d5765"
+  url "http://www.pjsip.org/release/2.7.1/pjproject-2.7.1.tar.bz2"
+  sha256 "59fabc62a02b2b80857297cfb10e2c68c473f4a0acc6e848cfefe8421f2c3126"
 
   bottle do
     cellar :any
-    sha256 "22be2e11f2538808f10aace043fb3096bfa7210bfe18eccd923e107b3c724311" => :el_capitan
-    sha256 "3ee6735dd996f8963d0d47cdd0019fb144485b3e10b604589f99164abd757c10" => :yosemite
-    sha256 "dae64c57018f78472c465c0f70883176d4edb5ceee27e93a8c1df448c8700fe8" => :mavericks
-    sha256 "ebe8c9879332a77a90523f4791c70c109f57ffcecc176e77e2acdcb47bacaa3d" => :mountain_lion
+    sha256 "6b5ac553cdb40d47f6e35ffd0b52736678b929bc6eaa463caa611adca1d52ef9" => :high_sierra
+    sha256 "37fbe15419028b6057780e26403faf91fc963b815e1599ae336d9abae04878f8" => :sierra
+    sha256 "395f3e6103bccaca54622224653e42d2aa02c5dfd09783e7dc04166c9987a831" => :el_capitan
   end
 
   depends_on "openssl"
@@ -19,10 +18,13 @@ class Pjproject < Formula
     system "make", "dep"
     system "make"
     system "make", "install"
-    bin.install "pjsip-apps/bin/pjsua-#{`uname -m`.chomp}-apple-darwin#{`uname -r`.chomp}" => "pjsua"
+
+    arch = Utils.popen_read("uname -m").chomp
+    rel = Utils.popen_read("uname -r").chomp
+    bin.install "pjsip-apps/bin/pjsua-#{arch}-apple-darwin#{rel}" => "pjsua"
   end
 
   test do
-    system "#{bin}/pjsua", "--version"
+    assert_match version.to_s, shell_output("#{bin}/pjsua --version 2>&1")
   end
 end

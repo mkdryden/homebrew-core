@@ -1,30 +1,36 @@
 class XercesC < Formula
   desc "Validating XML parser"
   homepage "https://xerces.apache.org/xerces-c/"
-  url "https://www.apache.org/dyn/closer.cgi?path=xerces/c/3/sources/xerces-c-3.1.3.tar.gz"
-  sha256 "f3d4f73db7c981e16db2b16d9424b0c75d9fbd30ad81747cac047bc6170b5b49"
+  url "https://www.apache.org/dyn/closer.cgi?path=xerces/c/3/sources/xerces-c-3.2.0.tar.gz"
+  sha256 "d3162910ada85612f5b8cc89cdab84d0ad9a852a49577691e54bc7e9fc304e15"
 
   bottle do
     cellar :any
-    sha256 "09c3aa649e5dd5833c5114f164ee2f508f140a22bf6e3b5c74741be9f51eba00" => :el_capitan
-    sha256 "d1b2e0e9c6715e1ec7407b0e6b6b68fe095b73576cc3b6dfa731bcdd9e3f2169" => :yosemite
-    sha256 "515d56bed90b80580312a37aecd838ace36914e8c7b9306ee714cd8b34ef8428" => :mavericks
+    sha256 "07d25ac5fbb7098f1e75d05495318fa5b24b36c5ab4ebf6b3563c662d6d7a90a" => :high_sierra
+    sha256 "ef2a0aa801a451609b04f930da52b87a32fb935320c2612281aa68db800392c9" => :sierra
+    sha256 "f841fc6be793694985b59073fee51e1339368083094c712022deed51c8cd5cda" => :el_capitan
   end
 
-  option :universal
+  depends_on "cmake" => :build
+
+  needs :cxx11
 
   def install
-    ENV.universal_binary if build.universal?
-    system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}"
-    system "make", "install"
+    ENV.cxx11
+
+    mkdir "build" do
+      system "cmake", "..", *std_cmake_args
+      system "make"
+      system "ctest", "-V"
+      system "make", "install"
+    end
     # Remove a sample program that conflicts with libmemcached
     # on case-insensitive file systems
     (bin/"MemParse").unlink
   end
 
   test do
-    (testpath/"ducks.xml").write <<-EOS.undent
+    (testpath/"ducks.xml").write <<~EOS
       <?xml version="1.0" encoding="iso-8859-1"?>
 
       <ducks>

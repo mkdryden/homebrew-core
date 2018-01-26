@@ -1,17 +1,16 @@
 class DockerMachineParallels < Formula
   desc "Docker Machine Parallels Driver"
   homepage "https://github.com/Parallels/docker-machine-parallels"
-  url "https://github.com/Parallels/docker-machine-parallels/archive/v1.1.1.tar.gz"
-  sha256 "a085bbc8c231f4629d3404677f73b49bff2414f7002f0e9acf9aee8cdae15829"
-  revision 2
+  url "https://github.com/Parallels/docker-machine-parallels/archive/v1.3.0.tar.gz"
+  sha256 "dcfd9fefde15ba0e5d264b7f3efdb76cdd14e59fe722a28fff82f3a418f78d8b"
 
   head "https://github.com/Parallels/docker-machine-parallels.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "39062149f2d3130ee6d9a6d61d3b887086c98b38dc9561d819135c828605a8ba" => :el_capitan
-    sha256 "8ad00f44d3b7a1ef6c32fe0caa57fe7424df3739e5284ab580fc90e5ebd7849b" => :yosemite
-    sha256 "bd8fa78ac56fdefe542378f18cfce9e44b73cfb00f751d27ca6c22debe4a42cb" => :mavericks
+    sha256 "90e5ca2fee7e338fa70402ba154176f24d2229cfbde1f17cc7839509cd0992e2" => :high_sierra
+    sha256 "6d6a4d6f286b19135036505469e8a1d917751ab1365ee18ddc0f08e640f6ce13" => :sierra
+    sha256 "4bc09895e88b6c5ca296c4fec0ae708d7675d7372b03781a7aa91de140032ae6" => :el_capitan
   end
 
   depends_on "go" => :build

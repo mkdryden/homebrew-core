@@ -1,22 +1,20 @@
 class Prometheus < Formula
   desc "Service monitoring system and time series database"
   homepage "https://prometheus.io/"
-  url "https://github.com/prometheus/prometheus.git",
-    :tag => "0.17.0",
-    :revision => "e11fab35d76d19c5c49b7d85e28275f894d3ada4"
+  url "https://github.com/prometheus/prometheus/archive/v2.1.0.tar.gz"
+  sha256 "c6fc92d695c9af30574eb41af5e0e89f4fde9a04a3169ba58aa2b2f80d5862a4"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "a5bd980c21a17cc3144c6f926630a043524473c597187a819023fe17bb1151cd" => :el_capitan
-    sha256 "de08265b7154e3b4036b2dc3a02902f6fe2ad6ae570e195bd1c3852f8658b4ec" => :yosemite
-    sha256 "fc21c6a2a8e36b7154308afa4215616455579fc9b83023627f05920df88d90d0" => :mavericks
+    sha256 "f9ee5b022c62f57f07fc0e6beea33bcc1b5a8c21e65a5991093219fbcb3ba53c" => :high_sierra
+    sha256 "039f2098e144fec4c0f862627633c846ad3dd3691f4afba53fd6fc361ef03e20" => :sierra
+    sha256 "f9570427fa5e09e34c0c99ec0ffbdd71376cb561d80fc1402e7d9f8fca501ff5" => :el_capitan
   end
 
   depends_on "go" => :build
 
   def install
     ENV["GOPATH"] = buildpath
-    ENV["GO15VENDOREXPERIMENT"] = "1"
     mkdir_p buildpath/"src/github.com/prometheus"
     ln_sf buildpath, buildpath/"src/github.com/prometheus/prometheus"
 
@@ -26,10 +24,13 @@ class Prometheus < Formula
   end
 
   test do
-    (testpath/"rules.example").write <<-EOS.undent
-    # Saving the per-job HTTP in-progress request count as a new set of time series:
-      job:http_inprogress_requests:sum = sum(http_inprogress_requests) by (job)
+    (testpath/"rules.example").write <<~EOS
+      groups:
+      - name: http
+        rules:
+        - record: job:http_inprogress_requests:sum
+          expr: sum(http_inprogress_requests) by (job)
     EOS
-    system "#{bin}/promtool", "check-rules", testpath/"rules.example"
+    system "#{bin}/promtool", "check", "rules", testpath/"rules.example"
   end
 end

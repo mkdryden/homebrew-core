@@ -5,6 +5,14 @@ class Ncp < Formula
   sha256 "6cfa72edd5f7717bf7a4a93ccc74c4abd89892360e2e0bb095a73c24b9359b88"
   head ":pserver:cvs:@cvs.fefe.de:/cvs", :using => :cvs
 
+  bottle do
+    cellar :any_skip_relocation
+    rebuild 1
+    sha256 "2c56e482f1608eeb3925f4db0b1ef782fb1644d2a7318e522a4a3c7ba7efcdd4" => :high_sierra
+    sha256 "d261de84549f890b4a3ca4c9f9d72ec25dd5a66c77fbccf6c29577c49a3c0866" => :sierra
+    sha256 "08f17ef57ee62eb3ca90c7c033fba68edc2822d93689ddabdcaa49913c98f369" => :el_capitan
+  end
+
   depends_on "libowfat"
 
   # fixes man and libowfat paths and "strip" command in Makefile

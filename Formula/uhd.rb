@@ -1,39 +1,38 @@
 class Uhd < Formula
-  desc "Hardware driver for all USRP devices."
-  homepage "http://files.ettus.com/manual/"
-  url "https://github.com/EttusResearch/uhd/archive/release_003_009_001.tar.gz"
-  sha256 "e2059c34bea2aaca31eb8d3501ce7b535b559775d3050ed5c30946c34146a92e"
-  head "https://github.com/EttusResearch/uhd.git"
+  desc "Hardware driver for all USRP devices"
+  homepage "https://files.ettus.com/manual/"
+  url "https://github.com/EttusResearch/uhd/archive/release_003_010_002_000.tar.gz"
+  sha256 "7f96d00ed8a1458b31add31291fae66afc1fed47e1dffd886dffa71a8281fabe"
   revision 2
+  head "https://github.com/EttusResearch/uhd.git"
 
   bottle do
-    sha256 "a9219e143155d880befb4d46684a18838ad1671b5088372222ad67ff5c5c44cf" => :el_capitan
-    sha256 "ed9abd856281bcd07827a460f9f04b8cffa9dca31ed4eb360721bb833e15b7ec" => :yosemite
-    sha256 "7cc29536d0d8c679a9db0251cc0e08223de79e37bec368996abff5657fcea9b5" => :mavericks
+    sha256 "09e6e9300165ceb431a585d475584286fd7cb678505f6851bb35c47e4d84ef48" => :high_sierra
+    sha256 "c41a4a38499da8686ab1f8f53aad5c0dd83e308ef5a0dd623f26fe2008217754" => :sierra
+    sha256 "a74de1f23e1c26c4d490228285878dc436af49dbaf1ff16bc73ae1f5936064cc" => :el_capitan
   end
-
-  option :universal
 
   depends_on "cmake" => :build
   depends_on "boost"
   depends_on "libusb"
-  depends_on :python if MacOS.version <= :snow_leopard
+  depends_on "python" if MacOS.version <= :snow_leopard
   depends_on "doxygen" => [:build, :optional]
   depends_on "gpsd" => :optional
 
   resource "Mako" do
-    url "https://pypi.python.org/packages/source/M/Mako/Mako-1.0.2.tar.gz"
-    sha256 "2550c2e4528820db68cbcbe668add5c71ab7fa332b7eada7919044bf8697679e"
+    url "https://files.pythonhosted.org/packages/eb/f3/67579bb486517c0d49547f9697e36582cd19dafb5df9e687ed8e22de57fa/Mako-1.0.7.tar.gz"
+    sha256 "4e02fde57bd4abb5ec400181e4c314f56ac3e49ba4fb8b0d50bba18cb27d25ae"
+  end
+
+  # Fix "error: no member named 'native' in
+  # 'boost::asio::basic_datagram_socket<boost::asio::ip::udp>'"
+  # Upstream PR from 19 Dec 2017 "Fix build with Boost 1.66"
+  patch do
+    url "https://github.com/EttusResearch/uhd/pull/148.patch?full_index=1"
+    sha256 "f7fcc3091d843f5c85c22845193df1ec75c389b556fd375b5023900908f01b33"
   end
 
   def install
-    args = std_cmake_args
-
-    if build.universal?
-      ENV.universal_binary
-      args << "-DCMAKE_OSX_ARCHITECTURES=#{Hardware::CPU.universal_archs.as_cmake_arch_flags}"
-    end
-
     ENV.prepend_create_path "PYTHONPATH", libexec/"vendor/lib/python2.7/site-packages"
 
     resource("Mako").stage do
@@ -41,7 +40,7 @@ class Uhd < Formula
     end
 
     mkdir "host/build" do
-      system "cmake", "..", *args
+      system "cmake", "..", *std_cmake_args
       system "make"
       system "make", "test"
       system "make", "install"

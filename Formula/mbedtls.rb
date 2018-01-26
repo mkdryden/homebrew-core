@@ -1,36 +1,39 @@
 class Mbedtls < Formula
   desc "Cryptographic & SSL/TLS library"
   homepage "https://tls.mbed.org/"
-  url "https://tls.mbed.org/download/mbedtls-2.2.1-apache.tgz"
-  sha256 "6ddd5ca2e7dfb43d2fd750400856246fc1c98344dabf01b1594eb2f9880ef7ce"
-  head "https://github.com/ARMmbed/mbedtls.git"
+  url "https://tls.mbed.org/download/mbedtls-2.6.0-apache.tgz"
+  sha256 "99bc9d4212d3d885eeb96273bcde8ecc649a481404b8d7ea7bb26397c9909687"
+  head "https://github.com/ARMmbed/mbedtls.git", :branch => "development"
 
   bottle do
-    cellar :any_skip_relocation
-    sha256 "154cf41b17b358385fe502306695022a32bb8ae014c9f549281684475ba827bb" => :el_capitan
-    sha256 "6e4ae0210116bae3d4b9d516d48213f894b24e6d8d6ba9cb97d681fa435d241a" => :yosemite
-    sha256 "61e46dded8bda3817a6d61701b9095b2eca26fabd5dbccb2c125a24f989c66eb" => :mavericks
+    cellar :any
+    sha256 "103b0d220515f4aeb9bfcc1a0e4d2aff32d4495f39c62e6e1d8bfb40667704ee" => :high_sierra
+    sha256 "14396d4acbb552478e1db64aa27195c8f7f2eab602b4aca4ff5118a3d45e0022" => :sierra
+    sha256 "695634b3cd78db5c0fc73ac792814b34d4fa11fe78e3b2b13d8c93c5af205139" => :el_capitan
+    sha256 "066b88497e6c0673ebc9552f13c5660989e5792dbde7bf954772ba30415b57cb" => :yosemite
   end
 
   depends_on "cmake" => :build
 
   def install
-    # "Comment this macro to disable support for SSL 3.0"
     inreplace "include/mbedtls/config.h" do |s|
-      s.gsub! "#define MBEDTLS_SSL_PROTO_SSL3", "//#define MBEDTLS_SSL_PROTO_SSL3"
+      # enable pthread mutexes
+      s.gsub! "//#define MBEDTLS_THREADING_PTHREAD", "#define MBEDTLS_THREADING_PTHREAD"
+      # allow use of mutexes within mbed TLS
+      s.gsub! "//#define MBEDTLS_THREADING_C", "#define MBEDTLS_THREADING_C"
     end
 
-    system "cmake", *std_cmake_args
+    system "cmake", "-DUSE_SHARED_MBEDTLS_LIBRARY=On", *std_cmake_args
     system "make"
     system "make", "install"
 
     # Why does Mbedtls ship with a "Hello World" executable. Let's remove that.
-    rm_f "#{bin}/hello"
+    rm_f bin/"hello"
     # Rename benchmark & selftest, which are awfully generic names.
     mv bin/"benchmark", bin/"mbedtls-benchmark"
     mv bin/"selftest", bin/"mbedtls-selftest"
     # Demonstration files shouldn't be in the main bin
-    libexec.install "#{bin}/mpi_demo"
+    libexec.install bin/"mpi_demo"
   end
 
   test do

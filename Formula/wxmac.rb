@@ -1,33 +1,49 @@
 class Wxmac < Formula
-  desc "wxWidgets, a cross-platform C++ GUI toolkit (for OS X)"
+  desc "Cross-platform C++ GUI toolkit (wxWidgets for macOS)"
   homepage "https://www.wxwidgets.org"
-  revision 2
-
+  url "https://github.com/wxWidgets/wxWidgets/releases/download/v3.0.3.1/wxWidgets-3.0.3.1.tar.bz2"
+  sha256 "3164ad6bc5f61c48d2185b39065ddbe44283eb834a5f62beb13f1d0923e366e4"
+  revision 1
   head "https://github.com/wxWidgets/wxWidgets.git"
-
-  stable do
-    url "https://github.com/wxWidgets/wxWidgets/releases/download/v3.0.2/wxWidgets-3.0.2.tar.bz2"
-    sha256 "346879dc554f3ab8d6da2704f651ecb504a22e9d31c17ef5449b129ed711585d"
-
-    # Various fixes related to Yosemite. Revisit in next stable release.
-    # Please keep an eye on http://trac.wxwidgets.org/ticket/16329 as well
-    # Theoretically the above linked patch should still be needed, but it isn't. Try to find out why.
-    patch :DATA
-  end
 
   bottle do
     cellar :any
-    sha256 "3cc5a1c0a2c3a94fdc8ba9fc7664d55f936b95964227ab90a5ea19b904b91418" => :el_capitan
-    sha256 "61d719f4a7bd53e3105b8bd41bcf291cec122fe7fb2ab5991bbe462fca2b6d43" => :yosemite
-    sha256 "9b137f0338358bdce6afc21e94226a09aa32432563a95173f6f050709e5c8f37" => :mavericks
+    sha256 "897ef07ebe51ba7f2fb0bc54df04a68814ce4d55afe1e8808fd5c6df6a811eca" => :high_sierra
+    sha256 "fb15ea55d8393fafa1c286485fc8c1da91b3f41d76a234d9766689cfe4635e1e" => :sierra
+    sha256 "b26fa72e62558efa45fc89a4cc9cea74845369764e74fffa339b3f9eb6549827" => :el_capitan
+    sha256 "591bffb395156566ef3e55a9a8f2c193bdcde8b941d42cc6e6b41833ceeeaba2" => :yosemite
+  end
+
+  # Fix compilation on High Sierra
+  # https://trac.wxwidgets.org/ticket/17929#ticket
+  patch do
+    url "https://github.com/wxWidgets/wxWidgets/commit/9a610eadcfe.patch?full_index=1"
+    sha256 "b445ddf1331b8ec21790b7e3fe3ac6059a2548002e7cbb9bf22b597baf32e3bf"
   end
 
   devel do
     url "https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.0/wxWidgets-3.1.0.tar.bz2"
     sha256 "e082460fb6bf14b7dd6e8ac142598d1d3d0b08a7b5ba402fdbf8711da7e66da8"
+
+    # Creating wxComboCtrl without wxTE_PROCESS_ENTER style results in an assert
+    patch do
+      url "https://github.com/wxWidgets/wxWidgets/commit/cee3188c1abaa5b222c57b87cc94064e56921db8.patch?full_index=1"
+      sha256 "c2389fcb565ec4d488aed2586da15ec72d7fdb8c614f266f8f936d6e4ea10210"
+    end
+
+    # Building under macOS in C++11 mode for i386 architecture (but not amd64) results in an error about narrowing conversion
+    patch do
+      url "https://github.com/wxWidgets/wxWidgets/commit/ee486dba32d02c744ae4007940f41a5b24b8c574.patch?full_index=1"
+      sha256 "dd73556b7a91cbfa63e2eafa8bab48ce5308b382d8e26e60b79f61d0520871e3"
+    end
+
+    # Building under macOS in C++11 results in several -Winconsistent-missing-override warnings
+    patch do
+      url "https://github.com/wxWidgets/wxWidgets/commit/173ecd77c4280e48541c33bdfe499985852935ba.patch?full_index=1"
+      sha256 "200c4fc3e103c7c9aa36ff35335af1a05494bf00a7181b6d6a11f0ffb2e4dc5d"
+    end
   end
 
-  option :universal
   option "with-stl", "use standard C++ classes for everything"
   option "with-static", "build static libraries"
 
@@ -36,53 +52,37 @@ class Wxmac < Formula
   depends_on "libtiff"
 
   def install
-    # need to set with-macosx-version-min to avoid configure defaulting to 10.5
     args = [
-      "--disable-debug",
       "--prefix=#{prefix}",
-      "--enable-unicode",
-      "--enable-std_string",
-      "--enable-display",
-      "--with-opengl",
-      "--with-osx_cocoa",
-      "--with-libjpeg",
-      "--with-libtiff",
-      # Otherwise, even in superenv, the internal libtiff can pick
-      # up on a nonuniversal xz and fail
-      # https://github.com/Homebrew/homebrew/issues/22732
-      "--without-liblzma",
-      "--with-libpng",
-      "--with-zlib",
-      "--enable-dnd",
       "--enable-clipboard",
-      "--enable-webkit",
-      "--enable-svg",
-      # On 64-bit, enabling mediactrl leads to wxconfig trying to pull
-      # in a non-existent 64 bit QuickTime framework. This is submitted
-      # upstream and will eventually be fixed, but for now...
-      MacOS.prefer_64_bit? ? "--disable-mediactrl" : "--enable-mediactrl",
-      "--enable-graphics_ctx",
       "--enable-controls",
       "--enable-dataviewctrl",
+      "--enable-display",
+      "--enable-dnd",
+      "--enable-graphics_ctx",
+      "--enable-std_string",
+      "--enable-svg",
+      "--enable-unicode",
+      "--enable-webkit",
       "--with-expat",
+      "--with-libjpeg",
+      "--with-libpng",
+      "--with-libtiff",
+      "--with-opengl",
+      "--with-osx_cocoa",
+      "--with-zlib",
       "--disable-precomp-headers",
-      "--with-macosx-version-min=#{MacOS.version}",
       # This is the default option, but be explicit
       "--disable-monolithic",
+      # Enabling mediactrl leads to wxconfig trying to pull in a non-existent
+      # 64-bit QuickTime framework: https://trac.wxwidgets.org/ticket/17639
+      "--disable-mediactrl",
+      # Set with-macosx-version-min to avoid configure defaulting to 10.5
+      "--with-macosx-version-min=#{MacOS.version}",
     ]
 
-    if build.universal?
-      ENV.universal_binary
-      args << "--enable-universal_binary=#{Hardware::CPU.universal_archs.join(",")}"
-    end
-
     args << "--enable-stl" if build.with? "stl"
-
-    if build.with? "static"
-      args << "--disable-shared"
-    else
-      args << "--enable-shared"
-    end
+    args << (build.with?("static") ? "--disable-shared" : "--enable-shared")
 
     system "./configure", *args
     system "make", "install"
@@ -98,65 +98,3 @@ class Wxmac < Formula
     system bin/"wx-config", "--libs"
   end
 end
-
-__END__
-
-diff --git a/include/wx/defs.h b/include/wx/defs.h
-index 397ddd7..d128083 100644
---- a/include/wx/defs.h
-+++ b/include/wx/defs.h
-@@ -3169,12 +3169,20 @@ DECLARE_WXCOCOA_OBJC_CLASS(UIImage);
- DECLARE_WXCOCOA_OBJC_CLASS(UIEvent);
- DECLARE_WXCOCOA_OBJC_CLASS(NSSet);
- DECLARE_WXCOCOA_OBJC_CLASS(EAGLContext);
-+DECLARE_WXCOCOA_OBJC_CLASS(UIWebView);
- 
- typedef WX_UIWindow WXWindow;
- typedef WX_UIView WXWidget;
- typedef WX_EAGLContext WXGLContext;
- typedef WX_NSString* WXGLPixelFormat;
- 
-+typedef WX_UIWebView OSXWebViewPtr;
-+
-+#endif
-+
-+#if wxOSX_USE_COCOA_OR_CARBON
-+DECLARE_WXCOCOA_OBJC_CLASS(WebView);
-+typedef WX_WebView OSXWebViewPtr;
- #endif
- 
- #endif /* __WXMAC__ */
-diff --git a/include/wx/html/webkit.h b/include/wx/html/webkit.h
-index 8700367..f805099 100644
---- a/include/wx/html/webkit.h
-+++ b/include/wx/html/webkit.h
-@@ -18,7 +18,6 @@
- #endif
- 
- #include "wx/control.h"
--DECLARE_WXCOCOA_OBJC_CLASS(WebView); 
- 
- // ----------------------------------------------------------------------------
- // Web Kit Control
-@@ -107,7 +106,7 @@ private:
-     wxString m_currentURL;
-     wxString m_pageTitle;
- 
--    WX_WebView m_webView;
-+    OSXWebViewPtr m_webView;
- 
-     // we may use this later to setup our own mouse events,
-     // so leave it in for now.
-diff --git a/include/wx/osx/webview_webkit.h b/include/wx/osx/webview_webkit.h
-index 803f8b0..438e532 100644
---- a/include/wx/osx/webview_webkit.h
-+++ b/include/wx/osx/webview_webkit.h
-@@ -158,7 +158,7 @@ private:
-     wxWindowID m_windowID;
-     wxString m_pageTitle;
- 
--    wxObjCID m_webView;
-+    OSXWebViewPtr m_webView;
- 
-     // we may use this later to setup our own mouse events,
-     // so leave it in for now.

@@ -1,15 +1,15 @@
 class Dynamips < Formula
   desc "Cisco 7200/3600/3725/3745/2600/1700 Router Emulator"
   homepage "https://github.com/GNS3/dynamips"
-  url "https://github.com/GNS3/dynamips/archive/v0.2.15.tar.gz"
-  sha256 "4f77a88470069dccab391ce786b633061511593efbd0a9b895e5711325eceb36"
+  url "https://github.com/GNS3/dynamips/archive/v0.2.17.tar.gz"
+  sha256 "d524ef32b78dd7384775920604912d3b4b212ded338cc4df930b0086df1e81ed"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "85c067f77c42527328fe8bf255e9faa6973c04cf1e979948d432333f7f85bd0e" => :el_capitan
-    sha256 "3b23d9683f4344d5bbca80bfb4328484e409e215ae7aa4c22c01d5e45217b4f9" => :yosemite
-    sha256 "c460f69bc4b30af2d57a7e624bab98ce244b7492d2ef5bd39b24c155708e0625" => :mavericks
-    sha256 "c5732f50e1571b3027d3254cce93c29bd6a6e1973a6f9830e02a9fc95721cc46" => :mountain_lion
+    sha256 "d5a6265bfadbccc1dbcf647e6313e97e262a0c784e3cc24d7349abc9f2627f02" => :high_sierra
+    sha256 "c94a3d1c7456287ad68113af62df3590674e4a41ab9f5ab383b9291af8d919ea" => :sierra
+    sha256 "3c2427ca53100fa0e44131d7ac4a33ec6a90a6bee45411c01de7258b4fd00836" => :el_capitan
+    sha256 "2fefd603afce1231c35103db5af5b64594cc17411238d5f783f31dfd99d513b2" => :yosemite
   end
 
   depends_on "libelf"
@@ -18,9 +18,9 @@ class Dynamips < Formula
   def install
     ENV.append "CFLAGS", "-I#{Formula["libelf"].include}/libelf"
 
-    arch = Hardware.is_64_bit? ? "amd64" : "x86"
+    arch = Hardware::CPU.is_64_bit? ? "amd64" : "x86"
 
-    ENV.j1
+    ENV.deparallelize
     system "cmake", ".", "-DANY_COMPILER=1", *std_cmake_args
     system "make", "DYNAMIPS_CODE=stable",
                    "DYNAMIPS_ARCH=#{arch}",

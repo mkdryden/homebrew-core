@@ -1,49 +1,49 @@
 class Libgcrypt < Formula
   desc "Cryptographic library based on the code from GnuPG"
   homepage "https://directory.fsf.org/wiki/Libgcrypt"
-  url "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.6.5.tar.bz2"
-  mirror "https://www.mirrorservice.org/sites/ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-1.6.5.tar.bz2"
-  sha256 "f49ebc5842d455ae7019def33eb5a014a0f07a2a8353dc3aa50a76fd1dafa924"
+  url "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.2.tar.bz2"
+  sha256 "c8064cae7558144b13ef0eb87093412380efa16c4ee30ad12ecb54886a524c07"
 
   bottle do
     cellar :any
-    sha256 "20f15a1fc7316033c35c11f9b18af95ed0e716b5fb588d5756c78c2feeaf01a3" => :el_capitan
-    sha256 "bfc5b81aa344074433ccc84f20949d96be15a6fe8a7126330da2a90bd38f03cf" => :yosemite
-    sha256 "cd65e7d1c4c3820f345fc502a1fd893a12334ee212dd4b85934b4ce16a3232bc" => :mavericks
+    sha256 "705d3a6d1ff879c875728ea827c1c5d6b2391ce24843237e54d694124472a3df" => :high_sierra
+    sha256 "17635f44bd687ae57f2e352fffefffb5f910db6d1a6ac959ddaef4095e50ed9c" => :sierra
+    sha256 "30ee5d42cd5d82c297e886cb3a55f3ae96edfe3b44394a7f5fb3337bf4719da5" => :el_capitan
   end
-
-  option :universal
 
   depends_on "libgpg-error"
 
-  resource "config.h.ed" do
-    url "https://raw.githubusercontent.com/Homebrew/patches/ec8d133/libgcrypt/config.h.ed"
-    version "113198"
-    sha256 "d02340651b18090f3df9eed47a4d84bed703103131378e1e493c26d7d0c7aab1"
-  end
-
   def install
-    ENV.universal_binary if build.universal?
+    # Temporary hack to get libgcrypt building on macOS 10.12 and 10.11 with XCode 8.
+    # Seems to be a Clang issue rather than an upstream one, so
+    # keep checking whether or not this is necessary.
+    # Should be reported to GnuPG if still an issue when near stable.
+    # https://github.com/Homebrew/homebrew-core/issues/1957
+    ENV.O1 if DevelopmentTools.clang_build_version == 800
 
     system "./configure", "--disable-dependency-tracking",
                           "--disable-silent-rules",
+                          "--enable-static",
                           "--prefix=#{prefix}",
                           "--disable-asm",
-                          "--with-libgpg-error-prefix=#{Formula["libgpg-error"].opt_prefix}"
-
-    if build.universal?
-      buildpath.install resource("config.h.ed")
-      system "ed -s - config.h <config.h.ed"
-    end
+                          "--with-libgpg-error-prefix=#{Formula["libgpg-error"].opt_prefix}",
+                          "--disable-jent-support" # Requires ENV.O0, which is unpleasant.
 
     # Parallel builds work, but only when run as separate steps
     system "make"
-    system "make", "install"
-    # Make check currently dies on El Capitan
-    # https://github.com/Homebrew/homebrew/issues/41599
+    # Slightly hideous hack to help `make check` work in
+    # normal place on >10.10 where SIP is enabled.
+    # https://github.com/Homebrew/homebrew-core/pull/3004
     # https://bugs.gnupg.org/gnupg/issue2056
-    # This check should be above make install again when fixed.
+    MachO::Tools.change_install_name("#{buildpath}/tests/.libs/random",
+                                     "#{lib}/libgcrypt.20.dylib",
+                                     "#{buildpath}/src/.libs/libgcrypt.20.dylib")
+
     system "make", "check"
+    system "make", "install"
+
+    # avoid triggering mandatory rebuilds of software that hard-codes this path
+    inreplace bin/"libgcrypt-config", prefix, opt_prefix
   end
 
   test do

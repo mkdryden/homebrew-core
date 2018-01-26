@@ -1,31 +1,23 @@
 class Rhash < Formula
   desc "Utility for computing and verifying hash sums of files"
-  homepage "http://rhash.anz.ru/"
-  url "https://downloads.sourceforge.net/project/rhash/rhash/1.3.3/rhash-1.3.3-src.tar.gz"
-  mirror "https://mirrors.kernel.org/debian/pool/main/r/rhash/rhash_1.3.3.orig.tar.gz"
-  sha256 "5b520b597bd83f933d316fce1382bb90e0b0b87b559b8c9c9a197551c935315a"
-
+  homepage "https://sourceforge.net/projects/rhash/"
+  url "https://downloads.sourceforge.net/project/rhash/rhash/1.3.5/rhash-1.3.5-src.tar.gz"
+  sha256 "98e0688acae29e68c298ffbcdbb0f838864105f9b2bd8857980664435b1f1f2e"
   head "https://github.com/rhash/RHash.git"
 
   bottle do
     cellar :any
-    sha256 "96daecac5b2d21ec7d40caf362868a80686b806e84afabe9b16b08cd79d82790" => :el_capitan
-    sha256 "e957f797d99c99ad3ccba26cf960a1b2bfbf6915694b44496b8c899c322856ce" => :yosemite
-    sha256 "f3a728fdbc481c60c42544e2360601e8bc8ed032b82c86a0e4f1e29949a2b653" => :mavericks
-    sha256 "4d88312b2da6202c1929e5b586ed63780009d1467bdfef2cc6ec3c615e73ab42" => :mountain_lion
+    sha256 "f088eebd9e263f0550a48711ce857a59766cd85414f7902e3a750289c8a0559d" => :high_sierra
+    sha256 "e86d5f2ffe1c5f7192264fc308f14b417ff1f09793adb0e9365e8a00c4f1520a" => :sierra
+    sha256 "10643c17507d1dcb081d4287d49a6291bcdaec5ba633285f0e54e121c217d83f" => :el_capitan
+    sha256 "01e895a04facb08fe288db3bfcb9968d4c0b19db4964329eeb2b02d5ca08cdf7" => :yosemite
   end
 
-  # Upstream issue: https://github.com/rhash/RHash/pull/7
-  # This patch will need to be in place permanently.
-  patch :DATA
-
   def install
-    # install target isn't parallel-safe
-    ENV.j1
-
-    system "make", "lib-static", "lib-shared", "all", "CC=#{ENV.cc}"
-    system "make", "install-lib-static", "install-lib-shared", "install",
-                   "PREFIX=", "DESTDIR=#{prefix}", "CC=#{ENV.cc}"
+    system "make", "install-lib-static", "install", "PREFIX=",
+           "DESTDIR=#{prefix}", "CC=#{ENV.cc}"
+    system "make", "-C", "librhash", "dylib"
+    lib.install Dir["librhash/*.dylib"]
   end
 
   test do
@@ -34,27 +26,3 @@ class Rhash < Formula
     system "#{bin}/rhash", "-c", "test.sha1"
   end
 end
-
-__END__
---- a/librhash/Makefile	2014-04-20 14:20:22.000000000 +0200
-+++ b/librhash/Makefile	2014-04-20 14:40:02.000000000 +0200
-@@ -26,8 +26,8 @@
- INCDIR  = $(PREFIX)/include
- LIBDIR  = $(PREFIX)/lib
- LIBRARY = librhash.a
--SONAME  = librhash.so.0
--SOLINK  = librhash.so
-+SONAME  = librhash.0.dylib
-+SOLINK  = librhash.dylib
- TEST_TARGET = test_hashes
- TEST_SHARED = test_shared
- # Set variables according to GNU coding standard
-@@ -176,8 +176,7 @@
-
- # shared and static libraries
- $(SONAME): $(SOURCES)
--	sed -n '1s/.*/{ global:/p; s/^RHASH_API.* \([a-z0-9_]\+\)(.*/  \1;/p; $$s/.*/local: *; };/p' $(SO_HEADERS) > exports.sym
--	$(CC) -fpic $(ALLCFLAGS) -shared $(SOURCES) -Wl,--version-script,exports.sym,-soname,$(SONAME) $(LIBLDFLAGS) -o $@
-+	$(CC) -fpic $(ALLCFLAGS) -dynamiclib $(SOURCES) $(LIBLDFLAGS) -Wl,-install_name,$(PREFIX)/lib/$@ -o $@
- 	ln -s $(SONAME) $(SOLINK)
- # use 'nm -Cg --defined-only $@' to view exported symbols

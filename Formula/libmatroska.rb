@@ -1,16 +1,14 @@
 class Libmatroska < Formula
   desc "Extensible, open standard container format for audio/video"
   homepage "https://www.matroska.org/"
-  url "https://dl.matroska.org/downloads/libmatroska/libmatroska-1.4.4.tar.bz2"
-  mirror "https://www.bunkus.org/videotools/mkvtoolnix/sources/libmatroska-1.4.4.tar.bz2"
-  sha256 "d3efaa9f6d3964351a05bea0f848a8d5dc570e4791f179816ce9a93730296bd7"
+  url "https://dl.matroska.org/downloads/libmatroska/libmatroska-1.4.8.tar.xz"
+  sha256 "d8c72b20d4c5bf888776884b0854f95e74139b5267494fae1f395f7212d7c992"
 
   bottle do
     cellar :any
-    revision 1
-    sha256 "e7e5ba09a40fea9dbc174c751c9c03e0feb6f4d2ae706b331a2f2b0bfec7d2b8" => :el_capitan
-    sha256 "ec806b9b2be99dc2588133417d230458ec721fe6a26d3aa65640e45bdfd6ad74" => :yosemite
-    sha256 "86d34a8a5c9dd1944785961f6f54553b7a01ce50e1ab51c6d806fec8a3144a43" => :mavericks
+    sha256 "e4f4d97646cb4860e229532d6a37ac3edeabac4dcc35fb66ff73aa4bd2baad62" => :high_sierra
+    sha256 "d9d618b79e33db74df3d594bbb8ce997c7fb3347861ad2ea6e5677cd607a3197" => :sierra
+    sha256 "53cffc64b37eec80b8325437f3fd7d84ffdf0626bb87499c1565eaa063c63854" => :el_capitan
   end
 
   head do
@@ -20,19 +18,10 @@ class Libmatroska < Formula
     depends_on "libtool" => :build
   end
 
-  option :cxx11
-
-  if build.cxx11?
-    depends_on "libebml" => "c++11"
-  else
-    depends_on "libebml"
-  end
-
   depends_on "pkg-config" => :build
+  depends_on "libebml"
 
   def install
-    ENV.cxx11 if build.cxx11?
-
     system "autoreconf", "-fi" if build.head?
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",

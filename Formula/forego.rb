@@ -1,44 +1,28 @@
-require "language/go"
-
 class Forego < Formula
-  desc "Foreman in Go"
+  desc "Foreman in Go for Procfile-based application management"
   homepage "https://github.com/ddollar/forego"
-  url "https://github.com/ddollar/forego/archive/v0.16.1.tar.gz"
-  sha256 "d4c8305262ac18c7e51d9d8028827f83b37fb3f9373d304686d084d68033ac6d"
-
+  url "https://github.com/ddollar/forego/archive/20170327195458.tar.gz"
+  sha256 "8a9bdff7f3d62ba64e9a8bb7fe619223e2fb20af6aff18f618ff2703a5bf1860"
   head "https://github.com/ddollar/forego.git"
 
   bottle do
     cellar :any_skip_relocation
-    revision 1
-    sha256 "43023b8d7dced63e30b15df1381d08ea0c3da8dada801c1e74ad733785333ec1" => :el_capitan
-    sha256 "b5250bbca85972af704278f539b5b95fe0b2f1f17e3174299353ad79e8955e02" => :yosemite
-    sha256 "39be1155c04fe129cc63c3b131ba4e302daaf09cf6faa76c79461f2c75d7c725" => :mavericks
+    sha256 "16941f70aab7b9ff0fce10386a47a07893728397319f9cf8027e5c1b052319f9" => :high_sierra
+    sha256 "5b7d4ce276f2e072caec1a5ca33b75d73623893ee1ded78f5853eee3c6ebccb4" => :sierra
+    sha256 "122b23bc8bba14c4376f14e7094d9c1e0c8cbe1da2bfcfd9ca93abb8cc038666" => :el_capitan
+    sha256 "0eb5516da23538f663c29fc3c0c487d85efc19a556c5d81eff4038723dc1019f" => :yosemite
   end
 
   depends_on "go" => :build
-  depends_on "godep" => :build
-
-  go_resource "github.com/kr/fs" do
-    url "https://github.com/kr/fs.git",
-        :revision => "2788f0dbd16903de03cb8186e5c7d97b69ad387b"
-  end
-
-  go_resource "golang.org/x/tools" do
-    url "https://go.googlesource.com/tools",
-        :using => :git,
-        :revision => "b1aed1a596ad02d2aa2eb5c5af431a7ba2f6afc4"
-  end
 
   def install
     ENV["GOPATH"] = buildpath
-    mkdir_p buildpath/"src/github.com/ddollar/"
-    ln_sf buildpath, buildpath/"src/github.com/ddollar/forego"
-    Language::Go.stage_deps resources, buildpath/"src"
-
-    ldflags = "-X main.Version #{version} -X main.allowUpdate false"
-    system "godep", "go", "build", "-ldflags", ldflags, "-o", "forego"
-    bin.install "forego"
+    (buildpath/"src/github.com/ddollar/forego").install buildpath.children
+    cd "src/github.com/ddollar/forego" do
+      system "go", "build", "-o", bin/"forego", "-ldflags",
+             "-X main.Version=#{version} -X main.allowUpdate=false"
+      prefix.install_metafiles
+    end
   end
 
   test do

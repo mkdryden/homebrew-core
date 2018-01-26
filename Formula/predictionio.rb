@@ -1,8 +1,9 @@
 class Predictionio < Formula
   desc "Source machine learning server"
-  homepage "https://prediction.io/"
-  url "http://download.prediction.io/PredictionIO-0.9.5.tar.gz"
-  sha256 "6af81c03ac5d74fc331ab2248d2cacc752a6c2a54e0a55d63b57f7f17eae2fb0"
+  homepage "https://predictionio.incubator.apache.org/"
+  url "https://github.com/apache/incubator-predictionio/releases/download/v0.9.6/PredictionIO-0.9.6.tar.gz"
+  mirror "https://dl.bintray.com/homebrew/mirror/predictionio-0.9.6.tar.gz"
+  sha256 "d64ee99f50094b36accac4deae1008372c15f2cbc6112f6a7d8094842cf57e86"
 
   bottle :unneeded
 

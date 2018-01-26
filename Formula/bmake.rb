@@ -1,32 +1,28 @@
 class Bmake < Formula
   desc "Portable version of NetBSD make(1)"
   homepage "http://www.crufty.net/help/sjg/bmake.html"
-  url "http://www.crufty.net/ftp/pub/sjg/bmake-20150606.tar.gz"
-  mirror "https://mirrors.kernel.org/debian/pool/main/b/bmake/bmake_20150606.orig.tar.gz"
-  sha256 "c3147540fd5f64d5f2c1c7cd5d65d64d69bc5573e02707774d8eee349f043946"
+  url "http://www.crufty.net/ftp/pub/sjg/bmake-20171207.tar.gz"
+  sha256 "1703667e53a0498c0903b20612ebcbb41b886a94b238624cfeadd91a4111d39a"
 
   bottle do
-    sha256 "25e8cf1c38ece0c9dc4f55cb65dc61812ef74ab18af60f92f5aae0fa5a0e3517" => :el_capitan
-    sha256 "d902fd473759c625fff2a6303a8b2a881f6e7eee050957bed8e5715531b00569" => :yosemite
-    sha256 "cc1978660d087797042a19efe067a902fad1c4081851d57f331790278868fcd9" => :mavericks
-    sha256 "3ca7512237d38d75a745b23e90e8fa6c1b4e572ebea7f4d0454e4cf8f7b017bf" => :mountain_lion
+    sha256 "3e2a1fc2f9770c9606944b9ea2d23dc72df88df68ed3f43f3d9813e33990e7a9" => :high_sierra
+    sha256 "9497a6854e972ac0654d42ba901098d6c86ca427eb6e9098a5e971be54e541ea" => :sierra
+    sha256 "5fa48bffe37432adc669af7fb3174cad369732f7fed09c0191bf58f12a9e7639" => :el_capitan
   end
 
   def install
-    # The first, an oversight upstream; the second, don't pre-roff cat pages.
-    inreplace "bmake.1", ".Dt MAKE", ".Dt BMAKE"
+    # Don't pre-roff cat pages.
     inreplace "mk/man.mk", "MANTARGET?", "MANTARGET"
 
     # -DWITHOUT_PROG_LINK means "don't symlink as bmake-VERSION."
     args = ["--prefix=#{prefix}", "-DWITHOUT_PROG_LINK", "--install"]
-
     system "sh", "boot-strap", *args
 
     man1.install "bmake.1"
   end
 
   test do
-    (testpath/"Makefile").write <<-EOS.undent
+    (testpath/"Makefile").write <<~EOS
       all: hello
 
       hello:

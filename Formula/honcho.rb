@@ -1,15 +1,15 @@
 class Honcho < Formula
   desc "Python clone of Foreman, for managing Procfile-based applications"
   homepage "https://github.com/nickstenning/honcho"
-  url "https://github.com/nickstenning/honcho/archive/v0.6.6.tar.gz"
-  sha256 "02703190e9775c899045e25e7f5b5b1a3b3ec1a4720d6b85a50da680f7f750c7"
+  url "https://github.com/nickstenning/honcho/archive/v1.0.1.tar.gz"
+  sha256 "3271f986ff7c4732cfd390383078bfce68c46f9ad74f1804c1b0fc6283b13f7e"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "5bafc65b2e1502c59e4535bfb4e97f93bb56ead0d5ede190091ea68ab7e1faee" => :el_capitan
-    sha256 "7b404c291672f7fab907c3aa5ad3ed1e53563b7e6d54512f5a8e7342ac393fdb" => :yosemite
-    sha256 "b1e3e387daaf6eb4afa04c89f7563751635d02745e37e64ea7bf0afb3d7ea2b6" => :mavericks
-    sha256 "b61af36df3f0228ffb78380bab1823e9a0d67d2c05ad14c37b43a1b5e41d0d0d" => :mountain_lion
+    sha256 "c0f694652d43aa7baefb6ef0a45817e4c5e5f68ca2eb4a54424b7f3fbcfb07b3" => :high_sierra
+    sha256 "cd5b5d510c350dbc1780bddb82760603ebcacbb2dd382955f2a9f4b781e02005" => :sierra
+    sha256 "0af8a184c2790eacbd3e0b43e90a55fc15baf17ba1f4963c5b05f78b7785737c" => :el_capitan
+    sha256 "0af8a184c2790eacbd3e0b43e90a55fc15baf17ba1f4963c5b05f78b7785737c" => :yosemite
   end
 
   def install
@@ -21,12 +21,8 @@ class Honcho < Formula
   end
 
   test do
-    (testpath/"Procfile").write <<-EOS.undent
-      talk: echo $MY_VAR
-    EOS
-    (testpath/".env").write <<-EOS.undent
-      MY_VAR=hi
-    EOS
-    assert_match /talk\.\d+ | hi/, `#{bin}/honcho start`
+    (testpath/"Procfile").write("talk: echo $MY_VAR")
+    (testpath/".env").write("MY_VAR=hi")
+    assert_match /talk\.\d+ \| hi/, shell_output("#{bin}/honcho start")
   end
 end

@@ -1,10 +1,12 @@
 class Bagit < Formula
   desc "Library for creation, manipulation, and validation of bags"
   homepage "https://github.com/LibraryOfCongress/bagit-java"
-  url "https://github.com/LibraryOfCongress/bagit-java/releases/download/v4.12.0/bagit-4.12.0.zip"
-  sha256 "045efaff7375af8cb47c9dc7890bf17d4d49d149e4d3ac388862288087505695"
+  url "https://github.com/LibraryOfCongress/bagit-java/releases/download/v4.12.3/bagit-v4.12.3.zip"
+  sha256 "7736d00fafe575ea298788a8d697a2af490dd12f856b43cd57bf579a374199e1"
 
   bottle :unneeded
+
+  depends_on :java => "1.8+"
 
   def install
     # put logs in var, not in the Cellar

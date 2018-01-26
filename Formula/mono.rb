@@ -1,31 +1,18 @@
 class Mono < Formula
   desc "Cross platform, open source .NET development framework"
   homepage "http://www.mono-project.com/"
-  url "http://download.mono-project.com/sources/mono/mono-4.2.3.4.tar.bz2"
-  sha256 "4703d390416a6e9977585f13711f59a6d54431086c2dbacee49888dcc31937be"
+  url "https://download.mono-project.com/sources/mono/mono-5.4.1.6.tar.bz2"
+  sha256 "bdfda0fe9ad5ce20bb2cf9e9bf28fed40f324141297479824e1f65d97da565df"
+
+  bottle do
+    sha256 "4180790335196a33a716ddb0bb1b6ba6a3487babedd8baac6de2458aff038906" => :high_sierra
+    sha256 "8ae5763ad3b6e84ac078ca83f729fe47e5f8d048a87ab0a5892c2b22b4c5854a" => :sierra
+    sha256 "8476cab8863aabdd7c64bff4a31b57aed56192baa71383b8f3ffcc8f41a45fb5" => :el_capitan
+  end
 
   # xbuild requires the .exe files inside the runtime directories to
   # be executable
   skip_clean "lib/mono"
-
-  bottle do
-    sha256 "497caf59e4ec884f8e027850f260e74b4eb396db1522177461759404af9a98f2" => :el_capitan
-    sha256 "ed0d5c49e0fedc6ceb51a2a787ef261f6d5d0d712ae4c1436054cf3eb7ef1582" => :yosemite
-    sha256 "397237006223604ca29a0c7b826d935e1d262df76de49255a9e25806cfe4db52" => :mavericks
-  end
-
-  conflicts_with "czmq", :because => "both install `makecert` binaries"
-
-  option "without-fsharp", "Build without support for the F# language."
-
-  depends_on "automake" => :build
-  depends_on "autoconf" => :build
-  depends_on "pkg-config" => :build
-
-  resource "fsharp" do
-    url "https://github.com/fsharp/fsharp.git", :tag => "4.0.1.0",
-                                                :revision => "b22167013d1f4f0c41107fd40935dc1a8fe46386"
-  end
 
   link_overwrite "bin/fsharpi"
   link_overwrite "bin/fsharpiAnyCpu"
@@ -34,8 +21,20 @@ class Mono < Formula
   link_overwrite "lib/mono"
   link_overwrite "lib/cli"
 
-  conflicts_with "disco", :because => "both install `disco` binaries"
+  option "without-fsharp", "Build without support for the F# language."
+
+  depends_on "automake" => :build
+  depends_on "autoconf" => :build
+  depends_on "pkg-config" => :build
+  depends_on "cmake" => :build
+
   conflicts_with "xsd", :because => "both install `xsd` binaries"
+
+  resource "fsharp" do
+    url "https://github.com/fsharp/fsharp.git",
+        :tag => "4.1.23",
+        :revision => "35a4a5b1f26927259c3213465a47b27ffcd5cb4d"
+  end
 
   def install
     args = %W[
@@ -66,7 +65,7 @@ class Mono < Formula
     end
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     To use the assemblies from other formulae you need to set:
       export MONO_GAC_PREFIX="#{HOMEBREW_PREFIX}"
     Note that the 'mono' formula now includes F#. If you have
@@ -77,7 +76,7 @@ class Mono < Formula
   test do
     test_str = "Hello Homebrew"
     test_name = "hello.cs"
-    (testpath/test_name).write <<-EOS.undent
+    (testpath/test_name).write <<~EOS
       public class Hello1
       {
          public static void Main()
@@ -86,12 +85,12 @@ class Mono < Formula
          }
       }
     EOS
-    shell_output "#{bin}/mcs #{test_name}"
-    output = shell_output "#{bin}/mono hello.exe"
+    shell_output("#{bin}/mcs #{test_name}")
+    output = shell_output("#{bin}/mono hello.exe")
     assert_match test_str, output.strip
 
     # Tests that xbuild is able to execute lib/mono/*/mcs.exe
-    (testpath/"test.csproj").write <<-EOS.undent
+    (testpath/"test.csproj").write <<~EOS
       <?xml version="1.0" encoding="utf-8"?>
       <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
         <PropertyGroup>
@@ -104,16 +103,19 @@ class Mono < Formula
         <Import Project="$(MSBuildBinPath)\\Microsoft.CSharp.targets" />
       </Project>
     EOS
-    system "#{bin}/xbuild", "test.csproj"
+    system bin/"xbuild", "test.csproj"
 
     if build.with? "fsharp"
       # Test that fsharpi is working
       ENV.prepend_path "PATH", bin
-      output = pipe_output("#{bin}/fsharpi", "printfn \"#{test_str}\"; exit 0")
+      (testpath/"test.fsx").write <<~EOS
+        printfn "#{test_str}"; 0
+      EOS
+      output = pipe_output("#{bin}/fsharpi test.fsx")
       assert_match test_str, output
 
       # Tests that xbuild is able to execute fsc.exe
-      (testpath/"test.fsproj").write <<-EOS.undent
+      (testpath/"test.fsproj").write <<~EOS
         <?xml version="1.0" encoding="utf-8"?>
         <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
           <PropertyGroup>
@@ -134,11 +136,11 @@ class Mono < Formula
           </ItemGroup>
         </Project>
       EOS
-      (testpath/"Main.fs").write <<-EOS.undent
+      (testpath/"Main.fs").write <<~EOS
         [<EntryPoint>]
         let main _ = printfn "#{test_str}"; 0
       EOS
-      system "#{bin}/xbuild", "test.fsproj"
+      system bin/"xbuild", "test.fsproj"
     end
   end
 end

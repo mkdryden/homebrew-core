@@ -1,36 +1,33 @@
 class Hh < Formula
   desc "Bash and zsh history suggest box"
   homepage "https://github.com/dvorka/hstr"
-  url "https://github.com/dvorka/hstr/releases/download/1.19/hh-1.19-src.tgz"
-  sha256 "b67cb5e2515948fd0fb402b732630a51885be5dfe58cbf914c22ea444129a647"
+  url "https://github.com/dvorka/hstr/archive/1.24.tar.gz"
+  sha256 "6c130afd8ca570ee1988a0c7d6a96efeeabd21be7e05ce1f3144bb3c86c74441"
+  head "https://github.com/dvorka/hstr.git"
 
   bottle do
     cellar :any
-    sha256 "b241ad9ec87ae46d2e125fa939294a6aea603fc857aeea030526954290bfee18" => :el_capitan
-    sha256 "f737693414e21b5ab9c434be4ffd5923fb4ccc153c4039ba2a65dea4f1010a95" => :yosemite
-    sha256 "b87d487cb1a2d951d9b38c651dda2cc6f3161e183a2174d033f220c0b9bb2cda" => :mavericks
+    sha256 "90be269fa8ed7ed3538f91d34cccc5fe87e4ce3e328b64a6c74f558d5f2d0633" => :high_sierra
+    sha256 "3a194279a8c4eda33d00398e6c3a2a854c9c15194449d1d0e813e57b17993cae" => :sierra
+    sha256 "4bbad864545de6e4f2a8e914fc20495983c0bde0feb2e2da9353a8169cfaa3fa" => :el_capitan
   end
 
-  head do
-    url "https://github.com/dvorka/hstr.git"
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "libtool" => :build
-  end
-
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "libtool" => :build
+  depends_on "pkg-config" => :build
   depends_on "readline"
 
   def install
-    system "autoreconf", "-fvi" if build.head?
+    system "autoreconf", "-fvi"
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make", "install"
   end
 
   test do
-    path = testpath/".hh_test"
-    path.write "test\n"
-    ENV["HISTFILE"] = path
-    assert_equal "test\n", `#{bin}/hh -n`
+    ENV["HISTFILE"] = testpath/".hh_test"
+    (testpath/".hh_test").write("test\n")
+    assert_equal "test", shell_output("#{bin}/hh -n").chomp
   end
 end
